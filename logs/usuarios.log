@@ -12571,3 +12571,13 @@ ValueError: Must supply cloud_name in tag or in configuration
 2025-08-06 14:15:20,578 | INFO | django | 2025-08-06 14:15:20.578657 | alexandre acessou /evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/relatorio-inscritos/
 2025-08-06 14:15:21,145 | INFO | django.server | "GET /evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/relatorio-inscritos/ HTTP/1.1" 200 7871
 2025-08-06 14:15:21,168 | WARNING | django.server | "GET /static/css/style.css HTTP/1.1" 404 1853
+2025-08-06 14:41:21,118 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 14:41:22,282 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 14:43:21,330 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 14:43:22,412 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 14:44:18,855 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 14:44:19,821 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 14:52:28,501 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 14:52:29,589 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 15:11:53,799 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 15:11:54,820 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
