@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Usuário Admin Paróquia - Admin Geral</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --light-bg: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --white: #fff;
+            --error-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px; /* Aumenta a largura do container */
+            margin: 30px auto;
+            padding: 30px;
+            background-color: var(--white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            flex: 1; /* Ocupa o espaço restante */
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.5em;
+        }
+
+        /* Formulário */
+        form {
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap; /* Permite que os campos quebrem para a próxima linha em telas menores */
+            gap: 20px; /* Espaçamento entre os campos */
+        }
+
+        .form-group {
+            flex: 1; /* Cada campo ocupa o mesmo espaço */
+            min-width: 250px; /* Largura mínima para evitar que os campos fiquem muito estreitos */
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"], /* Adicionado para campos de senha */
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="password"]:focus, /* Adicionado para campos de senha */
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* Botões */
+        button[type="submit"] {
+            padding: 14px 28px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #207ac2;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            text-decoration: underline;
+        }
+
+        /* Erros de Formulário */
+        .errorlist {
+            margin: 10px 0;
+            padding: 0;
+            list-style: none;
+            color: var(--error-color);
+            font-size: 0.9em;
+        }
+
+        .errorlist li {
+            margin-bottom: 5px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            margin-top: 30px;
+            border-radius: 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 15px auto;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-row {
+                flex-direction: column; /* Empilha os campos em telas menores */
+            }
+
+            .form-group {
+                min-width: auto; /* Permite que os campos ocupem a largura total */
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="password"], /* Adicionado para campos de senha */
+            select,
+            textarea {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+
+            button[type="submit"] {
+                padding: 12px 24px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Criar Novo Usuário Admin Paróquia</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit">Salvar</button>
+        </form>
+        <a href="{% url 'inscricoes:admin_geral_list_usuarios' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar para lista de usuários
+        </a>
+    </div>
+
+    <footer>
+        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
+    </footer>
+</body>
+</html>

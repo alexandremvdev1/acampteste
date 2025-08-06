@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ficha de Inscrição</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 98%;
+            max-width: 1200px;
+            background: #fff;
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin: 2px;
+        }
+
+        .event-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .event-banner {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 1.1em;
+        }
+
+        h2 {
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 2px;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            /* Ajuste para telas menores */
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 1px;
+            color: #777;
+            font-size: 0.6em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 3px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            /* Campos arredondados */
+            box-sizing: border-box;
+            margin-top: 1px;
+            font-size: 0.6em;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+
+        .btn {
+            padding: 5px 8px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.6em;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .photo-container {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            margin-bottom: 2px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 8px;
+            color: #aaa;
+            font-size: 0.5em;
+        }
+
+        /* Estilos para telas menores */
+        @media (max-width: 600px) {
+            .container {
+                width: 98%;
+                padding: 5px;
+            }
+
+            h1 {
+                font-size: 0.9em;
+            }
+
+            h2 {
+                font-size: 0.8em;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+                /* Uma coluna em telas muito pequenas */
+            }
+
+            .btn {
+                padding: 4px 6px;
+                font-size: 0.5em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="event-header">
+            <h2>{{ inscricao.evento.nome }}</h2>
+        </div>
+
+        <h1>FICHA DE INSCRIÇÃO</h1>
+
+        <div class="photo-container">
+            {% if inscricao.participante.foto %}
+            <img src="{{ inscricao.participante.foto.url }}" alt="Foto do Participante" class="photo">
+            {% else %}
+            <div class="photo">Sem foto</div>
+            {% endif %}
+        </div>
+
+        <h2>Dados do Participante</h2>
+        <div class="grid-container">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" value="{{ inscricao.participante.nome }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="data_nascimento">Data Nasc:</label>
+                <input type="text" id="data_nascimento" value="{{ data_nascimento }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="cpf">CPF:</label>
+                <input type="text" id="cpf" value="{{ inscricao.participante.cpf }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" value="{{ inscricao.participante.telefone }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="{{ inscricao.participante.email }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="cep">CEP:</label>
+                <input type="text" id="cep" value="{{ inscricao.participante.CEP }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" value="{{ inscricao.participante.endereco }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="numero">Número:</label>
+                <input type="text" id="numero" value="{{ inscricao.participante.numero }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="bairro">Bairro:</label>
+                <input type="text" id="bairro" value="{{ inscricao.participante.bairro }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="cidade">Cidade:</label>
+                <input type="text" id="cidade" value="{{ inscricao.participante.cidade }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <input type="text" id="estado" value="{{ inscricao.participante.estado }}" readonly>
+            </div>
+        </div>
+
+        <h2>Dados Adicionais</h2>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="altura">Altura:</label>
+                <input type="text" id="altura" value="{{ inscricao_base.altura }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="peso">Peso:</label>
+                <input type="text" id="peso" value="{{ inscricao_base.peso }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="batizado">Batizado?</label>
+                <input type="text" id="batizado" value="{{ inscricao_base.get_batizado_display }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="estado_civil">Estado Civil:</label>
+                <input type="text" id="estado_civil" value="{{ inscricao_base.get_estado_civil_display }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="casado_igreja">Casado Igreja?</label>
+                <input type="text" id="casado_igreja" value="{{ inscricao_base.get_casado_na_igreja_display }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="paroquia">Paróquia:</label>
+                <input type="text" id="paroquia" value="{{ inscricao_base.paroquia }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="pastoral">Pastoral:</label>
+                <input type="text" id="pastoral" value="{{ inscricao_base.pastoral_movimento }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="dizimista">Dizimista?</label>
+                <input type="text" id="dizimista" value="{{ inscricao_base.get_dizimista_display }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="crismado">Crismado?</label>
+                <input type="text" id="crismado" value="{{ inscricao_base.get_crismado_display }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="tamanho_camisa">Tam. Camisa:</label>
+                <input type="text" id="tamanho_camisa" value="{{ inscricao_base.tamanho_camisa }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="problema_saude">Prob. Saúde?</label>
+                <input type="text" id="problema_saude" value="{{ inscricao_base.get_problema_saude_display }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="qual_problema_saude">Qual Prob.?</label>
+                <input type="text" id="qual_problema_saude" value="{{ inscricao_base.qual_problema_saude }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="medicamento">Medicamento?</label>
+                <input type="text" id="medicamento"
+                    value="{{ inscricao_base.get_medicamento_controlado_display }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="qual_medicamento_controlado">Qual Medic.?</label>
+                <input type="text" id="qual_medicamento_controlado"
+                    value="{{ inscricao_base.qual_medicamento_controlado }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="indicado_por">Indicado Por:</label>
+                <input type="text" id="indicado_por" value="{{ inscricao_base.indicado_por }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="pressao_alta">Pressão Alta?</label>
+                <input type="text" id="pressao_alta" value="{{ inscricao_base.get_pressao_alta_display }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="diabetes">Diabetes?</label>
+                <input type="text" id="diabetes" value="{{ inscricao_base.get_diabetes_display }}" readonly>
+            </div>
+        </div>
+
+        <h2>Dados do Cônjuge</h2>
+        {% if inscricao.conjuge %}
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="nome_conjuge">Nome Cônjuge:</label>
+                <input type="text" id="nome_conjuge" value="{{ inscricao.conjuge.nome }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="conjuge_inscrito">Cônjuge Inscrito?</label>
+                <input type="text" id="conjuge_inscrito"
+                    value="{{ inscricao.conjuge.get_conjuge_inscrito_display }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="ja_e_campista">Já é Campista?</label>
+                <input type="text" id="ja_e_campista" value="{{ inscricao.conjuge.get_ja_e_campista_display }}"
+                    readonly>
+            </div>
+        </div>
+        {% endif %}
+        <h2>Dados da Paróquia</h2>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="nome_paroquia">Nome Paróquia:</label>
+                <input type="text" id="nome_paroquia" value="{{ inscricao.paroquia.nome }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="cidade_paroquia">Cidade:</label>
+                <input type="text" id="cidade_paroquia" value="{{ inscricao.paroquia.cidade }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="estado_paroquia">Estado:</label>
+                <input type="text" id="estado_paroquia" value="{{ inscricao.paroquia.estado }}" readonly>
+            </div>
+        </div>
+
+        <h2>Responsáveis</h2>
+        <h3>Responsável 1</h3>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="responsavel_1_nome">Nome:</label>
+                <input type="text" id="responsavel_1_nome" value="{{ inscricao.responsavel_1_nome }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_1_telefone">Telefone:</label>
+                <input type="tel" id="responsavel_1_telefone" value="{{ inscricao.responsavel_1_telefone }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_1_grau_parentesco">Grau:</label>
+                <input type="text" id="responsavel_1_grau_parentesco"
+                    value="{{ inscricao.responsavel_1_grau_parentesco }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_1_ja_e_campista">Já é Campista:</label>
+                <input type="text" id="responsavel_1_ja_e_campista"
+                    value="{% if inscricao.responsavel_1_ja_e_campista %}Sim{% else %}Não{% endif %}" readonly>
+            </div>
+        </div>
+
+        <h3>Responsável 2</h3>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="responsavel_2_nome">Nome:</label>
+                <input type="text" id="responsavel_2_nome" value="{{ inscricao.responsavel_2_nome }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_2_telefone">Telefone:</label>
+                <input type="tel" id="responsavel_2_telefone" value="{{ inscricao.responsavel_2_telefone }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_2_grau_parentesco">Grau:</label>
+                <input type="text" id="responsavel_2_grau_parentesco"
+                    value="{{ inscricao.responsavel_2_grau_parentesco }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel_2_ja_e_campista">Já é Campista:</label>
+                <input type="text" id="responsavel_2_ja_e_campista"
+                    value="{% if inscricao.responsavel_2_ja_e_campista %}Sim{% else %}Não{% endif %}" readonly>
+            </div>
+        </div>
+
+        <h2>Contato Emergência</h2>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="contato_emergencia_nome">Nome:</label>
+                <input type="text" id="contato_emergencia_nome" value="{{ inscricao.contato_emergencia_nome }}"
+                    readonly>
+            </div>
+            <div class="form-group">
+                <label for="contato_emergencia_telefone">Telefone:</label>
+                <input type="tel" id="contato_emergencia_telefone"
+                    value="{{ inscricao.contato_emergencia_telefone }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="contato_emergencia_grau_parentesco">Grau:</label>
+                <input type="text" id="contato_emergencia_grau_parentesco"
+                    value="{{ inscricao.contato_emergencia_grau_parentesco }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="contato_emergencia_ja_e_campista">Já é Campista:</label>
+                <input type="text" id="contato_emergencia_ja_e_campista"
+                    value="{% if inscricao.contato_emergencia_ja_e_campista %}Sim{% else %}Não{% endif %}"
+                    readonly>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn btn-secondary" onclick="window.history.back()">Voltar</button>
+            <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+        </div>
+
+        <div class="footer">
+            Desenvolvido por Alexandre Martins Vieira
+        </div>
+    </div>
+</body>
+
+</html>

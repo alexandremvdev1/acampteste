@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Participantes do Evento - {{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #4CAF50; /* Verde */
+            --secondary-color: #333;
+            --accent-color: #FFC107; /* Amarelo */
+            --success-color: #4CAF50;
+            --danger-color: #F44336; /* Vermelho */
+            --light-bg: #FAFAFA;
+            --dark-bg: #E0E0E0;
+            --text-color: #333;
+            --light-text: #777;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 1em;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid var(--dark-bg);
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1em;
+            margin-right: 5px;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            padding: 10px 16px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-view    { background: var(--success-color); }
+        .btn-edit    { background: var(--primary-color); }
+        .btn-delete  { background: var(--danger-color); }
+        .btn-ficha   { background: var(--accent-color); }
+        .btn-cracha  { background: #d35400; }
+        .btn-pagamento { background: #16a085; }
+
+        .payment-status {
+            text-align: center;
+            width: 40px;
+            font-size: 1.3em;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+            width: 250px;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .save-btn {
+            background: var(--primary-color);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: 10px;
+        }
+
+        .save-btn:hover {
+            background: #388E3C;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+            color: #388E3C;
+        }
+
+        form.inline-form {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Estilo do campo de busca */
+        #searchInput {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border: 1.5px solid var(--dark-bg);
+            border-radius: 10px;
+            box-sizing: border-box;
+            color: var(--text-color);
+        }
+
+        /* Estilos para os botões de relatório */
+        .report-buttons {
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.6rem;
+            justify-content: center;
+        }
+
+        .report-buttons a {
+            padding: 12px 20px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .report-buttons a:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .actions-cell {
+                width: 150px;
+            }
+
+            .btn {
+                font-size: 0.9em;
+                padding: 8px 12px;
+            }
+
+            .report-buttons {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Total de Participantes */
+        .total-participantes {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<a href="{% url 'inscricoes:admin_paroquia_painel' %}" class="back-link">
+    <i class="fas fa-arrow-left"></i> Voltar ao Painel
+</a>
+<h1>{{ evento.nome }}</h1>
+
+<!-- BOTÕES DE RELATÓRIOS -->
+<div class="report-buttons">
+    <a href="{% url 'inscricoes:relatorio_crachas' evento.id %}"
+       class="btn btn-cracha"
+       target="_blank">
+        <i class="fas fa-id-card"></i> Imprimir Crachás
+    </a>
+    <a href="{% url 'inscricoes:relatorio_fichas_sorteio' evento.id %}"
+       target="_blank"
+       class="btn btn-ficha">
+        <i class="fas fa-ticket-alt"></i> Fichas Sorteio
+    </a>
+    <a href="{% url 'inscricoes:relatorio_inscritos' evento.id %}"
+       class="btn btn-view">
+        <i class="fas fa-list-alt"></i> Relatório Inscritos
+    </a>
+    <a href="{% url 'inscricoes:relatorio_financeiro' evento.id %}"
+       class="btn btn-pagamento">
+        <i class="fas fa-money-bill-wave"></i> Relatório Financeiro
+    </a>
+    <a href="{% url 'inscricoes:pagina_video_evento' evento.slug %}" class="btn btn-edit" target="_blank">
+        <i class="fas fa-video"></i> Adicionar/Editar Vídeo
+    </a>
+    <a href="{% url 'inscricoes:imprimir_todas_fichas' evento.id %}"
+   class="btn btn-ficha"
+   target="_blank">
+  <i class="fas fa-print"></i>Todas as Fichas
+</a>
+
+</div>
+
+<label for="searchInput" style="font-weight:600;"><i class="fas fa-search"></i> Buscar participante:</label>
+<input type="text" id="searchInput" placeholder="Digite o nome para buscar..." />
+
+<p class="total-participantes">Total de Participantes: {{ total_participantes }}</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th class="payment-status" title="Status do pagamento"><i class="fas fa-dollar-sign"></i></th>
+            <th>Selecionado</th>
+            <th class="actions-cell"><i class="fas fa-tools"></i> Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inscricao in participantes %}
+        <tr>
+            <td>{{ inscricao.participante.nome }}</td>
+            <td class="payment-status">
+                {% if inscricao.pagamento_confirmado %}<i class="fas fa-check-circle" style="color: var(--success-color);"></i>{% else %}<i class="fas fa-times-circle" style="color: var(--danger-color);"></i>{% endif %}
+            </td>
+            <td style="text-align:center;">
+                <form method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="inscricao_id" value="{{ inscricao.id }}" />
+                    <input type="checkbox" name="foi_selecionado" value="1" {% if inscricao.foi_selecionado %}checked{% endif %} />
+                    <button type="submit" class="save-btn" title="Salvar"><i class="fas fa-save"></i></button>
+                </form>
+            </td>
+            <td class="actions-cell">
+                <a href="{% url 'inscricoes:ver_inscricao' inscricao.id %}" class="btn btn-view" title="Ver"><i class="fas fa-eye"></i></a>
+                <a href="{% url 'inscricoes:editar_inscricao' inscricao.id %}" class="btn btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
+                <a href="{% url 'inscricoes:deletar_inscricao' inscricao.id %}" class="btn btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir?');"><i class="fas fa-trash-alt"></i></a>
+                <a href="{% url 'inscricoes:ficha_inscricao' inscricao.id %}" class="btn btn-ficha" title="Ficha"><i class="fas fa-file-alt"></i></a>
+                <a href="{% url 'inscricoes:imprimir_cracha' inscricao.id %}" class="btn btn-cracha" title="Crachá" target="_blank"><i class="fas fa-id-card"></i></a>
+                <a href="{% url 'inscricoes:incluir_pagamento' inscricao.id %}" class="btn btn-pagamento" title="Incluir Pagamento"><i class="fas fa-dollar-sign"></i></a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" style="text-align:center;">Nenhum participante inscrito.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("searchInput");
+    const tableBody = document.querySelector("table tbody");
+    const rows = tableBody.querySelectorAll("tr");
+
+    searchInput.addEventListener("input", function() {
+      const filter = searchInput.value.toLowerCase();
+
+      rows.forEach(row => {
+        const nome = row.querySelector("td:first-child").textContent.toLowerCase();
+        if (nome.includes(filter)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

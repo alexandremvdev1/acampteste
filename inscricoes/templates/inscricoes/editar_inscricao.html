@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Inscrição - {{ inscricao.participante.nome }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #4CAF50; /* Verde */
+            --secondary-color: #333;
+            --light-bg: #f5f5f5;
+            --text-color: #444;
+            --border-color: #ccc;
+            --white: #fff;
+            --error-color: #e74c3c;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: var(--white);
+            box-shadow: 0 4px 8px var(--shadow-color);
+            border-radius: 12px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 500;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            background-color: var(--white);
+            padding: 12px 15px;
+            border-left: 5px solid var(--primary-color);
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            font-size: 1.4em;
+            font-weight: 500;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+
+        /* Formulário */
+        form {
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1em;
+            color: var(--text-color);
+            background-color: var(--white);
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* Botões */
+        button[type="submit"] {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        button[type="submit"]:hover {
+            background-color: #388E3C;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            text-decoration: underline;
+            color: #388E3C;
+        }
+
+        /* Erros de Formulário */
+        .errorlist {
+            margin-top: 5px;
+            padding: 0;
+            list-style: none;
+            color: var(--error-color);
+            font-size: 0.9em;
+        }
+
+        .errorlist li {
+            margin-bottom: 3px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            margin-top: 40px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        /* Estilo para os forms de contato */
+        .contato-form {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: var(--white);
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px auto;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="number"],
+            select,
+            textarea {
+                padding: 12px;
+                font-size: 1em;
+            }
+
+            button[type="submit"] {
+                padding: 14px 28px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Inscrição</h1>
+
+        <a href="{% url 'inscricoes:evento_participantes' evento_id=inscricao.evento.pk %}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <h2>Dados do Participante</h2>
+            <div class="form-row">
+                {% for field in participante_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <h2>Dados da Inscrição</h2>
+            <div class="form-row">
+                {% for field in inscricao_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if base_form %}
+                <h2>Formulário Específico</h2>
+                <div class="form-row">
+                    {% for field in base_form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <ul class="errorlist">
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if conjuge_form %}
+            <h2>Dados do Cônjuge</h2>
+            <div class="form-row">
+                {% for field in conjuge_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if contato_forms %}
+            <h2>Contatos de Emergência</h2>
+            {% for contato_form in contato_forms %}
+                <div class="contato-form">
+                    <div class="form-row">
+                        {% for field in contato_form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if pagamento_form %}
+            <h2>Pagamento</h2>
+            <div class="form-row">
+                {% for field in pagamento_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <button type="submit">Salvar Alterações</button>
+    </form>
+</div>
+
+<footer>
+    &copy; {{ current_year }} - Todos os direitos reservados
+</footer>
+</body>
+</html>

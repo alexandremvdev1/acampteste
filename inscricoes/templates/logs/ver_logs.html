@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Logs de Usuários</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f1f1;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .log-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-line {
+            border-bottom: 1px solid #444;
+            padding: 3px 0;
+        }
+
+        .button-bar {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .button-bar a {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 8px 14px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .button-bar a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📝 Logs de Usuários</h1>
+
+    <div class="button-bar">
+        <a href="{% url 'inscricoes:ver_logs' %}">🔄 Atualizar</a>
+        <a href="{% url 'inscricoes:download_logs' %}">⬇️ Baixar Logs</a>
+    </div>
+
+    <div class="log-box">
+        {% for linha in linhas %}
+            <div class="log-line">{{ linha }}</div>
+        {% empty %}
+            <p>Nenhum log disponível.</p>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

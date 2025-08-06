@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Financeiro - {{ evento.nome }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores (Mais vibrantes e acessíveis) */
+        :root {
+            --primary-color: #2980b9; /* Azul mais moderno */
+            --secondary-color: #34495e; /* Cinza-azulado escuro */
+            --light-bg: #f4f7f9; /* Cinza bem claro */
+            --text-color: #2c3e50; /* Texto principal */
+            --border-color: #e0e6ed; /* Bordas suaves */
+            --white: #fff;
+            --success-color: #27ae60; /* Verde */
+            --warning-color: #d35400; /* Laranja */
+            --back-button-color: #7f8c8d; /* Cinza para o botão voltar */
+            --accent-color: #f1c40f; /* Amarelo para detalhes */
+        }
+
+        /* Reset básico para melhor consistência entre navegadores */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif; /* Fonte mais moderna */
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 900px; /* Aumenta um pouco a largura */
+            margin: 20px auto;
+            background-color: var(--white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+            border-radius: 12px; /* Bordas mais arredondadas */
+            padding: 30px; /* Espaçamento interno maior */
+            flex: 1;
+        }
+
+        /* Título */
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700; /* Mais forte */
+            font-size: 2.5em; /* Aumenta o tamanho */
+            letter-spacing: -0.02em; /* Ajuste fino do espaçamento */
+        }
+
+        /* Seção de resumo */
+        .summary {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* Sombra sutil */
+        }
+
+        .summary p {
+            margin-bottom: 12px;
+            font-size: 1.1em; /* Tamanho um pouco maior */
+            color: var(--text-color);
+        }
+
+        .summary p strong {
+            color: var(--primary-color); /* Destaca os títulos */
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .summary hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 20px 0;
+        }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07); /* Sombra mais definida */
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 15px; /* Aumenta o preenchimento */
+            text-align: left;
+            font-size: 1em;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+
+        tbody tr:hover {
+            background-color: #f0f3f5; /* Hover mais suave */
+            transition: background-color 0.3s ease;
+        }
+
+        /* Mensagem de "sem dados" */
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: var(--light-text);
+            font-size: 1.1em;
+        }
+
+        /* Botão Voltar */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background-color: var(--back-button-color);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background-color: #636e72;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            margin-top: 40px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        /* Cores de status */
+        .positive {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .negative {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px auto;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .summary {
+                padding: 15px;
+            }
+
+            .summary p {
+                font-size: 1em;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            .back-button {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'inscricoes:evento_participantes' evento.id %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+        <h1>Relatório Financeiro - {{ evento.nome }}</h1>
+
+        <div class="summary">
+            <p><strong>Total Arrecadado:</strong> R$ {{ total_arrecadado }}</p>
+            <p><strong>Total Esperado:</strong> R$ {{ total_esperado }}</p>
+            {% if total_pendente > 0 %}
+                <p><strong>Total Pendente:</strong> <span class="negative">R$ {{ total_pendente }}</span></p>
+            {% else %}
+                <p><strong>Total Pendente:</strong> <span class="positive">R$ {{ total_pendente }}</span></p>
+            {% endif %}
+            <hr>
+            <p><strong>Total em PIX:</strong> R$ {{ total_pix }}</p>
+            <p><strong>Total em Cartão de Crédito:</strong> R$ {{ total_credito }}</p>
+            <p><strong>Total em Cartão de Débito:</strong> R$ {{ total_debito }}</p>
+            <p><strong>Total em Dinheiro:</strong> R$ {{ total_dinheiro }}</p>
+        </div>
+
+        <h2>Pagamentos Confirmados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Inscrição</th>
+                    <th>Método</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pagamento in pagamentos_confirmados %}
+                    <tr>
+                        <td>{{ pagamento.inscricao }}</td>
+                        <td>{{ pagamento.get_metodo_display }}</td>
+                        <td>R$ {{ pagamento.valor }}</td>
+                        <td>{{ pagamento.data_pagamento }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="no-data">Nenhum pagamento confirmado.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <footer>
+        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
+    </footer>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar Vídeo - {{ evento.nome }}</title>
+</head>
+<body>
+    <h1>📹 Adicionar Vídeo para {{ evento.nome }}</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar Vídeo</button>
+    </form>
+
+    {% if evento.video %}
+        <hr>
+        <h3>Vídeo Atual:</h3>
+        <video width="480" controls>
+            <source src="{{ evento.video.arquivo.url }}" type="video/mp4">
+            Seu navegador não suporta vídeo.
+        </video>
+    {% endif %}
+</body>
+</html>

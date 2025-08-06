@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Atividades dos Usuários</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #f1f1f1;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        .login { color: green; }
+        .logout { color: red; }
+        .acesso { color: #555; }
+        .erro { color: #c0392b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧾 Atividades dos Usuários</h1>
+        <ul>
+            {% for evento in eventos %}
+                <li class="{{ evento.tipo }}">
+                    {% if evento.tipo == 'login' %}
+                        🔐 <strong>{{ evento.usuario }}</strong> fez login (IP: {{ evento.ip }}) às {{ evento.hora }}
+                    {% elif evento.tipo == 'logout' %}
+                        🚪 <strong>{{ evento.usuario }}</strong> fez logout (IP: {{ evento.ip }}) às {{ evento.hora }}
+                    {% elif evento.tipo == 'acesso' %}
+                        ➡️ <strong>{{ evento.usuario }}</strong> acessou <code>{{ evento.caminho }}</code> às {{ evento.hora }}
+                    {% elif evento.tipo == 'erro' %}
+                        ⚠️ {{ evento.mensagem }}
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li>Nenhuma atividade encontrada.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

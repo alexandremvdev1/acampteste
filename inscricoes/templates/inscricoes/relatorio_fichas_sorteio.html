@@ -1,0 +1,206 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Fichas de Sorteio - {{ evento.nome }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos CSS (movidos para um arquivo style.css para melhor organização) */
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .ficha {
+                border: 1px dashed #999;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #334155;
+        }
+
+        .page {
+            page-break-after: always;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .ficha {
+            width: 32%;
+            height: 250px;
+            border: 1px dashed #999;
+            margin-bottom: 15px;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .ficha h2 {
+            font-size: 18px;
+            margin: 0;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .ficha h3 { /* Estilo para o nome do evento */
+            font-size: 16px;
+            margin: 5px 0;
+            color: #64748b;
+            font-weight: normal;
+        }
+
+        .ficha p {
+            font-size: 14px;
+            margin: 4px 0;
+            color: #64748b;
+        }
+
+        .filtros {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+        }
+
+        .filtros label {
+            font-size: 16px;
+            color: #334155;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        .filtros select {
+            font-size: 15px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            color: #4b5563;
+            background-color: #f9fafb;
+            margin-right: 10px;
+        }
+
+        .filtros button {
+            font-size: 15px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background-color: #4338ca;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .filtros button:hover {
+            background-color: #312e81;
+        }
+
+        /* Estilo para a foto do participante */
+        .foto-participante {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page {
+                flex-direction: column;
+            }
+
+            .ficha {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .filtros {
+                padding: 10px;
+            }
+
+            .filtros label {
+                font-size: 14px;
+                margin-right: 5px;
+            }
+
+            .filtros select,
+            .filtros button {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print filtros">
+        <form method="get">
+            <label for="cidade"><i class="fas fa-filter"></i> Filtrar por cidade:</label>
+            <select name="cidade" id="cidade">
+                <option value="">Todas</option>
+                {% for cid in cidades %}
+                <option value="{{ cid }}" {% if cid == cidade_selecionada %}selected{% endif %}>
+                    {{ cid }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit"><i class="fas fa-search"></i> Filtrar</button>
+            <button type="button" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        </form>
+    </div>
+
+    {% for inscricao in inscricoes %}
+    {# A cada 6 fichas abre uma nova página #}
+    {% if forloop.first or forloop.counter0|divisibleby:6 %}
+    <div class="page">
+        {% endif %}
+
+        <div class="ficha">
+            <img src="{{ inscricao.participante.foto.url }}" alt="Foto do Participante" class="foto-participante">
+            <h3>{{ evento.nome }}</h3> <!-- Nome do evento aqui -->
+            <h2>{{ inscricao.participante.nome }}</h2>
+            <p><i class="fas fa-map-marker-alt"></i> <strong>Cidade:</strong> {{ inscricao.paroquia.cidade }}</p>
+            <p><i class="fas fa-church"></i> <strong>Paróquia:</strong> {{ inscricao.paroquia.nome }}</p>
+        </div>
+
+        {% if forloop.counter|divisibleby:6 or forloop.last %}
+    </div>
+    {% endif %}
+    {% empty %}
+    <p>Nenhuma inscrição concluída encontrada para este evento.</p>
+    {% endfor %}
+
+</body>
+
+</html>

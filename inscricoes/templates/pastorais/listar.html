@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>📋 Lista de Pastorais</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0;
+        }
+
+        li {
+            background-color: #ecf0f1;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        li::before {
+            content: "🔹";
+        }
+
+        .empty-message {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: block;
+            width: 96%;
+            padding: 12px;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #636e72;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📋 Lista de Pastorais / Movimentos</h2>
+
+        {% if pastorais %}
+            <ul>
+                {% for p in pastorais %}
+                    <li>{{ p.nome }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-message">⚠️ Nenhuma pastoral ou movimento cadastrado.</p>
+        {% endif %}
+
+        <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn">➕ Cadastrar Nova Pastoral</a>
+        <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-secondary">⬅️ Voltar para o Painel</a>
+    </div>
+</body>
+</html>

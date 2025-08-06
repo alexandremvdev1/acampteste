@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Política de Privacidade</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --light-bg: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --white: #fff;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: var(--white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.5em;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        textarea { /* Alterado para aplicar apenas a textarea */
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            transition: border-color 0.3s ease;
+            min-height: 300px; /* Adicionado para dar uma altura inicial */
+        }
+
+        textarea:focus { /* Alterado para aplicar apenas a textarea */
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button[type="submit"],
+        .btn {
+            padding: 14px 28px;
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        button[type="submit"] {
+            background-color: var(--primary-color);
+        }
+
+        button[type="submit"]:hover {
+            background-color: #207ac2;
+        }
+
+        .btn-back {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-back:hover {
+            background-color: #203343;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--white);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            text-decoration: underline;
+        }
+
+        .errorlist {
+            margin: 10px 0;
+            padding: 0;
+            list-style: none;
+            color: var(--error-color);
+            font-size: 0.9em;
+        }
+
+        .errorlist li {
+            margin-bottom: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            margin-top: 30px;
+            border-radius: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 15px auto;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: auto;
+            }
+
+            textarea { /* Alterado para aplicar apenas a textarea */
+                padding: 10px;
+                font-size: 0.9em;
+            }
+
+            button[type="submit"],
+            .btn {
+                padding: 12px 24px;
+                font-size: 1em;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alterar Política de Privacidade</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.texto.id_for_label }}">{{ form.texto.label }}</label>
+                {{ form.texto }}
+                {% if form.texto.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.texto.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="button-container">
+                <button type="submit">Salvar</button>
+                <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Voltar para o Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+    <footer>
+        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
+    </footer>
+</body>
+</html>

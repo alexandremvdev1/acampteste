@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Administrador Geral</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #4CAF50; /* Verde */
+            --secondary-color: #333;
+            --accent-color: #FFC107; /* Amarelo */
+            --success-color: #4CAF50;
+            --danger-color: #F44336; /* Vermelho */
+            --light-bg: #FAFAFA;
+            --dark-bg: #E0E0E0;
+            --text-color: #333;
+            --light-text: #777;
+            --paroquia-color: #673AB7; /* Roxo */
+            --usuario-color: #FF9800; /* Laranja */
+            --nova-paroquia-color: #009688; /* Verde-azulado */
+            --novo-usuario-color: #607D8B; /* Azul acinzentado */
+            --politica-color: #9E9E9E; /* Cinza */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif; /* Fonte mais moderna */
+            max-width: 1000px;
+            margin: 0 auto; /* Centralizar */
+            padding: 20px;
+            background: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2em; /* Aumentar o tamanho */
+            color: var(--secondary-color);
+            flex-grow: 1;
+            font-weight: 500; /* Mais leve */
+        }
+
+        /* Logout Form */
+        form button {
+            background: var(--danger-color);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        form button:hover {
+            background: #D32F2F; /* Vermelho mais escuro */
+            transform: translateY(-2px);
+        }
+
+        /* Section Buttons */
+        .section-buttons {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        a.btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            margin: 5px 10px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            gap: 8px; /* Espaçamento para ícones */
+        }
+
+        a.btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Cores específicas para os botões */
+        a.btn-paroquias {
+            background: var(--paroquia-color);
+        }
+
+        a.btn-paroquias:hover {
+            background: #512DA8; /* Roxo mais escuro */
+        }
+
+        a.btn-usuarios {
+            background: var(--usuario-color);
+        }
+        
+        a.btn-usuarios:hover {
+            background: #F57C00; /* Laranja mais escuro */
+        }
+
+        a.btn-politica {
+            background: var(--politica-color);
+            color: #fff;
+        }
+
+        a.btn-politica:hover {
+            background: #757575; /* Cinza mais escuro */
+        }
+
+        a.btn-logs {
+            background: #00796B; /* Verde-azulado */
+            color: #fff;
+        }
+
+        a.btn-logs:hover {
+            background: #00695C; /* Verde-azulado mais escuro */
+        }
+
+        /* Cards Container */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Card Style */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--dark-bg);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            font-weight: 500;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+        }
+
+        .card-info {
+            font-size: 1em;
+            color: var(--light-text);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-link {
+            font-weight: 500;
+            color: var(--primary-color);
+            word-break: break-word;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .card-link a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .card-link a:hover {
+            text-decoration: underline;
+            color: var(--accent-color);
+        }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-actions a {
+            flex: 1 1 auto;
+            text-align: center;
+            padding: 10px 16px;
+            font-size: 0.9em;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .card-actions a:hover {
+            transform: translateY(-2px);
+        }
+
+        .edit-btn {
+            background-color: var(--primary-color);
+        }
+
+        .edit-btn:hover {
+            background-color: #388E3C; /* Verde mais escuro */
+        }
+
+        .delete-btn {
+            background-color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background-color: #D32F2F; /* Vermelho mais escuro */
+        }
+
+        .view-btn {
+            background-color: var(--success-color);
+        }
+
+        .view-btn:hover {
+            background-color: #388E3C; /* Verde mais escuro */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .section-buttons {
+                margin: 20px 0;
+            }
+
+            a.btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Estilos específicos para o Painel do Administrador Geral */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Aumentar o minmax */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px; /* Aumentar o padding */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid var(--dark-bg);
+            transition: transform 0.3s ease; /* Animação */
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05); /* Efeito de zoom */
+        }
+
+        .stat-title {
+            font-size: 1.2em;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .list-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 1px solid var(--dark-bg);
+        }
+
+        .list-title {
+            font-size: 1.4em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Espaçamento para ícones */
+        }
+
+        a.btn-logs {
+            background: #00796B; /* Verde-azulado */
+            color: #fff;
+        }
+
+        a.btn-logs:hover {
+            background: #00695C; /* Verde-azulado mais escuro */
+        }
+
+        .list-item {
+            padding: 15px 0; /* Aumentar o padding */
+            border-bottom: 1px solid var(--dark-bg);
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Espaçamento para ícones */
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .empty {
+            font-style: italic;
+            color: var(--light-text);
+        }
+
+        /* Links Extras */
+        .btn-extra-link {
+            background: #7f8c8d;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-extra-link:hover {
+            background: #546e7a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Painel do Administrador Geral</h1>
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        </form>
+    </header>
+
+    <div class="section-buttons">
+        <a href="{% url 'inscricoes:admin_geral_list_paroquias' %}" class="btn btn-paroquias"><i class="fas fa-church"></i> Paróquias</a>
+        <a href="{% url 'inscricoes:admin_geral_list_usuarios' %}" class="btn btn-usuarios"><i class="fas fa-users"></i> Usuários</a>
+        <a href="{% url 'inscricoes:alterar_politica' %}" class="btn btn-politica"><i class="fas fa-file-alt"></i> Alterar Política</a>
+        <a href="{% url 'inscricoes:ver_logs_lista' %}" class="btn btn-logs"><i class="fas fa-clipboard-list"></i> Ver Logs de Ações</a>
+        <a href="{% url 'inscricoes:listar_pastorais_movimentos' %}" class="btn btn-politica"><i class="fas fa-hands-helping"></i> Pastorais e Movimentos</a>
+    </div>
+
+    <div class="section-buttons" style="margin-top: -10px;">
+        <a href="http://localhost:8000/admin/" target="_blank" class="btn btn-extra-link" style="background:#7f8c8d; font-size: 0.8rem; padding: 6px 12px;">
+            <i class="fas fa-cog"></i> Admin Django
+        </a>
+        <a href="https://console.neon.tech/app/org-green-math-42653053/projects" target="_blank" class="btn btn-extra-link" style="background:#7f8c8d; font-size: 0.8rem; padding: 6px 12px;">
+            <i class="fas fa-database"></i> Neon Console
+        </a>
+        <a href="https://console.cloudinary.com/app/c-1796ace1f92c1472bcb319a576f851/home/dashboard" target="_blank" class="btn btn-extra-link" style="background:#7f8c8d; font-size: 0.8rem; padding: 6px 12px;">
+            <i class="fas fa-cloud"></i> Cloudinary
+        </a>
+        <a href="https://github.com/alexandremvdev1/acampamento" target="_blank" class="btn btn-extra-link" style="background:#7f8c8d; font-size: 0.8rem; padding: 6px 12px;">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+    </div>
+
+    <h2>📊 Visão Geral</h2>
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-title">Paróquias</div>
+            <div class="stat-value">{{ total_paroquias }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Eventos</div>
+            <div class="stat-value">{{ total_eventos }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Inscrições</div>
+            <div class="stat-value">{{ total_inscricoes }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Confirmadas</div>
+            <div class="stat-value">{{ total_inscricoes_confirmadas }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Usuários</div>
+            <div class="stat-value">{{ total_usuarios }}</div>
+        </div>
+    </div>
+
+    <section class="list-section">
+        <h2 class="list-title"><i class="fas fa-church"></i> Últimas Paróquias</h2>
+        {% if ultimas_paroquias %}
+            {% for paroquia in ultimas_paroquias %}
+                <div class="list-item"><i class="fas fa-map-marker-alt"></i> <strong>{{ paroquia.nome }}</strong> - {{ paroquia.cidade }}/{{ paroquia.estado }}</div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">Nenhuma paróquia cadastrada.</p>
+        {% endif %}
+    </section>
+
+    <section class="list-section">
+        <h2 class="list-title"><i class="fas fa-calendar-alt"></i> Próximos Eventos</h2>
+        {% if proximos_eventos %}
+            {% for evento in proximos_eventos %}
+                <div class="list-item"><i class="fas fa-calendar-day"></i> <strong>{{ evento.nome }}</strong> ({{ evento.get_tipo_display }}) - {{ evento.data_inicio }}</div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">Sem eventos futuros.</p>
+        {% endif %}
+    </section>
+
+    <section class="list-section">
+        <h2 class="list-title"><i class="fas fa-clipboard-check"></i> Inscrições Recentes</h2>
+        {% if inscricoes_recentes %}
+            {% for inscricao in inscricoes_recentes %}
+                <div class="list-item"><i class="fas fa-user-check"></i> {{ inscricao.participante.nome }} - {{ inscricao.evento.nome }} em {{ inscricao.data_inscricao }}</div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">Sem inscrições recentes.</p>
+        {% endif %}
+    </section>
+    <footer>
+        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
+    </footer>
+</body>
+</html>

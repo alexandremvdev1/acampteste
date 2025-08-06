@@ -1,0 +1,101 @@
+from django.urls import path
+from django.contrib.auth import views as auth_views
+from . import views
+from django.conf import settings
+from .views import mp_config
+from django.conf.urls.static import static
+from .views import (
+    buscar_participante_ajax,
+    iniciar_pagamento
+
+)
+
+app_name = 'inscricoes'  # importante para usar namespace
+
+urlpatterns = [
+    path('login/', auth_views.LoginView.as_view(template_name='inscricoes/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('', views.home_redirect, name='home_redirect'),
+    path('admin-geral/', views.admin_geral_home, name='admin_geral_home'),
+    path('admin-geral/dashboard/', views.admin_geral_dashboard, name='admin_geral_dashboard'),
+
+    path('admin-geral/paroquias/', views.admin_geral_list_paroquias, name='admin_geral_list_paroquias'),
+    path('admin-geral/paroquias/criar/', views.admin_geral_create_paroquia, name='admin_geral_create_paroquia'),
+    path('admin-geral/paroquias/<int:pk>/editar/', views.admin_geral_edit_paroquia, name='admin_geral_edit_paroquia'),
+    path('admin-geral/paroquias/<int:pk>/deletar/', views.admin_geral_delete_paroquia, name='admin_geral_delete_paroquia'),
+
+    path('admin-geral/usuarios/', views.admin_geral_list_usuarios, name='admin_geral_list_usuarios'),
+    path('admin-geral/usuarios/criar/', views.admin_geral_create_usuario, name='admin_geral_create_usuario'),
+    path('admin-geral/usuarios/<int:pk>/editar/', views.admin_geral_edit_usuario, name='admin_geral_edit_usuario'),
+    path('admin-geral/usuarios/<int:pk>/deletar/', views.admin_geral_delete_usuario, name='admin_geral_delete_usuario'),
+    path('admin-paroquia/', views.admin_paroquia_painel, name='admin_paroquia_painel'),
+
+    path('eventos/novo/', views.evento_novo, name='evento_novo'),
+    path('eventos/', views.eventos_listar, name='eventos_listar'),
+    path('inscricoes/', views.inscricoes_listar, name='inscricoes_listar'),
+    path('eventos/<uuid:pk>/editar/', views.evento_editar, name='evento_editar'),
+    path('eventos/<uuid:pk>/deletar/', views.evento_deletar, name='evento_deletar'),
+    path('admin-paroquia/evento/<uuid:evento_id>/participantes/', views.evento_participantes, name='evento_participantes'),
+    path('inscricao/<int:pk>/', views.ver_inscricao, name='ver_inscricao'),
+    path('inscricao/<slug:slug>/', views.inscricao_evento_publico, name='inscricao_evento_publico'),
+
+    
+    path('inscricao/<int:pk>/editar/', views.editar_inscricao, name='editar_inscricao'),
+    path('inscricao/<int:pk>/deletar/', views.deletar_inscricao, name='deletar_inscricao'),
+    path('inscricao/<int:pk>/ficha/', views.ficha_inscricao, name='ficha_inscricao'),
+    path('inscricao/<int:pk>/imprimir-cracha/', views.imprimir_cracha, name='imprimir_cracha'),
+    path('inscricao/<int:inscricao_id>/incluir-pagamento/', views.incluir_pagamento, name='incluir_pagamento'),
+    path('evento/<slug:slug>/inscricao/', views.inscricao_inicial, name='inscricao_inicial'),
+    path('formulario/<int:inscricao_id>/', views.formulario_personalizado, name='formulario_personalizado'),
+    
+    path('inscricao/', views.form_inscricao, name='form_inscricao'),
+    path('cadastro/finalizado/<int:pk>/', views.inscricao_finalizada, name='inscricao_finalizada'),
+
+    path('evento/<uuid:evento_id>/relatorio-crachas/', views.relatorio_crachas, name='relatorio_crachas'),
+    path('evento/<uuid:evento_id>/relatorio-fichas-sorteio/', views.relatorio_fichas_sorteio, name='relatorio_fichas_sorteio'),
+    path('evento/<uuid:evento_id>/relatorio-inscritos/', views.relatorio_inscritos, name='relatorio_inscritos'),
+    path('evento/<uuid:evento_id>/relatorio-financeiro/', views.relatorio_financeiro, name='relatorio_financeiro'),
+
+    path('evento/<slug:slug>/video/', views.pagina_video_evento, name='pagina_video_evento'),
+
+    
+    path('admin_geral/alterar_politica/', views.alterar_politica, name='alterar_politica'),
+
+    path('evento/<uuid:evento_id>/relatorio_financeiro/', views.relatorio_financeiro, name='relatorio_financeiro'),
+
+    path('formulario-contato/<int:inscricao_id>/', views.formulario_contato, name='formulario_contato'),
+    path('formulario-saude/<int:inscricao_id>/', views.formulario_saude, name='formulario_saude'),
+
+    path('ver-logs/', views.ver_logs_bruto, name='ver_logs'),
+    path('ver-logs/lista/', views.ver_logs_lista, name='ver_logs_lista'),
+    path('download-logs/', views.download_logs, name='download_logs'),
+
+
+    path("evento/<slug:slug>/video/", views.pagina_video_evento, name="pagina_video_evento"),
+
+    path('conta/alterar/<int:pk>/', views.alterar_credenciais, name='alterar_credenciais'),
+
+    path('admin-geral/pastorais/', views.listar_pastorais_movimentos, name='listar_pastorais_movimentos'),
+    path('admin-geral/pastorais/cadastrar/', views.cadastrar_pastoral_movimento, name='cadastrar_pastoral_movimento'),
+
+    path('admin-geral/paroquia/<int:paroquia_id>/painel/', views.admin_paroquia_painel, name='admin_paroquia_painel'),
+
+    path('evento/<uuid:evento_id>/verificar-selecao/',views.verificar_selecao,name='verificar_selecao'),
+
+    path('ajax/buscar-participante/',buscar_participante_ajax,name='buscar_participante_ajax'),
+
+    path('admin-paroquia/mp-config/',mp_config,name='mp_config'),
+
+    path('inscricao/<int:inscricao_id>/pagar/',iniciar_pagamento,name='iniciar_pagamento'),
+    path('api/mercadopago/webhook/', views.mp_webhook, name='mp_webhook'),
+
+    path('contato-pagamento/', views.pagina_de_contato, name='pagina_de_contato'),
+
+    path('evento/<uuid:evento_id>/imprimir-todas-fichas/',views.imprimir_todas_fichas,name='imprimir_todas_fichas'),
+
+
+
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

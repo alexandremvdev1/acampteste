@@ -1,0 +1,270 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Crachás</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos CSS (movidos para um arquivo style.css para melhor organização) */
+        @media print {
+            .page-break {
+                page-break-after: always;
+            }
+
+            body {
+                margin: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .cracha-container {
+                padding: 10mm; /* Garante que o contorno não fique muito na borda da página */
+            }
+
+            .cracha-wrapper {
+                width: 100%;
+                height: 413px;
+                position: relative;
+                box-sizing: border-box;
+                border: 1px dashed #000; /* Contorno para corte */
+                margin: 2mm;
+            }
+
+            .cracha {
+                width: 100%;
+                height: 100%;
+                padding: 5mm;
+                box-sizing: border-box;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background-size: cover;
+                background-position: center;
+                border: none; /* Remove a borda do crachá interno */
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #334155;
+        }
+
+        .filter-form {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .filter-form label {
+            font-size: 16px;
+            color: #334155;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        .filter-form select {
+            padding: 10px 14px;
+            font-size: 15px;
+            margin: 0 5px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            color: #4b5563;
+            background-color: #f9fafb;
+        }
+
+        .filter-form button {
+            padding: 10px 16px;
+            font-size: 15px;
+            margin: 0 5px;
+            border-radius: 6px;
+            background-color: #4338ca;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-form button:hover {
+            background-color: #312e81;
+        }
+
+        .cracha-container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .cracha-wrapper {
+            width: 25%;
+            height: 413px;
+            box-sizing: border-box;
+            position: relative;
+            margin: 5px;
+            border: 1px dashed #ccc; /* Contorno para visualização na tela */
+        }
+
+        .cracha {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .cracha-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .cracha .foto {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nome {
+            word-break: break-word;
+            white-space: normal;
+            font-size: 1.1rem;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        .nascimento {
+            font-size: 0.9rem;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .print-button {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            font-size: 1rem;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .print-button:hover {
+            background-color: #218838;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .cracha-wrapper {
+                width: 50%;
+                height: 350px;
+            }
+
+            .filter-form label {
+                font-size: 14px;
+                margin-right: 5px;
+            }
+
+            .filter-form select,
+            .filter-form button {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- filtro por cidade -->
+    <form method="get" class="filter-form no-print">
+        <label for="cidade"><i class="fas fa-filter"></i> Filtrar por cidade:</label>
+        <select name="cidade" id="cidade">
+            <option value="">Todas as cidades</option>
+            {% for cidade in cidades %}
+            <option value="{{ cidade }}" {% if cidade == cidade_selecionada %}selected{% endif %}>
+                {{ cidade }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit"><i class="fas fa-search"></i> Filtrar</button>
+    </form>
+
+    <!-- container de crachás -->
+    <div class="cracha-container">
+        {% for inscricao in inscricoes %}
+        <div class="cracha-wrapper">
+            <div class="cracha" style="background: url('{{ cracha_template.imagem_fundo.url }}') no-repeat center/cover;">
+                <div class="cracha-inner">
+                    <!-- Foto -->
+                    {% if inscricao.participante.foto %}
+                    <img class="foto" src="{{ inscricao.participante.foto.url }}" alt="Foto">
+                    {% else %}
+                    <img class="foto" src="{% static 'default-user.png' %}" alt="Foto">
+                    {% endif %}
+
+                    <!-- Nome -->
+                    <div class="nome">
+                        {{ inscricao.participante.nome }}
+                    </div>
+
+                    <!-- Data de nascimento conforme tipo -->
+                    <div class="nascimento">
+                        {% if evento.tipo == 'senior' %}
+                        {{ inscricao.inscricaosenior.data_nascimento|date:"d/m/Y" }}
+                        {% elif evento.tipo == 'juvenil' %}
+                        {{ inscricao.inscricaojuvenil.data_nascimento|date:"d/m/Y" }}
+                        {% elif evento.tipo == 'mirim' %}
+                        {{ inscricao.inscricaomirim.data_nascimento|date:"d/m/Y" }}
+                        {% elif evento.tipo == 'servos' %}
+                        {{ inscricao.inscricaoservos.data_nascimento|date:"d/m/Y" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+        <div class="page-break"></div>
+        {% endif %}
+        {% empty %}
+        <p style="text-align:center;">Nenhuma inscrição concluída encontrada.</p>
+        {% endfor %}
+    </div>
+
+    <!-- botão imprimir -->
+    <div class="no-print" style="text-align:center;">
+        <button class="print-button" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+<ul>
+  {% for group, options, index in widget.optgroups %}
+    {% for name, value, label, selected, attrs in options %}
+      <li>
+        <label for="{{ attrs.id }}">
+          <input type="radio" name="{{ name }}" value="{{ value }}"{% if selected %} checked{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+          {{ label }}
+        </label>
+      </li>
+    {% endfor %}
+  {% endfor %}
+</ul>

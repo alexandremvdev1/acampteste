@@ -1,0 +1,388 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Incluir Pagamento - {{ inscricao.participante.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Variáveis de cores */
+        :root {
+            --primary-color: #2980b9;
+            --secondary-color: #16a085;
+            --text-color: #34495e;
+            --light-bg: #f0f8ff;
+            --border-color: #bdc3c7;
+            --success-color: #d1e7dd;
+            --success-text: #0f5132;
+            --error-color: #f8d7da;
+            --error-text: #842029;
+            --white: #ffffff;
+        }
+
+        /* Reset e Base */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9; /* Cor de fundo mais suave */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Garante que o conteúdo preencha a tela */
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px; /* Aumentei um pouco a largura */
+            width: 100%;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            margin: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem; /* Tamanho maior e mais moderno */
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        /* Informações da Inscrição */
+        .inscricao-info {
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .inscricao-info p {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .inscricao-info strong {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        /* Links */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 25px;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.4);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .back-link:hover,
+        .back-link:focus {
+            background: #1c5d8b;
+            box-shadow: 0 6px 14px rgba(28, 93, 139, 0.5);
+            outline: none;
+        }
+
+        /* Formulário */
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        input[type="number"],
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-color);
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            outline: none;
+        }
+
+        input[type="number"]:focus,
+        select:focus,
+        input[type="file"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(41, 128, 185, 0.3);
+            background: var(--light-bg);
+        }
+
+        /* Botão */
+        button {
+            width: 100%;
+            background: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 9px;
+            cursor: pointer;
+            box-shadow: 0 5px 12px rgba(22, 160, 133, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover,
+        button:focus {
+            background: #13876f;
+            box-shadow: 0 7px 16px rgba(19, 135, 111, 0.4);
+            outline: none;
+        }
+
+        /* Mensagens */
+        .messages {
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .messages.error {
+            background-color: var(--error-color);
+            color: var(--error-text);
+            border: 1px solid #f5c2c7;
+        }
+
+        .messages.success {
+            background-color: var(--success-color);
+            color: var(--success-text);
+            border: 1px solid #badbcc;
+        }
+
+        /* Pagamento Atual */
+        .payment-info {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            background-color: #f8f8f8;
+        }
+
+        .payment-info h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            text-align: center;
+        }
+
+        .payment-info p {
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .payment-info strong {
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 80px auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #777;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .modal-body iframe,
+        .modal-body img {
+            max-width: 100%;
+            max-height: 75vh;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .back-link {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            button {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="{% url 'inscricoes:evento_participantes' inscricao.evento.id %}" class="back-link">← Voltar para Participantes</a>
+
+    <h1>{{ inscricao.participante.nome }}</h1>
+
+    <section class="inscricao-info">
+        <p><strong>Evento:</strong> {{ inscricao.evento.nome }}</p>
+        <p><strong>Valor da Inscrição:</strong> R$ {{ inscricao.evento.valor_inscricao|floatformat:2 }}</p>
+    </section>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="messages {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if pagamento %}
+        <section class="payment-info">
+            <h2>Pagamento Atual</h2>
+            <p><strong>Valor:</strong> R$ {{ pagamento.valor|floatformat:2 }}</p>
+            <p><strong>Método:</strong> {{ pagamento.get_metodo_display }}</p>
+            <p><strong>Status:</strong> {{ pagamento.get_status_display }}</p>
+            <p><strong>Data do Pagamento:</strong> {{ pagamento.data_pagamento|date:"d/m/Y H:i" }}</p>
+
+            {% if pagamento.comprovante %}
+                <button type="button" id="btnAbrirModal">
+                    Visualizar Comprovante
+                </button>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    <form method="POST" action="" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <label for="valor">Valor (R$):</label>
+        <input type="number" name="valor" id="valor" step="0.01" min="0" required
+               value="{{ valor_default|floatformat:2 }}" autocomplete="off" />
+
+        <label for="metodo">Método de Pagamento:</label>
+        <select name="metodo" id="metodo" required autocomplete="off">
+            <option value="" disabled {% if not metodo_selecionado %}selected{% endif %}>Selecione</option>
+            {% for codigo, nome in metodo_choices %}
+                <option value="{{ codigo }}" {% if codigo == metodo_selecionado %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="comprovante">Comprovante de Pagamento:</label>
+        <input type="file" name="comprovante" id="comprovante" accept="image/*,application/pdf" />
+
+        <button type="submit">Salvar Pagamento</button>
+    </form>
+
+    <!-- Modal -->
+    <div id="modalComprovante" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitulo">
+        <div class="modal-content">
+            <span class="modal-close" id="fecharModal" aria-label="Fechar">×</span>
+            <h2 id="modalTitulo">Comprovante de Pagamento</h2>
+            <div class="modal-body">
+                {% if pagamento.comprovante %}
+                    {% if pagamento.comprovante.url|tem_pdf %}
+                        <iframe src="{{ pagamento.comprovante.url }}" width="100%" height="500px" frameborder="0"></iframe>
+                    {% else %}
+                        <img src="{{ pagamento.comprovante.url }}" alt="Comprovante de pagamento" />
+                    {% endif %}
+                {% else %}
+                    <p>Nenhum comprovante disponível.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script para abrir/fechar modal
+    const btnAbrirModal = document.getElementById('btnAbrirModal');
+    const modal = document.getElementById('modalComprovante');
+    const fecharModal = document.getElementById('fecharModal');
+
+    if (btnAbrirModal) {
+        btnAbrirModal.addEventListener('click', () => {
+            modal.style.display = 'block';
+            modal.setAttribute('aria-hidden', 'false');
+        });
+    }
+
+    fecharModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === "Escape" && modal.style.display === 'block') {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    });
+</script>
+
+</body>
+</html>

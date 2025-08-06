@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Paróquias - Admin Geral</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --light-bg: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --white: #fff;
+            --nova-paroquia-color: #1abc9c; /* Verde-azulado */
+            --view-button-color: #27ae60; /* Verde para o botão "Ver" */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: var(--white);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            flex: 1; /* Ocupa o espaço restante */
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 2.5em;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .btn:hover {
+            background-color: #207ac2;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px; /* Espaçamento entre os botões */
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Botão Nova Paróquia */
+        .btn-nova-paroquia {
+            background-color: var(--nova-paroquia-color);
+        }
+
+        .btn-nova-paroquia:hover {
+            background-color: #16a085;
+        }
+
+        /* Botão Ver */
+        .btn-ver {
+            background-color: var(--view-button-color);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-ver:hover {
+            background-color: #218c51;
+        }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden; /* Esconde as bordas arredondadas */
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+
+        tbody tr:hover {
+            background-color: #ecf0f1;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Empty State */
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--secondary-color);
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            margin-top: 30px;
+            border-radius: 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 15px auto;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+
+            .button-container {
+                flex-direction: column; /* Empilha os botões em telas menores */
+                align-items: flex-start; /* Alinha os botões à esquerda */
+            }
+        }
+
+        /* Estilo para a coluna de botões */
+        .actions-column {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Paróquias Cadastradas</h1>
+        <div class="button-container">
+            <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i> Voltar para o Dashboard
+            </a>
+            <a href="{% url 'inscricoes:admin_geral_create_paroquia' %}" class="btn btn-nova-paroquia">
+                <i class="fas fa-plus"></i> Nova Paróquia
+            </a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
+                    <th>Responsável</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th class="actions-column">Ações</th> <!-- Coluna para os botões -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for paroquia in paroquias %}
+                    <tr>
+                        <td>{{ paroquia.nome }}</td>
+                        <td>{{ paroquia.cidade }}</td>
+                        <td>{{ paroquia.estado }}</td>
+                        <td>{{ paroquia.responsavel }}</td>
+                        <td>{{ paroquia.email }}</td>
+                        <td>{{ paroquia.telefone }}</td>
+                        <td class="actions-column">
+                            <a href="{% url 'inscricoes:admin_paroquia_painel' paroquia.id %}" class="btn-ver">Ver</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="empty-message">Nenhuma paróquia cadastrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
+    </footer>
+</body>
+</html>

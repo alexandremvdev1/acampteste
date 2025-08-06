@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Formulário - {{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            max-width: 480px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #ffffff;
+            color: #333;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("{{ politica.imagem_2.url }}");
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        header img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            color: #222;
+        }
+
+        .info-periodos p {
+            font-size: 0.9rem;
+            margin: 3px 0;
+            color: #555;
+        }
+
+        .info-participante {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .info-participante p {
+            font-size: 1rem;
+            margin: 3px 0;
+            color: #444;
+        }
+
+        .info-participante .mensagem-importante {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        form {
+            background: white;
+            padding: 20px 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1.8px solid #ccc;
+            border-radius: 6px;
+            transition: border-color 0.3s ease;
+            width: 100%;
+            font-family: inherit;
+            text-transform: capitalize;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover,
+        button:focus {
+            background: #0056b3;
+            outline: none;
+        }
+
+        /* Estilos para o modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .politica-link {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .politica-link a {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .politica-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* === Caixinha flutuante WhatsApp === */
+        #whatsapp-flutuante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #009443;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            transition: background-color 0.3s ease;
+            font-size: 30px;
+            color: white;
+            user-select: none;
+        }
+
+        #whatsapp-flutuante:hover {
+            background-color: #02853d;
+        }
+
+        /* Botão dentro do modal WhatsApp */
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #128C4A;
+        }
+
+        .campo-condicional {
+            display: none;
+        }
+
+        /* Centraliza o ícone do WhatsApp */
+        #whatsapp-flutuante {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilos para o Datepicker */
+        .date {
+            display: flex;
+            align-items: center;
+        }
+
+        .date input {
+            flex: 1;
+            margin-right: 5px;
+        }
+
+        .date .input-group-addon {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        {% if evento.banner %}
+        <img src="{{ evento.banner.url }}" alt="Banner do Evento {{ evento.nome }}">
+        {% endif %}
+        <h1>{{ evento.nome }}</h1>
+        <div class="info-periodos">
+            <p><strong>Período de Inscrição:</strong> {{ evento.inicio_inscricoes|date:"d/m/Y" }} – {{ evento.fim_inscricoes|date:"d/m/Y" }}</p>
+            <p><strong>Período do Evento:</strong> {{ evento.data_inicio|date:"d/m/Y" }} – {{ evento.data_fim|date:"d/m/Y" }}</p>
+        </div>
+    </header>
+
+    <div class="info-participante">
+        <p><strong>Nome:</strong> {{ inscricao.participante.nome }}</p>
+        <p><strong>CPF:</strong> {{ inscricao.participante.cpf }}</p>
+        <p class="mensagem-importante">
+            Atenção: Verifique se o nome e CPF estão corretos, pois serão usados para a identificação no evento.
+        </p>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <label for="id_data_nascimento">Data de Nascimento:</label>
+        <div class="date input-group date" data-provide="datepicker">
+            {{ form.data_nascimento.errors }}
+            <input type="text" id="id_data_nascimento" name="{{ form.data_nascimento.name }}"
+                value="{{ form.data_nascimento.value|date:'d/m/Y' }}" class="form-control" placeholder="DD/MM/AAAA">
+            <div class="input-group-addon">
+                <i class="fa fa-calendar"></i>
+            </div>
+        </div>
+
+        <label for="id_estado_civil">Estado Civil:</label>
+        {{ form.estado_civil.errors }}
+        {{ form.estado_civil }}
+
+        <div id="campo_nome_conjuge" class="campo-condicional">
+        <label for="{{ conj_form.nome.id_for_label }}">Nome do Cônjuge:</label>
+            {{ conj_form.nome.errors }}
+            {{ conj_form.nome }}
+        </div>
+
+        <div id="campo_conjuge_inscrito" class="campo-condicional">
+        <label for="{{ conj_form.conjuge_inscrito.id_for_label }}">Cônjuge Inscrito?</label>
+            {{ conj_form.conjuge_inscrito.errors }}
+        <select name="{{ conj_form.conjuge_inscrito.name }}" id="{{ conj_form.conjuge_inscrito.id_for_label }}">
+        <option value="">---------</option>
+        <option value="sim" {% if conj_form.conjuge_inscrito.value == "sim" %}selected{% endif %}>Sim</option>
+        <option value="nao" {% if conj_form.conjuge_inscrito.value == "nao" %}selected{% endif %}>Não</option>
+        </select>
+            </div>
+
+        <div id="campo_ja_e_campista" class="campo-condicional">
+        <label for="{{ conj_form.ja_e_campista.id_for_label }}">Já é Campista?</label>
+            {{ conj_form.ja_e_campista.errors }}
+        <select name="{{ conj_form.ja_e_campista.name }}" id="{{ conj_form.ja_e_campista.id_for_label }}">
+        <option value="">---------</option>
+        <option value="sim" {% if conj_form.ja_e_campista.value == "sim" %}selected{% endif %}>Sim</option>
+        <option value="nao" {% if conj_form.ja_e_campista.value == "nao" %}selected{% endif %}>Não</option>
+        </select>
+        </div>
+
+        <label for="id_tamanho_camisa">Tamanho da Camisa:</label>
+        {{ form.tamanho_camisa.errors }}
+        {{ form.tamanho_camisa }}
+        <p>
+            <a href="#" onclick="openModal('tabelaTamanhosModal')">
+                Tabela de Tamanhos
+            </a>
+        </p>
+
+        <label for="id_paroquia">Paróquia:</label>
+        {{ form.paroquia.errors }}
+        {{ form.paroquia }}
+
+        <label for="id_pastoral_movimento">Pastoral/Movimento:</label>
+        {{ form.pastoral_movimento.errors }}
+        {{ form.pastoral_movimento }}
+
+        <label for="id_batizado">É batizado?</label>
+        {{ form.batizado.errors }}
+        <select name="{{ form.batizado.name }}" id="{{ form.batizado.id_for_label }}">
+            <option value="">---------</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+        </select>
+
+        <label for="id_dizimista">Dizimista?</label>
+        {{ form.dizimista.errors }}
+        {{ form.dizimista }}
+
+        <label for="id_crismado">Crismado?</label>
+        {{ form.crismado.errors }}
+        {{ form.crismado }}
+
+        <button type="submit">Próxima Etapa</button>
+    </form>
+
+    <!-- Modal da Tabela de Tamanhos -->
+    <div id="tabelaTamanhosModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('tabelaTamanhosModal')">&times;</span>
+            <h3>Tabela de Tamanhos</h3>
+            {% if politica.imagem_camisa %}
+            <img src="{{ politica.imagem_camisa.url }}" alt="Tabela de Tamanhos" style="max-width: 100%;">
+            {% else %}
+            <p>Imagem da tabela de tamanhos não disponível.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <p class="politica-link">
+        <a href="#" onclick="openModal('modalPolitica')">
+            Política de Privacidade
+        </a>
+    </p>
+    <p style="text-align:center; font-size:0.75rem; color:rgba(0,0,0,0.25); margin-top:4px;">
+        Desenvolvido por Alexandre Martins Vieira
+    </p>
+
+    <!-- Modal da Política de Privacidade -->
+    <div id="modalPolitica" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalPolitica')">&times;</span>
+            <h3>Política de Privacidade</h3>
+            {{ politica.texto|linebreaks }}
+        </div>
+    </div>
+
+    <!-- Caixinha flutuante WhatsApp -->
+    <div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp" onclick="openModal('modalWhatsApp')">🙋🏼‍♂️</div>
+
+    <!-- Modal WhatsApp - custom -->
+    <div id="modalWhatsApp" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalWhatsApp')">&times;</span>
+            <h3>Fale conosco pelo WhatsApp</h3>
+            <p>Estamos prontos para ajudar você!</p>
+            <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer"
+                class="btn-whatsapp">Abrir
+                WhatsApp</a>
+        </div>
+    </div>
+<style>
+  /* Overlay */
+  .modal {
+    display: none;               /* Escondido até receber .show */
+    position: fixed;
+    inset: 0;                    /* top:0; right:0; bottom:0; left:0 */
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  /* Quando ativado, exibe o flex */
+  .modal.show {
+    display: flex;
+  }
+  /* Conteúdo branco por trás do texto */
+  .modal-content {
+    background: #fff !important;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  /* Botão de fechar */
+  .modal-content .close {
+    color: #333;
+  }
+</style>
+
+    <!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.pt-BR.min.js"></script>
+
+<!-- Inputmask UMD -->
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.9/dist/inputmask.min.js"></script>
+
+<!-- Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+$(function() {
+  // —————————————
+  // Máscaras
+  // —————————————
+  Inputmask("999.999.999-99").mask("#id_cpf");
+  Inputmask({
+    mask: ["(99) 9999-9999", "(99) 99999-9999"],
+    keepStatic: true
+  }).mask("#id_telefone");
+  Inputmask("99.999-999").mask("#id_CEP");
+  Inputmask("99/99/9999", {
+    placeholder: "DD/MM/AAAA",
+    clearMaskOnLostFocus: false
+  }).mask("#id_data_nascimento");
+
+  // —————————————
+  // Datepicker (calendário apenas ao clicar no ícone)
+  // —————————————
+  $('.date').datepicker({
+    format: 'dd/mm/yyyy',
+    language: 'pt-BR',
+    autoclose: true,
+    todayHighlight: true
+  });
+
+  // Impede abertura automática no foco, mas permite digitar
+  $('#id_data_nascimento').off('focus').on('focus', function(e) {
+    e.stopImmediatePropagation();
+  });
+
+  // Abre o datepicker ao clicar no ícone
+  $('.date .input-group-addon').on('click', function() {
+    $(this).siblings('input').datepicker('show');
+  });
+
+  // —————————————
+  // Campos condicionais de cônjuge
+  // —————————————
+  function atualizarConjuge() {
+    var est = $('#id_estado_civil').val();
+    $('.campo-condicional').toggle(est === 'casado' || est === 'uniao_estavel');
+  }
+  $('#id_estado_civil').on('change', atualizarConjuge);
+  atualizarConjuge();
+
+  // —————————————
+  // Modais WhatsApp e Política
+  // —————————————
+  window.openModal = function(id) {
+    $('#' + id).css('display','flex').attr('aria-hidden','false');
+    $('body').addClass('modal-open');
+  };
+  window.closeModal = function(id) {
+    $('#' + id).css('display','none').attr('aria-hidden','true');
+    $('body').removeClass('modal-open');
+  };
+  $(window).on('click', function(e) {
+    if ($(e.target).hasClass('modal')) closeModal(e.target.id);
+  });
+  $(window).on('keydown', function(e) {
+    if (e.key === 'Escape') $('.modal').filter(function() {
+      return $(this).css('display') === 'flex';
+    }).each(function() {
+      closeModal(this.id);
+    });
+  });
+});
+</script>

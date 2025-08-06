@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inscrição - {{ evento.nome }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Reset simples */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      max-width: 480px;
+      margin: 20px auto;
+      padding: 15px;
+      background-color: #ffffff;
+      color: #333;
+      position: relative; /* para garantir z-index correto */
+    }
+
+    /* Estilos para a imagem de fundo */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("{{ politica.imagem_2.url }}"); /* URL da imagem */
+      background-size: cover;
+      background-position: center;
+      filter: blur(5px); /* Ajuste o valor do blur conforme necessário */
+      opacity: 0.2; /* Ajuste a opacidade conforme necessário */
+      z-index: -1; /* Coloca a imagem atrás de todo o conteúdo */
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative; /* Garante que o header fique acima da imagem de fundo */
+    }
+
+    header img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+      color: #222;
+    }
+
+    .info-periodos p {
+      font-size: 0.9rem;
+      margin: 3px 0;
+      color: #555;
+    }
+
+    form {
+      background: white;
+      padding: 20px 18px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      position: relative; /* Garante que o formulário fique acima da imagem de fundo */
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #444;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1.8px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+      width: 100%;
+      text-transform: capitalize;
+    }
+
+    input[type="email"] {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1.8px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+      width: 100%;
+    }
+
+
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+    }
+
+    .errorlist {
+      margin: 0 0 6px 0;
+      padding-left: 20px;
+      color: #b00020;
+      font-size: 0.9rem;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover,
+    button:focus {
+      background: #0056b3;
+      outline: none;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        margin: 10px;
+        padding: 10px;
+      }
+
+      form {
+        padding: 15px;
+      }
+    }
+
+    /* Modal padrão custom para WhatsApp */
+    .modal {
+      display: none; /* escondido inicialmente */
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      /* display:flex só quando abrir */
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+      font-size: 0.95rem;
+      color: #222;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .modal-body {
+      text-align: left;
+    }
+    .close-modal {
+      color: #aaa;
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close-modal:hover,
+    .close-modal:focus {
+      color: #000;
+      text-decoration: none;
+    }
+
+    /* Link do rodapé */
+    .politica-link {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: 600;
+      position: relative; /* Garante que o link fique acima da imagem de fundo */
+    }
+
+    .politica-link a {
+      color: #007bff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .politica-link a:hover {
+      text-decoration: underline;
+    }
+
+    /* === Caixinha flutuante WhatsApp === */
+    #whatsapp-flutuante {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #009443;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      transition: background-color 0.3s ease;
+      font-size: 30px;
+      color: white;
+      user-select: none;
+    }
+    #whatsapp-flutuante:hover {
+      background-color: #02853d;
+    }
+
+    /* Botão dentro do modal WhatsApp */
+    .btn-whatsapp {
+      background-color: #25D366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+    .btn-whatsapp:hover {
+      background-color: #128C4A;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    {% if evento.banner %}
+      <img src="{{ evento.banner.url }}" alt="Banner do Evento {{ evento.nome }}">
+    {% endif %}
+    <h1>{{ evento.nome }}</h1>
+    <div class="info-periodos">
+      <p><strong>Período de Inscrição:</strong> {{ evento.inicio_inscricoes|date:"d/m/Y" }} – {{ evento.fim_inscricoes|date:"d/m/Y" }}</p>
+      <p><strong>Período do Evento:</strong> {{ evento.data_inicio|date:"d/m/Y" }} – {{ evento.data_fim|date:"d/m/Y" }}</p>
+    </div>
+  </header>
+
+  {% if form %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <label for="id_cpf">CPF:</label>
+    {{ form.cpf.errors }}
+    {{ form.cpf }}
+
+    <label for="id_nome">Nome:</label>
+    {{ form.nome.errors }}
+    {{ form.nome }}
+
+    <label for="id_telefone">Telefone:</label>
+    {{ form.telefone.errors }}
+    {{ form.telefone }}
+
+    <label for="id_email">Email:</label>
+    {{ form.email.errors }}
+    {{ form.email }}
+    <small style="color:#777; font-size:0.85rem; display:block; margin-top:-10px; margin-bottom:10px;">
+      Preencha o e-mail corretamente, por ele você receberá informações sobre o evento.
+    </small>
+    <button type="submit">Próxima Etapa</button>
+  </form>
+  {% endif %}
+
+  {% if endereco_form %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ endereco_form.non_field_errors }}
+
+    <label for="id_CEP">CEP:</label>
+    {{ endereco_form.CEP.errors }}
+    {{ endereco_form.CEP }}
+
+    <label for="id_endereco">Endereço:</label>
+    {{ endereco_form.endereco.errors }}
+    {{ endereco_form.endereco }}
+
+    <label for="id_numero">Número:</label>
+    {{ endereco_form.numero.errors }}
+    {{ endereco_form.numero }}
+
+    <label for="id_bairro">Bairro:</label>
+    {{ endereco_form.bairro.errors }}
+    {{ endereco_form.bairro }}
+
+    <label for="id_cidade">Cidade:</label>
+    {{ endereco_form.cidade.errors }}
+    {{ endereco_form.cidade }}
+
+    <label for="id_estado">Estado:</label>
+    {{ endereco_form.estado.errors }}
+    {{ endereco_form.estado }}
+
+    <button type="submit">Próxima Etapa</button>
+  </form>
+  {% endif %}
+
+  <p class="politica-link">
+    <a href="#" data-bs-toggle="modal" data-bs-target="#modalPolitica">
+      Política de Privacidade
+    </a>
+  </p>
+  <p style="text-align:center; font-size:0.75rem; color:rgba(0,0,0,0.25); margin-top:4px;">
+    Desenvolvido por Alexandre Martins Vieira
+  </p>
+  <!-- Modal da Política de Privacidade - Bootstrap 5 -->
+  <div class="modal fade" id="modalPolitica" tabindex="-1" aria-labelledby="modalPoliticaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPoliticaLabel">Política de Privacidade</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          {{ politica.texto|linebreaks }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Caixinha flutuante WhatsApp -->
+  <div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp">​🙋🏼‍♂️​</div>
+
+  <!-- Modal WhatsApp - custom -->
+  <div id="modal-whatsapp" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-whatsapp-title">
+    <div class="modal-content">
+      <span class="close-modal" id="fechar-whatsapp" aria-label="Fechar">&times;</span>
+      <h2 id="modal-whatsapp-title">Fale conosco pelo WhatsApp</h2>
+      <p>Estamos prontos para ajudar você!</p>
+      <a
+        href="https://wa.me/5511999999999"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-whatsapp"
+      >Abrir WhatsApp</a>
+    </div>
+  </div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Inputmask -->
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.9/dist/inputmask.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Base da URL para ver_inscricao (gera /inscricao/0/ e depois remove o 0)
+  const verInscricaoBase = "{% url 'inscricoes:ver_inscricao' 0 %}".replace('/0/', '/');
+
+  const cpfInput      = document.getElementById("id_cpf");
+  const nomeInput     = document.getElementById("id_nome");
+  const emailInput    = document.getElementById("id_email");
+  const telefoneInput = document.getElementById("id_telefone");
+  const cepInput      = document.getElementById("id_CEP");
+  const enderecoInput = document.getElementById("id_endereco");
+  const bairroInput   = document.getElementById("id_bairro");
+  const cidadeInput   = document.getElementById("id_cidade");
+  const estadoInput   = document.getElementById("id_estado");
+
+  // Protege máscaras para evitar Inputmask undefined.length
+  try { if (cpfInput)      Inputmask("999.999.999-99").mask(cpfInput); }
+  catch(e) { console.warn("Erro na máscara CPF:", e); }
+  try { if (telefoneInput) Inputmask({ mask:["(99) 9999-9999","(99) 99999-9999"], keepStatic:true }).mask(telefoneInput); }
+  catch(e) { console.warn("Erro na máscara Telefone:", e); }
+  try { if (cepInput)      Inputmask("99.999-999").mask(cepInput); }
+  catch(e) { console.warn("Erro na máscara CEP:", e); }
+
+  const limpaEndereco = () => {
+    enderecoInput && (enderecoInput.value = "");
+    bairroInput   && (bairroInput.value   = "");
+    cidadeInput   && (cidadeInput.value   = "");
+    estadoInput   && (estadoInput.value   = "");
+  };
+
+  // Blur no CPF: validação + AJAX
+  if (cpfInput) {
+    cpfInput.addEventListener("blur", async () => {
+      const raw = cpfInput.value || "";
+      const cpf = raw.replace(/\D/g, "");
+      if (cpf.length !== 11) return;
+
+      try {
+        // Passa também o evento atual para o back-end
+        const url = `/ajax/buscar-participante/?cpf=${cpf}&evento_id={{ evento.id }}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.ja_inscrito) {
+          // redireciona para /inscricao/<id>/
+          window.location.href = verInscricaoBase + data.inscricao_id + '/';
+        } else if (data.nome) {
+          nomeInput     && (nomeInput.value     = data.nome);
+          emailInput    && (emailInput.value    = data.email);
+          telefoneInput && (telefoneInput.value = data.telefone);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar participante:", err);
+      }
+    });
+  }
+
+  // Blur no CEP: validação + ViaCEP
+  if (cepInput) {
+    cepInput.addEventListener("blur", async () => {
+      const raw = cepInput.value || "";
+      const cep = raw.replace(/\D/g, "");
+      if (!/^[0-9]{8}$/.test(cep)) {
+        limpaEndereco();
+        if (cep) alert("Formato de CEP inválido.");
+        return;
+      }
+
+      [enderecoInput, bairroInput, cidadeInput, estadoInput].forEach(i => i && (i.value = "..."));
+
+      try {
+        const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const d = await resCep.json();
+        if (d.erro) throw new Error("CEP não encontrado.");
+
+        enderecoInput && (enderecoInput.value = d.logradouro  || "");
+        bairroInput   && (bairroInput.value   = d.bairro      || "");
+        cidadeInput   && (cidadeInput.value   = d.localidade  || "");
+        estadoInput   && (estadoInput.value   = d.uf          || "");
+      } catch (e) {
+        console.error("Erro ao buscar CEP:", e);
+        alert(e.message || "Erro ao buscar CEP.");
+        limpaEndereco();
+      }
+    });
+  }
+
+  // Modal WhatsApp
+  const modal = document.getElementById("modal-whatsapp");
+  const btn   = document.getElementById("whatsapp-flutuante");
+  const close = document.getElementById("fechar-whatsapp");
+  btn?.addEventListener("click",   () => modal.style.display = "flex");
+  close?.addEventListener("click", () => modal.style.display = "none");
+  window.addEventListener("click", e => e.target === modal && (modal.style.display = "none"));
+  window.addEventListener("keydown", e => e.key === "Escape" && (modal.style.display = "none"));
+});
+</script>

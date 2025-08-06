@@ -1,0 +1,322 @@
+{% load custom_filters %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Inscritos - {{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos CSS (movidos para um arquivo style.css para melhor organização) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9;
+            color: #334155;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #334155;
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        form label {
+            font-size: 16px;
+            color: #334155;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+
+        select {
+            padding: 10px 14px;
+            font-size: 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            color: #4b5563;
+            background-color: #f9fafb;
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            border: 1px solid #e0e0e0;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        th,
+        td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+            color: #4b5563;
+            /* Adicionado para evitar quebra de linha */
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .total {
+            margin-top: 20px;
+            font-weight: 500;
+            text-align: right;
+            color: #334155;
+            font-size: 16px;
+        }
+
+        @media print {
+
+            form,
+            #btn-imprimir,
+            #btn-voltar {
+                display: none;
+            }
+
+            /* Garante que a tabela ocupe toda a largura da página na impressão */
+            table {
+                width: 100%;
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            form label {
+                font-size: 14px;
+                margin-right: 5px;
+                margin-bottom: 5px;
+                text-align: left;
+            }
+
+            select,
+            button {
+                font-size: 14px;
+                padding: 8px 12px;
+                margin-bottom: 10px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                white-space: normal; /* Permite quebra de linha em telas menores */
+            }
+
+            .total {
+                font-size: 15px;
+            }
+        }
+
+        /* Estilos para a seção de tamanhos de camisa */
+        .tamanho-camisa {
+            margin-top: 10px; /* Reduz o espaçamento superior */
+            text-align: right; /* Alinha o texto à direita */
+        }
+
+        .tamanho-camisa h3 {
+            font-size: 18px;
+            color: #334155;
+            margin-bottom: 5px; /* Reduz o espaçamento inferior */
+        }
+
+        .tamanho-camisa p {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 2px; /* Reduz o espaçamento inferior */
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2><i class="fas fa-list-alt"></i> Relatório de Inscritos - {{ evento.nome }}</h2>
+
+    <!-- Formulário de Filtro -->
+    <form method="get">
+        <label for="cidade"><i class="fas fa-city"></i> Filtrar por Cidade:</label>
+        <select name="cidade" id="cidade">
+            <option value="">Todas as Cidades</option>
+            {% for c in cidades %}
+            <option value="{{ c }}" {% if cidade_filtro == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="status"><i class="fas fa-filter"></i> Filtrar por Status:</label>
+        <select name="status" id="status">
+            <option value="">Todos os Status</option>
+            <option value="concluida" {% if status_filtro == 'concluida' %}selected{% endif %}>Inscrição Concluída
+            </option>
+            <option value="pendente" {% if status_filtro == 'pendente' %}selected{% endif %}>Inscrição Pendente
+            </option>
+        </select>
+
+        <label for="selecionado"><i class="fas fa-check-square"></i> Mostrar Selecionados:</label>
+        <select name="selecionado" id="selecionado">
+            <option value="">Todos</option>
+            <option value="sim" {% if selecionado_filtro == 'sim' %}selected{% endif %}>Apenas Selecionados
+            </option>
+            <option value="nao" {% if selecionado_filtro == 'nao' %}selected{% endif %}>Não Selecionados</option>
+        </select>
+
+        <button type="submit"><i class="fas fa-search"></i> Filtrar</button>
+    </form>
+
+    <!-- Botões -->
+    <div style="text-align: center; margin-bottom: 15px;">
+        <button id="btn-imprimir" onclick="window.print()"><i class="fas fa-print"></i> Imprimir Relatório</button>
+        <button id="btn-voltar" onclick="history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
+    </div>
+
+    <!-- Tabela de Participantes -->
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+                <th>Telefone</th>
+                <th>Email</th>
+                <th>Tamanho da Camisa</th>
+                <th>Data de Nascimento</th>
+                <th>Status</th>
+                <th>Selecionado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in participantes %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ p.nome }}</td>
+                <td>{{ p.cidade }}</td>
+                <td>{{ p.estado }}</td>
+                <td>{{ p.telefone }}</td>
+                <td>{{ p.email }}</td>
+
+                {% with inscricao=inscricoes_dict|get_item:p.id %}
+                {% if inscricao %}
+                    {% if inscricao.inscricao_concluida %}
+                        {% if inscricao.inscricaosenior %}
+                            <td>{{ inscricao.inscricaosenior.tamanho_camisa }}</td>
+                            <td>{{ inscricao.inscricaosenior.data_nascimento|date:"d/m/Y" }}</td>
+                        {% elif inscricao.inscricaojuvenil %}
+                            <td>{{ inscricao.inscricaojuvenil.tamanho_camisa }}</td>
+                            <td>{{ inscricao.inscricaojuvenil.data_nascimento|date:"d/m/Y" }}</td>
+                        {% elif inscricao.inscricaomirim %}
+                            <td>{{ inscricao.inscricaomirim.tamanho_camisa }}</td>
+                            <td>{{ inscricao.inscricaomirim.data_nascimento|date:"d/m/Y" }}</td>
+                        {% elif inscricao.inscricaoservos %}
+                            <td>{{ inscricao.inscricaoservos.tamanho_camisa }}</td>
+                            <td>{{ inscricao.inscricaoservos.data_nascimento|date:"d/m/Y" }}</td>
+                        {% else %}
+                            <td>-</td>
+                            <td>-</td>
+                        {% endif %}
+                        <td>Concluída</td>
+                    {% else %}
+                        <td>-</td>
+                        <td>-</td>
+                        <td>Pendente</td>
+                    {% endif %}
+                    <td>
+                        {% if inscricao.foi_selecionado %}
+                            Sim
+                        {% else %}
+                            Não
+                        {% endif %}
+                    </td>
+                {% else %}
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                {% endif %}
+                {% endwith %}
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10">Nenhum participante encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="total">
+        Total de participantes encontrados: {{ participantes|length }}
+    </p>
+
+    <!-- Seção de Tamanhos de Camisa -->
+    <div class="tamanho-camisa">
+        <h3>Quantidade de Camisas por Tamanho</h3>
+        <p>PP: {{ quantidades_camisas.pp|default_if_none:0 }}</p>
+        <p>P: {{ quantidades_camisas.p|default_if_none:0 }}</p>
+        <p>M: {{ quantidades_camisas.m|default_if_none:0 }}</p>
+        <p>G: {{ quantidades_camisas.g|default_if_none:0 }}</p>
+        <p>GG: {{ quantidades_camisas.gg|default_if_none:0 }}</p>
+        <p>XG: {{ quantidades_camisas.xg|default_if_none:0 }}</p>
+        <p>XXG: {{ quantidades_camisas.xxg|default_if_none:0 }}</p>
+    </div>
+
+</body>
+
+</html>
