@@ -97,13 +97,12 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-# E-mail (opcional mover para env também)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('alexandremv.dev@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('cuic rxzh wxcq qqej')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # correto
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # correto
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 SITE_URL = "https://acampamento.onrender.com"  # depois ajuste o domínio real
