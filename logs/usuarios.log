@@ -12581,3 +12581,5 @@ ValueError: Must supply cloud_name in tag or in configuration
 2025-08-06 14:52:29,589 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
 2025-08-06 15:11:53,799 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
 2025-08-06 15:11:54,820 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 15:30:01,716 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 15:30:03,033 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
