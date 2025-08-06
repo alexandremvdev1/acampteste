@@ -12508,3 +12508,66 @@ ValueError: Must supply cloud_name in tag or in configuration
 2025-08-06 14:04:12,818 | ERROR | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 500 152389
 2025-08-06 14:05:12,423 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
 2025-08-06 14:05:13,472 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 14:05:18,919 | INFO | django | 2025-08-06 14:05:18.919057 | alexandre acessou /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/
+2025-08-06 14:05:19,240 | INFO | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 200 20257
+2025-08-06 14:06:34,456 | INFO | django | 2025-08-06 14:06:34.456594 | alexandre acessou /admin/inscricoes/eventoacampamento/
+2025-08-06 14:06:35,092 | INFO | django.server | "GET /admin/inscricoes/eventoacampamento/ HTTP/1.1" 200 22142
+2025-08-06 14:06:35,377 | INFO | django | 2025-08-06 14:06:35.377693 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:06:35,381 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:06:38,049 | INFO | django | 2025-08-06 14:06:38.048894 | alexandre acessou /admin/inscricoes/eventoacampamento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/change/
+2025-08-06 14:06:38,935 | INFO | django.server | "GET /admin/inscricoes/eventoacampamento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/change/ HTTP/1.1" 200 26130
+2025-08-06 14:06:39,224 | INFO | django | 2025-08-06 14:06:39.224542 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:06:39,227 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:07:14,516 | INFO | django | 2025-08-06 14:07:14.516367 | alexandre acessou /admin/inscricoes/eventoacampamento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/change/
+2025-08-06 14:07:18,149 | INFO | django.server | "POST /admin/inscricoes/eventoacampamento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/change/ HTTP/1.1" 302 0
+2025-08-06 14:07:18,440 | INFO | django | 2025-08-06 14:07:18.440022 | alexandre acessou /admin/inscricoes/eventoacampamento/
+2025-08-06 14:07:19,041 | INFO | django.server | "GET /admin/inscricoes/eventoacampamento/ HTTP/1.1" 200 22438
+2025-08-06 14:07:19,352 | INFO | django | 2025-08-06 14:07:19.352228 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:07:19,354 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:07:22,093 | INFO | django | 2025-08-06 14:07:22.092986 | alexandre acessou /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/
+2025-08-06 14:07:22,377 | INFO | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 200 20223
+2025-08-06 14:08:13,785 | INFO | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 200 20223
+2025-08-06 14:08:22,453 | INFO | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 200 19273
+2025-08-06 14:08:25,688 | INFO | django.server | "GET /ajax/buscar-participante/?cpf=04272258176&evento_id=b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df HTTP/1.1" 200 22
+2025-08-06 14:08:51,924 | INFO | django.server | "POST /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 302 0
+2025-08-06 14:08:52,393 | INFO | django.server | "GET /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 200 20223
+2025-08-06 14:09:15,004 | INFO | django.server | "POST /evento/juvenil-acampamento-de-tecnologos-2025-08-01/inscricao/ HTTP/1.1" 302 0
+2025-08-06 14:09:17,385 | INFO | django.server | "GET /formulario/66/ HTTP/1.1" 200 23143
+2025-08-06 14:10:39,514 | INFO | django | 2025-08-06 14:10:39.514696 | alexandre acessou /admin/inscricoes/politicaprivacidade/
+2025-08-06 14:10:40,009 | INFO | django.server | "GET /admin/inscricoes/politicaprivacidade/ HTTP/1.1" 200 18193
+2025-08-06 14:10:40,344 | INFO | django | 2025-08-06 14:10:40.344026 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:10:40,346 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:10:42,313 | INFO | django | 2025-08-06 14:10:42.313811 | alexandre acessou /admin/inscricoes/politicaprivacidade/1/change/
+2025-08-06 14:10:42,683 | INFO | django.server | "GET /admin/inscricoes/politicaprivacidade/1/change/ HTTP/1.1" 200 26130
+2025-08-06 14:10:43,018 | INFO | django | 2025-08-06 14:10:43.017915 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:10:43,025 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:10:53,549 | INFO | django | 2025-08-06 14:10:53.549376 | alexandre acessou /admin/inscricoes/politicaprivacidade/1/change/
+2025-08-06 14:10:55,890 | INFO | django.server | "POST /admin/inscricoes/politicaprivacidade/1/change/ HTTP/1.1" 302 0
+2025-08-06 14:10:56,194 | INFO | django | 2025-08-06 14:10:56.194343 | alexandre acessou /admin/inscricoes/politicaprivacidade/
+2025-08-06 14:10:56,645 | INFO | django.server | "GET /admin/inscricoes/politicaprivacidade/ HTTP/1.1" 200 18440
+2025-08-06 14:10:56,947 | INFO | django | 2025-08-06 14:10:56.946974 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:10:56,950 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:10:59,616 | INFO | django.server | "GET /formulario/66/ HTTP/1.1" 200 23123
+2025-08-06 14:11:26,109 | INFO | django.server | "POST /formulario/66/ HTTP/1.1" 302 0
+2025-08-06 14:11:26,836 | INFO | django.server | "GET /formulario-contato/66/ HTTP/1.1" 200 19958
+2025-08-06 14:11:47,075 | INFO | django.server | "POST /formulario-contato/66/ HTTP/1.1" 200 20379
+2025-08-06 14:12:06,028 | INFO | django.server | "POST /formulario-contato/66/ HTTP/1.1" 302 0
+2025-08-06 14:12:06,907 | INFO | django.server | "GET /formulario-saude/66/ HTTP/1.1" 200 22847
+2025-08-06 14:13:01,411 | INFO | django.server | "POST /formulario-saude/66/ HTTP/1.1" 302 0
+2025-08-06 14:13:02,137 | INFO | django.server | "GET /inscricao/66/ HTTP/1.1" 200 5482
+2025-08-06 14:13:12,616 | INFO | django | 2025-08-06 14:13:12.616704 | alexandre acessou /admin/inscricoes/politicaprivacidade/1/change/
+2025-08-06 14:13:12,790 | INFO | django.server | "GET /admin/inscricoes/politicaprivacidade/1/change/ HTTP/1.1" 200 26081
+2025-08-06 14:13:13,078 | INFO | django | 2025-08-06 14:13:13.077982 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:13:13,079 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:13:24,953 | INFO | django | 2025-08-06 14:13:24.953793 | alexandre acessou /admin/inscricoes/politicaprivacidade/1/change/
+2025-08-06 14:13:28,155 | INFO | django.server | "POST /admin/inscricoes/politicaprivacidade/1/change/ HTTP/1.1" 302 0
+2025-08-06 14:13:28,442 | INFO | django | 2025-08-06 14:13:28.442022 | alexandre acessou /admin/inscricoes/politicaprivacidade/
+2025-08-06 14:13:28,904 | INFO | django.server | "GET /admin/inscricoes/politicaprivacidade/ HTTP/1.1" 200 18440
+2025-08-06 14:13:29,196 | INFO | django | 2025-08-06 14:13:29.196594 | alexandre acessou /admin/jsi18n/
+2025-08-06 14:13:29,199 | INFO | django.server | "GET /admin/jsi18n/ HTTP/1.1" 200 8158
+2025-08-06 14:13:29,417 | INFO | django.server | "GET /inscricao/66/ HTTP/1.1" 200 5453
+2025-08-06 14:15:13,827 | INFO | django | 2025-08-06 14:15:13.827654 | alexandre acessou /admin-paroquia/evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/participantes/
+2025-08-06 14:15:14,252 | INFO | django.server | "GET /admin-paroquia/evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/participantes/ HTTP/1.1" 200 10472
+2025-08-06 14:15:20,578 | INFO | django | 2025-08-06 14:15:20.578657 | alexandre acessou /evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/relatorio-inscritos/
+2025-08-06 14:15:21,145 | INFO | django.server | "GET /evento/b8d0bc9e-6b8c-4f78-8c7d-9ed0b993e7df/relatorio-inscritos/ HTTP/1.1" 200 7871
+2025-08-06 14:15:21,168 | WARNING | django.server | "GET /static/css/style.css HTTP/1.1" 404 1853
