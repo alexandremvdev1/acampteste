@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Login - Sistema</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             box-sizing: border-box;
@@ -12,77 +17,151 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4A90E2, #357ABD);
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #6A82FB, #FC5C7D);
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
         .login-container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+            margin: auto 0; /* centraliza verticalmente */
+        }
+
+        .login-container:hover {
+            transform: scale(1.02);
         }
 
         h1 {
-            text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 25px;
             color: #333;
+            font-size: 2.2rem;
+            font-weight: 600;
         }
 
         label {
             display: block;
             margin-bottom: 6px;
-            font-weight: bold;
-            color: #333;
+            font-weight: 500;
+            color: #555;
+            text-align: left;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
             padding: 10px 12px;
-            margin-bottom: 16px;
-            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #6A82FB;
+            outline: none;
         }
 
         button {
             width: 100%;
-            background-color: #357ABD;
+            background-color: #6A82FB;
             color: white;
             padding: 12px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #2d639d;
+            background-color: #5167d9;
         }
 
         .error-message {
-            color: red;
-            margin-bottom: 16px;
+            color: #e74c3c;
+            margin-bottom: 15px;
             text-align: center;
+            font-size: 1rem;
+        }
+
+        .contact-btns-pequenos {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 380px;
+            margin: 15px auto;
+        }
+
+        .btn-pequeno {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            margin: 0 8px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-suporte-whatsapp {
+            background-color: #25d366;
+        }
+
+        .btn-suporte-whatsapp:hover {
+            background-color: #128c7e;
+        }
+
+        .btn-email {
+            background-color: #007bff;
+        }
+
+        .btn-email:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-pequeno i {
+            margin-right: 6px;
+        }
+
+        footer {
+            text-align: center;
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin-top: auto;
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h1>Login</h1>
 
         {% if form.errors %}
-            <div class="error-message">
-                Usuário ou senha inválidos.
-            </div>
+        <div class="error-message">
+            Usuário ou senha inválidos.
+        </div>
         {% endif %}
 
         <form method="post">
@@ -98,5 +177,17 @@
             <button type="submit">Entrar</button>
         </form>
     </div>
+
+    <div class="contact-btns-pequenos">
+        <a href="https://wa.me/5563920013103" class="btn-pequeno btn-suporte-whatsapp" target="_blank"
+            rel="noopener"><i class="fab fa-whatsapp"></i> Suporte Sistema</a>
+        <a href="mailto:alexandremv.dev@gmail.com" class="btn-pequeno btn-email"><i
+                class="fas fa-envelope"></i> Suporte Email</a>
+    </div>
+
+    <footer>
+        Sistema eismeaqui.app desenvolvido por Alexandre Martins Vieira
+    </footer>
 </body>
+
 </html>
