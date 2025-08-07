@@ -1,6 +1,6 @@
 import os
 import datetime
-
+from datetime import date
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404, HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.http import require_POST
@@ -539,110 +539,97 @@ def incluir_pagamento(request, inscricao_id):
     })
 
 def inscricao_inicial(request, slug):
-    evento = get_object_or_404(EventoAcampamento, slug=slug)
+    evento   = get_object_or_404(EventoAcampamento, slug=slug)
     politica = PoliticaPrivacidade.objects.first()
+    hoje     = date.today()
+
+    # —> Se hoje estiver fora do período de inscrições, exibe template de encerradas
+    if hoje < evento.inicio_inscricoes or hoje > evento.fim_inscricoes:
+        return render(request, 'inscricoes/inscricao_encerrada.html', {
+            'evento': evento,
+            'politica': politica
+        })
 
     if 'participante_id' in request.session:
         # Usuário já preencheu o formulário inicial
         endereco_form = ParticipanteEnderecoForm(request.POST or None)
-        if request.method == 'POST':
-            if endereco_form.is_valid():
-                # Salvar os dados de endereço no participante
-                participante = Participante.objects.get(id=request.session['participante_id'])
-                participante.CEP = endereco_form.cleaned_data['CEP']
-                participante.endereco = endereco_form.cleaned_data['endereco']
-                participante.numero = endereco_form.cleaned_data['numero']
-                participante.bairro = endereco_form.cleaned_data['bairro']
-                participante.cidade = endereco_form.cleaned_data['cidade']
-                participante.estado = endereco_form.cleaned_data['estado']
-                participante.save()
+        if request.method == 'POST' and endereco_form.is_valid():
+            participante = Participante.objects.get(id=request.session['participante_id'])
+            participante.CEP      = endereco_form.cleaned_data['CEP']
+            participante.endereco = endereco_form.cleaned_data['endereco']
+            participante.numero   = endereco_form.cleaned_data['numero']
+            participante.bairro   = endereco_form.cleaned_data['bairro']
+            participante.cidade   = endereco_form.cleaned_data['cidade']
+            participante.estado   = endereco_form.cleaned_data['estado']
+            participante.save()
 
-                # Limpar a sessão
-                del request.session['participante_id']
+            del request.session['participante_id']
 
-                # Redirecionar para o próximo passo (formulário personalizado ou ver inscrição)
-                inscricao = Inscricao.objects.get(participante=participante, evento=evento)
-                return redirect('inscricoes:formulario_personalizado', inscricao_id=inscricao.id)
+            inscricao = Inscricao.objects.get(participante=participante, evento=evento)
+            return redirect('inscricoes:formulario_personalizado', inscricao_id=inscricao.id)
 
         return render(request, 'inscricoes/inscricao_inicial.html', {
             'endereco_form': endereco_form,
             'evento': evento,
             'politica': politica
         })
+
     else:
         # Exibir o formulário inicial
         inicial_form = ParticipanteInicialForm(request.POST or None)
-        if request.method == 'POST':
-            if inicial_form.is_valid():
-                cpf = ''.join(filter(str.isdigit, inicial_form.cleaned_data['cpf']))
+        if request.method == 'POST' and inicial_form.is_valid():
+            cpf = ''.join(filter(str.isdigit, inicial_form.cleaned_data['cpf']))
+            participante, created = Participante.objects.get_or_create(
+                cpf=cpf,
+                defaults={
+                    'nome': inicial_form.cleaned_data['nome'],
+                    'email': inicial_form.cleaned_data['email'],
+                    'telefone': inicial_form.cleaned_data['telefone']
+                }
+            )
+            if not created:
+                participante.nome     = inicial_form.cleaned_data['nome']
+                participante.email    = inicial_form.cleaned_data['email']
+                participante.telefone = inicial_form.cleaned_data['telefone']
+                participante.save()
 
-                participante, created = Participante.objects.get_or_create(
-                    cpf=cpf,
-                    defaults={
-                        'nome': inicial_form.cleaned_data['nome'],
-                        'email': inicial_form.cleaned_data['email'],
-                        'telefone': inicial_form.cleaned_data['telefone']
-                    }
-                )
+            request.session['participante_id'] = participante.id
 
-                if not created:
-                    participante.nome = inicial_form.cleaned_data['nome']
-                    participante.email = inicial_form.cleaned_data['email']
-                    participante.telefone = inicial_form.cleaned_data['telefone']
-                    participante.save()
+            inscricao_existente = Inscricao.objects.filter(
+                participante=participante,
+                evento=evento
+            ).first()
 
-                # Salvar o ID do participante na sessão
-                request.session['participante_id'] = participante.id
-
-                inscricao_existente = Inscricao.objects.filter(
-                    participante=participante,
-                    evento=evento
-                ).first()
-
-                if inscricao_existente:
-                    # Mapear tipo do evento para o nome do relacionamento OneToOne
-                    form_map = {
-                        'senior': 'inscricaosenior',
-                        'juvenil': 'inscricaojuvenil',
-                        'mirim': 'inscricaomirim',
-                        'servos': 'inscricaoservos',
-                    }
-                    tipo_evento = evento.tipo.lower()
-                    rel_name = form_map.get(tipo_evento)
-
-                    if rel_name:
-                        form_personalizado = getattr(inscricao_existente, rel_name, None)
-                        if form_personalizado:
-                            # Formulário personalizado já preenchido
-                            return redirect('inscricoes:ver_inscricao', pk=inscricao_existente.id)
-                        else:
-                            # Formulário personalizado não preenchido, continua preenchimento
-                            return redirect('inscricoes:formulario_personalizado', inscricao_id=inscricao_existente.id)
-
-                    # Se o tipo não estiver no map, só mostra a inscrição
+            if inscricao_existente:
+                form_map = {
+                    'senior':  'inscricaosenior',
+                    'juvenil': 'inscricaojuvenil',
+                    'mirim':   'inscricaomirim',
+                    'servos':  'inscricaoservos',
+                }
+                rel_name = form_map.get(evento.tipo.lower())
+                if rel_name and getattr(inscricao_existente, rel_name, None):
                     return redirect('inscricoes:ver_inscricao', pk=inscricao_existente.id)
+                return redirect('inscricoes:formulario_personalizado', inscricao_id=inscricao_existente.id)
 
-                try:
-                    inscricao = Inscricao.objects.create(
-                        participante=participante,
-                        evento=evento,
-                        paroquia=evento.paroquia
-                    )
-                except IntegrityError:
-                    inscricao = Inscricao.objects.get(
-                        participante=participante,
-                        evento=evento
-                    )
-                    return redirect('inscricoes:ver_inscricao', pk=inscricao.id)
+            try:
+                inscricao = Inscricao.objects.create(
+                    participante=participante,
+                    evento=evento,
+                    paroquia=evento.paroquia
+                )
+            except IntegrityError:
+                inscricao = Inscricao.objects.get(participante=participante, evento=evento)
+                return redirect('inscricoes:ver_inscricao', pk=inscricao.id)
 
-                # Redirecionar para a mesma view para exibir o formulário de endereço
-                return redirect('inscricoes:inscricao_inicial', slug=evento.slug)
+            return redirect('inscricoes:inscricao_inicial', slug=evento.slug)
 
         return render(request, 'inscricoes/inscricao_inicial.html', {
             'form': inicial_form,
             'evento': evento,
             'politica': politica
         })
+    
     
 def buscar_participante_ajax(request):
     cpf = request.GET.get('cpf', '').replace('.', '').replace('-', '')

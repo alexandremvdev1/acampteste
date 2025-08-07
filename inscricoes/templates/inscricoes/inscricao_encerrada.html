@@ -1,0 +1,51 @@
+{# templates/inscricoes/inscricao_encerrada.html #}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscrições Encerradas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f0f4f8;
+      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem;
+    }
+    .card-closed {
+      max-width: 500px;
+      margin: 4rem auto;
+      border: none;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      background: #fff;
+      padding: 2rem;
+      text-align: center;
+    }
+    .emoji {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card-closed">
+    <div class="emoji">🚫</div>
+    <h1>Inscrições Encerradas!</h1>
+    <p>As inscrições para <strong>{{ evento.nome }}</strong><br>
+       foram encerradas em <strong>{{ evento.fim_inscricoes|date:"d/m/Y" }}</strong>.</p>
+    <p>😢 Sentimos muito, mas novas inscrições não estão mais disponíveis.</p>
+    <p>📅 Fique de olho nos nossos próximos eventos e venha viver momentos inesquecíveis!</p>
+  </div>
+</body>
+</html>

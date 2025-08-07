@@ -12585,3 +12585,103 @@ ValueError: Must supply cloud_name in tag or in configuration
 2025-08-06 15:30:03,033 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
 2025-08-06 15:36:06,987 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
 2025-08-06 15:36:08,257 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 15:38:09,402 | INFO | django.utils.autoreload | C:\Users\ALEXANDRE\acampamentos\acampamentos\settings.py changed, reloading.
+2025-08-06 15:38:10,442 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-06 15:58:00,845 | ERROR | django.request | Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\base.py", line 244, in _get_session
+    return self._session_cache
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'SessionStore' object has no attribute '_session_cache'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ALEXANDRE\acampamentos\inscricoes\middleware.py", line 11, in __call__
+    if request.user.is_authenticated:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\functional.py", line 251, in inner
+    self._setup()
+    ~~~~~~~~~~~^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\functional.py", line 404, in _setup
+    self._wrapped = self._setupfunc()
+                    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\middleware.py", line 40, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+                                            ~~~~~~~~^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\middleware.py", line 20, in get_user
+    request._cached_user = auth.get_user(request)
+                           ~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\__init__.py", line 304, in get_user
+    user_id = _get_user_session_key(request)
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\__init__.py", line 95, in _get_user_session_key
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+                                               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\base.py", line 55, in __getitem__
+    return self._session[key]
+           ^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\base.py", line 249, in _get_session
+    self._session_cache = self.load()
+                          ~~~~~~~~~^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\db.py", line 55, in load
+    s = self._get_session_from_db()
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\db.py", line 34, in _get_session_from_db
+    return self.model.objects.get(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        session_key=self.session_key, expire_date__gt=timezone.now()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 629, in get
+    num = len(clone)
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1610, in execute_sql
+    sql, params = self.as_sql()
+                  ~~~~~~~~~~~^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 766, in as_sql
+    extra_select, order_by, group_by = self.pre_sql_setup(
+                                       ~~~~~~~~~~~~~~~~~~^
+        with_col_aliases=with_col_aliases or bool(combinator),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 85, in pre_sql_setup
+    self.setup_query(with_col_aliases=with_col_aliases)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 74, in setup_query
+    self.select, self.klass_info, self.annotation_col_map = self.get_select(
+                                                            ~~~~~~~~~~~~~~~^
+        with_col_aliases=with_col_aliases,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 316, in get_select
+    sql, params = self.compile(col)
+                  ~~~~~~~~~~~~^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 577, in compile
+    sql, params = node.as_sql(self, self.connection)
+                  ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\expressions.py", line 1305, in as_sql
+    sql = ".".join(map(compiler.quote_name_unless_alias, identifiers))
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 568, in quote_name_unless_alias
+    r = self.connection.ops.quote_name(name)
+  File "C:\Users\ALEXANDRE\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\dummy\base.py", line 20, in complain
+    raise ImproperlyConfigured(
+    ...<3 lines>...
+    )
+django.core.exceptions.ImproperlyConfigured: settings.DATABASES is improperly configured. Please supply the ENGINE value. Check settings documentation for more details.
+2025-08-06 15:58:00,973 | ERROR | django.server | "GET /admin/ HTTP/1.1" 500 145

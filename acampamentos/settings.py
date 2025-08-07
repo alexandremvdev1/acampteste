@@ -101,11 +101,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # correto
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # correto
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-SITE_URL = "https://acampamento.onrender.com"  # depois ajuste o domínio real
+SITE_URL = "https://acampamento.onrender.com"  # depois ajuste o domínio rea
 SITE_DOMAIN = "acampamento.onrender.com"
 SITE_ID = 1
 
