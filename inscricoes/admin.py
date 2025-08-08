@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import CrachaTemplate
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import PoliticaPrivacidade
+from django.urls import reverse
+from django.utils.html import format_html
 from .models import VideoEventoAcampamento
 from .models import (
     Paroquia, Participante, EventoAcampamento, Inscricao, Pagamento,
@@ -15,8 +17,40 @@ class ParoquiaAdmin(admin.ModelAdmin):
 
 @admin.register(Participante)
 class ParticipanteAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'cpf', 'telefone', 'email')
-    search_fields = ('nome', 'cpf', 'email')
+    list_display = (
+        'nome', 'cpf', 'telefone', 'email',
+        'cidade', 'estado',
+        'qr_token',      # mostra o token UUID
+        'qr_code_img',  # método customizado para renderizar o QR
+    )
+    search_fields = ('nome', 'cpf', 'email', 'cidade')
+    list_filter = ('cidade', 'estado')
+    readonly_fields = ('qr_token',)
+
+    def qr_code_img(self, obj):
+        if not obj.qr_token:
+            return "-"
+        url = reverse('inscricoes:qr_code_png', args=[obj.qr_token])
+        return format_html(
+            '<img src="{}" width="40" height="40" style="border:1px solid #ccc;"/>',
+            url
+        )
+    qr_code_img.short_description = "QR Code"
+
+    # Opcional: o campo qr_token aparece como somente‐leitura em detalhe
+    fieldsets = (
+        (None, {
+            'fields': (
+                'nome', 'cpf', 'telefone', 'email',
+                'CEP', 'endereco', 'numero', 'bairro', 'cidade', 'estado',
+                'foto',
+            )
+        }),
+        ('QR Code', {
+            'fields': ('qr_token',),
+        }),
+    )
+
 
 @admin.register(EventoAcampamento)
 class EventoAcampamentoAdmin(admin.ModelAdmin):

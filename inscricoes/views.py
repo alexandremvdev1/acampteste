@@ -1424,11 +1424,43 @@ def relatorios_evento(request, evento_id):
 @login_required
 def relatorio_etiquetas_bagagem(request, evento_id):
     evento = get_object_or_404(EventoAcampamento, id=evento_id)
-    # Permissão (opcional)
+    # Permissão: superuser ou mesma paróquia
     if not request.user.is_superuser and evento.paroquia != getattr(request.user, 'paroquia', None):
         return HttpResponseForbidden()
-    # TODO: implementar geração de etiquetas
-    return HttpResponse(f"Etiquetas de bagagem para {evento.nome}")
+
+    # Filtro por cidade (query param ?cidade=…)
+    cidade_sel = request.GET.get('cidade', '').strip()
+    inscricoes_qs = Inscricao.objects.filter(
+        evento=evento,
+        pagamento_confirmado=True,
+        inscricao_concluida=True
+    ).select_related('participante')
+
+    if cidade_sel:
+        inscricoes_qs = inscricoes_qs.filter(
+            participante__cidade__iexact=cidade_sel
+        )
+
+    # Lista distinta de cidades para o filtro
+    cidades = (
+        inscricoes_qs
+        .values_list('participante__cidade', flat=True)
+        .distinct()
+        .order_by('participante__cidade')
+    )
+
+    # Monta lista de etiquetas (3 por inscrição)
+    labels = []
+    for ins in inscricoes_qs:
+        for _ in range(3):
+            labels.append(ins)
+
+    return render(request, 'inscricoes/etiquetas_bagagem.html', {
+        'evento': evento,
+        'labels': labels,
+        'cidades': cidades,
+        'cidade_sel': cidade_sel,
+    })
 
 @login_required
 def relatorio_ficha_cozinha(request, evento_id):
@@ -1443,5 +1475,76 @@ def relatorio_ficha_farmacia(request, evento_id):
     evento = get_object_or_404(EventoAcampamento, id=evento_id)
     if not request.user.is_superuser and evento.paroquia != getattr(request.user, 'paroquia', None):
         return HttpResponseForbidden()
-    # TODO: implementar geração da ficha de farmácia
-    return HttpResponse(f"Ficha de farmácia para {evento.nome}")
+
+    # Busca inscrições com pagamento confirmado
+    inscricoes = Inscricao.objects.filter(
+        evento=evento,
+        pagamento_confirmado=True
+    ).select_related('participante')
+
+    fichas = []
+    for inscr in inscricoes:
+        # escolhe o BaseInscricao certo
+        tipo = evento.tipo
+        if tipo == 'senior':
+            base = InscricaoSenior.objects.filter(inscricao=inscr).first()
+        elif tipo == 'juvenil':
+            base = InscricaoJuvenil.objects.filter(inscricao=inscr).first()
+        elif tipo == 'mirim':
+            base = InscricaoMirim.objects.filter(inscricao=inscr).first()
+        else:
+            base = InscricaoServos.objects.filter(inscricao=inscr).first()
+
+        if not base:
+            continue
+
+        # só inclui quem tem **algum** dado de saúde relevante
+        tem_saude = any([
+            base.problema_saude == 'sim',
+            base.medicamento_controlado == 'sim',
+            base.mobilidade_reduzida == 'sim',
+            getattr(base, 'alergia_alimento', '') == 'sim',
+            getattr(base, 'alergia_medicamento', '') == 'sim',
+            bool(base.informacoes_extras),
+        ])
+        if not tem_saude:
+            continue
+
+        fichas.append({'inscricao': inscr, 'base': base})
+
+    # filtro por cidade
+    cidades = sorted({f['inscricao'].participante.cidade for f in fichas})
+    cidade_sel = request.GET.get('cidade')
+    if cidade_sel:
+        fichas = [f for f in fichas if f['inscricao'].participante.cidade == cidade_sel]
+
+    return render(request, 'inscricoes/ficha_farmacia.html', {
+        'evento': evento,
+        'fichas': fichas,
+        'cidades': cidades,
+        'cidade_sel': cidade_sel,
+    })
+
+def qr_code_png(request, token):
+    """
+    Gera um PNG de QR code que aponta para a página de inscrição
+    (ou qualquer endpoint) do participante identificado por `token`.
+    """
+    participante = get_object_or_404(Participante, qr_token=token)
+    # A URL que o QR deve apontar (ajuste para onde quiser redirecionar)
+    destino = request.build_absolute_uri(
+        reverse('inscricoes:ver_inscricao', args=[participante.id])
+    )
+
+    # Gera o QR code
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(destino)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Converte para bytes PNG
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type="image/png")

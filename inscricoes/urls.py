@@ -99,6 +99,7 @@ urlpatterns = [
     path('evento/<uuid:evento_id>/relatorio/etiquetas-bagagem/',views.relatorio_etiquetas_bagagem,name='relatorio_etiquetas_bagagem'),
     path('evento/<uuid:evento_id>/relatorio/ficha-cozinha/',views.relatorio_ficha_cozinha,name='relatorio_ficha_cozinha'),
     path('evento/<uuid:evento_id>/relatorio/ficha-farmacia/',views.relatorio_ficha_farmacia,name='relatorio_ficha_farmacia'),
+    path('qr/<str:token>.png', views.qr_code_png, name='qr_code_png'),
 
 ]
 
