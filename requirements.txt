@@ -17,6 +17,7 @@ defusedxml==0.7.1
 dj-database-url==2.3.0
 Django==5.2.3
 django-cloudinary-storage==0.3.0
+django-nested-admin==4.1.1
 django-storages==1.14.6
 django-widget-tweaks==1.5.0
 fonttools==4.58.0
@@ -43,6 +44,7 @@ pypdf==5.5.0
 python-bidi==0.6.6
 python-dateutil==2.9.0.post0
 python-decouple==3.8
+python-monkey-business==1.1.0
 pytz==2025.2
 PyYAML==6.0.2
 qrcode==8.2
