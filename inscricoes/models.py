@@ -314,6 +314,8 @@ class PastoralMovimento(models.Model):
 
 from django.db import models
 
+from django.db import models
+
 class BaseInscricao(models.Model):
     """Abstract base class for common fields in Inscricao models."""
     inscricao = models.OneToOneField(Inscricao, on_delete=models.CASCADE)
@@ -455,6 +457,47 @@ class BaseInscricao(models.Model):
         null=True,
         verbose_name="Qual medicamento controlado?"
     )
+    protocolo_administracao = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Protocolo de administração"
+    )
+
+    # Limitações físicas / mobilidade reduzida
+    mobilidade_reduzida = models.CharField(
+        max_length=3,
+        choices=SIM_NAO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Possui limitações físicas ou mobilidade reduzida?"
+    )
+    qual_mobilidade_reduzida = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Qual limitação/mobilidade reduzida?"
+    )
+
+    # Tipos sanguíneos
+    TIPO_SANGUINEO_CHOICES = [
+        ('A+',  'A+'),
+        ('A-',  'A-'),
+        ('B+',  'B+'),
+        ('B-',  'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+',  'O+'),
+        ('O-',  'O-'),
+        ('NS',  'Não sei'),
+    ]
+    tipo_sanguineo = models.CharField(
+        max_length=3,
+        choices=TIPO_SANGUINEO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Tipo Sanguíneo"
+    )
 
     indicado_por = models.CharField(
         max_length=200,
@@ -463,25 +506,33 @@ class BaseInscricao(models.Model):
         verbose_name="Indicado Por"
     )
 
-    # Adicionando os novos campos
-    pressao_alta = models.CharField(
-        max_length=3,
-        choices=SIM_NAO_CHOICES,
+    # Informações extras
+    informacoes_extras = models.TextField(
         blank=True,
         null=True,
-        verbose_name="Tem pressão alta?"
-    )
-
-    diabetes = models.CharField(
-        max_length=3,
-        choices=SIM_NAO_CHOICES,
-        blank=True,
-        null=True,
-        verbose_name="Tem diabetes?"
+        verbose_name="Informações extras (qualquer detalhe relevante não coberto acima)"
     )
 
     class Meta:
         abstract = True
+
+
+class InscricaoSenior(BaseInscricao):
+    def __str__(self):
+        return f"Inscrição Senior de {self.inscricao.participante.nome}"
+
+class InscricaoJuvenil(BaseInscricao):
+    def __str__(self):
+        return f"Inscrição Juvenil de {self.inscricao.participante.nome}"
+
+class InscricaoMirim(BaseInscricao):
+    def __str__(self):
+        return f"Inscrição Mirim de {self.inscricao.participante.nome}"
+
+class InscricaoServos(BaseInscricao):
+    def __str__(self):
+        return f"Inscrição Servos de {self.inscricao.participante.nome}"
+
 
 
 class InscricaoSenior(BaseInscricao):

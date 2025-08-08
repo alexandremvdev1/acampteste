@@ -93,7 +93,12 @@ urlpatterns = [
 
     path('evento/<uuid:evento_id>/imprimir-todas-fichas/',views.imprimir_todas_fichas,name='imprimir_todas_fichas'),
 
+    path('evento/<uuid:evento_id>/relatorios/',views.relatorios_evento,name='relatorios_evento'),
 
+    path('evento/<uuid:evento_id>/relatorios/',views.relatorios_evento,name='relatorios_evento'),
+    path('evento/<uuid:evento_id>/relatorio/etiquetas-bagagem/',views.relatorio_etiquetas_bagagem,name='relatorio_etiquetas_bagagem'),
+    path('evento/<uuid:evento_id>/relatorio/ficha-cozinha/',views.relatorio_ficha_cozinha,name='relatorio_ficha_cozinha'),
+    path('evento/<uuid:evento_id>/relatorio/ficha-farmacia/',views.relatorio_ficha_farmacia,name='relatorio_ficha_farmacia'),
 
 ]
 

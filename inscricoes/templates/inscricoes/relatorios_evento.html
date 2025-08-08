@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios – {{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Cores */
+        :root {
+            --primary-color: #4CAF50;
+            --accent-color: #FFC107;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --light-bg: #FAFAFA;
+            --dark-bg: #E0E0E0;
+            --text-color: #333;
+            --back-button-color: #777;
+            --disabled-color: #999; /* Cor para botões desabilitados */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            background: var(--back-button-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link:hover {
+            text-decoration: none;
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .report-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .report-buttons a {
+            padding: 12px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .report-buttons a:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-cracha {
+            background: #d35400;
+        }
+
+        .btn-ficha {
+            background: var(--accent-color);
+        }
+
+        .btn-view {
+            background: var(--success-color);
+        }
+
+        .btn-pagamento {
+            background: #16a085;
+        }
+
+        /* Estilo para botões desabilitados */
+        .report-buttons a.disabled {
+            background: var(--disabled-color);
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none; /* Impede que o botão seja clicado */
+        }
+
+        .report-buttons a.disabled:hover {
+            transform: none;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .report-buttons {
+                gap: 6px;
+            }
+
+            .report-buttons a {
+                font-size: 0.8rem;
+                padding: 10px 16px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <a href="{% url 'inscricoes:evento_participantes' evento.id %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    <h1>Relatórios – {{ evento.nome }}</h1>
+
+    <div class="report-buttons">
+        <a href="{% url 'inscricoes:relatorio_crachas' evento.id %}" class="btn-cracha" target="_blank">
+            <i class="fas fa-id-card"></i> Imprimir Crachás
+        </a>
+        <a href="{% url 'inscricoes:relatorio_fichas_sorteio' evento.id %}" class="btn-ficha" target="_blank">
+            <i class="fas fa-ticket-alt"></i> Fichas Sorteio
+        </a>
+        <a href="{% url 'inscricoes:relatorio_inscritos' evento.id %}" class="btn-view">
+            <i class="fas fa-list-alt"></i> Relatório Inscritos
+        </a>
+        <a href="{% url 'inscricoes:relatorio_financeiro' evento.id %}" class="btn-pagamento">
+            <i class="fas fa-money-bill-wave"></i> Relatório Financeiro
+        </a>
+        <a href="{% url 'inscricoes:imprimir_todas_fichas' evento.id %}" class="btn-ficha" target="_blank">
+            <i class="fas fa-print"></i> Todas as Fichas
+        </a>
+        <a href="{% url 'inscricoes:relatorio_etiquetas_bagagem' evento.id %}" class="btn-cracha" target="_blank">
+            <i class="fas fa-tag"></i> Etiquetas Bagagem
+        </a>
+        <a href="{% url 'inscricoes:relatorio_ficha_cozinha' evento.id %}" class="btn-ficha" target="_blank">
+            <i class="fas fa-utensils"></i> Ficha Cozinha
+        </a>
+        <a href="{% url 'inscricoes:relatorio_ficha_farmacia' evento.id %}" class="btn-ficha" target="_blank">
+            <i class="fas fa-pills"></i> Ficha Farmácia
+        </a>
+        <a href="#" class="btn-view disabled">
+            <i class="fas fa-ban"></i> Em breve
+        </a>
+
+    </div>
+</body>
+
+</html>

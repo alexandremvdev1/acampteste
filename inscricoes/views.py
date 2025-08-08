@@ -791,7 +791,7 @@ def formulario_saude(request, inscricao_id):
     participante = inscricao.participante
     politica = PoliticaPrivacidade.objects.first()
 
-    # detecta modelo específico de formulário
+    # Seleciona a instância correta de BaseInscricao
     if evento.tipo == 'senior':
         base_inscricao = get_object_or_404(InscricaoSenior, inscricao=inscricao)
     elif evento.tipo == 'juvenil':
@@ -805,29 +805,27 @@ def formulario_saude(request, inscricao_id):
         form_saude = DadosSaudeForm(request.POST, request.FILES, instance=base_inscricao)
 
         if form_saude.is_valid():
-            # salva dados de saúde específicos
+            # Salva todos os campos, inclusive a foto
             form_saude.save()
 
-            # marca inscrição como enviada
+            # Se enviou foto, atualiza o Participante
+            foto = form_saude.cleaned_data.get('foto')
+            if foto:
+                participante.foto = foto
+                participante.save(update_fields=['foto'])
+
+            # Marca inscrição como enviada
             inscricao.inscricao_enviada = True
             inscricao.save(update_fields=['inscricao_enviada'])
 
-            # atualiza foto do participante, se enviada
-            if 'foto' in request.FILES:
-                participante.foto = request.FILES['foto']
-                participante.save(update_fields=['foto'])
-
             return redirect('inscricoes:ver_inscricao', pk=inscricao.id)
         else:
-            print("Erros no form_saude:", form_saude.errors)
+            # Para debug, imprime erros no console
+            print("Erros no DadosSaudeForm:", form_saude.errors)
 
     else:
+        # GET: carrega o form com os dados já salvos
         form_saude = DadosSaudeForm(instance=base_inscricao)
-        # injeta o campo foto para exibição, sem alterar a lógica de DadosSaudeForm
-        form_part = ParticipanteForm(instance=participante)
-        form_saude.fields['foto'] = form_part.fields['foto']
-        form_saude.initial['foto'] = form_part.initial.get('foto')
-        form_saude.fields['foto'].widget.attrs.update({'class': 'form-control'})
 
     return render(request, 'inscricoes/formulario_saude.html', {
         'form': form_saude,
@@ -1407,3 +1405,43 @@ def imprimir_todas_fichas(request, evento_id):
         'evento': evento,
         'inscricoes': inscricoes,
     })
+
+@login_required
+def relatorios_evento(request, evento_id):
+    # Busca o evento
+    evento = get_object_or_404(EventoAcampamento, id=evento_id)
+
+    # Opcional: só permite que admin da paróquia ou superuser acesse
+    if not request.user.is_superuser:
+        if not hasattr(request.user, 'paroquia') or evento.paroquia != request.user.paroquia:
+            return HttpResponseForbidden("Você não tem permissão para ver estes relatórios.")
+
+    # Renderiza uma página com todos os botões de relatório
+    return render(request, 'inscricoes/relatorios_evento.html', {
+        'evento': evento
+    })
+
+@login_required
+def relatorio_etiquetas_bagagem(request, evento_id):
+    evento = get_object_or_404(EventoAcampamento, id=evento_id)
+    # Permissão (opcional)
+    if not request.user.is_superuser and evento.paroquia != getattr(request.user, 'paroquia', None):
+        return HttpResponseForbidden()
+    # TODO: implementar geração de etiquetas
+    return HttpResponse(f"Etiquetas de bagagem para {evento.nome}")
+
+@login_required
+def relatorio_ficha_cozinha(request, evento_id):
+    evento = get_object_or_404(EventoAcampamento, id=evento_id)
+    if not request.user.is_superuser and evento.paroquia != getattr(request.user, 'paroquia', None):
+        return HttpResponseForbidden()
+    # TODO: implementar geração da ficha de cozinha
+    return HttpResponse(f"Ficha de cozinha para {evento.nome}")
+
+@login_required
+def relatorio_ficha_farmacia(request, evento_id):
+    evento = get_object_or_404(EventoAcampamento, id=evento_id)
+    if not request.user.is_superuser and evento.paroquia != getattr(request.user, 'paroquia', None):
+        return HttpResponseForbidden()
+    # TODO: implementar geração da ficha de farmácia
+    return HttpResponse(f"Ficha de farmácia para {evento.nome}")

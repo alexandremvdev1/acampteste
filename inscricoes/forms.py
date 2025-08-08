@@ -337,111 +337,124 @@ class DadosSaudeForm(forms.ModelForm):
         ('nao', 'Não'),
     ]
 
-    # O campo "foto" será sobrescrito na view com os dados do Participante
+    TIPO_SANGUINEO_CHOICES = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'), ('NS',  'Não sei'),
+    ]
+
     foto = forms.ImageField(
         label="Foto (Mostre seu melhor ângulo! 😉)",
-        required=True  # Torna o campo obrigatório
+        required=True
     )
-
     altura = forms.FloatField(
-        label="Altura (metros)",
-        required=True,  # Torna o campo obrigatório
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: 1.70'})
+        label="Altura (m)",
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: 1.70'}),
+        required=True
     )
-
     peso = forms.FloatField(
         label="Peso (kg)",
-        required=True,  # Torna o campo obrigatório
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: 50'})
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: 50'}),
+        required=True
     )
 
     pressao_alta = forms.ChoiceField(
         label="Tem pressão alta?",
         choices=SIM_NAO_CHOICES,
-        required=True  # Torna o campo obrigatório
+        required=True
     )
-
     diabetes = forms.ChoiceField(
         label="Tem diabetes?",
         choices=SIM_NAO_CHOICES,
-        required=True  # Torna o campo obrigatório
+        required=True
     )
 
     problema_saude = forms.ChoiceField(
-        label='Possui algum problema de saúde?',
+        label="Possui algum problema de saúde?",
         choices=SIM_NAO_CHOICES,
-        required=True  # Torna o campo obrigatório
+        required=True
     )
-
     qual_problema_saude = forms.CharField(
-        label='Qual problema de saúde?',
+        label="Qual problema de saúde?",
         max_length=255,
-        required=False  # Inicialmente não obrigatório
+        required=False
     )
 
     medicamento_controlado = forms.ChoiceField(
-        label='Usa algum medicamento controlado?',
+        label="Usa algum medicamento controlado?",
         choices=SIM_NAO_CHOICES,
-        required=True  # Torna o campo obrigatório
+        required=True
+    )
+    qual_medicamento_controlado = forms.CharField(
+        label="Qual medicamento controlado?",
+        max_length=255,
+        required=False
+    )
+    protocolo_administracao = forms.CharField(
+        label="Protocolo de administração",
+        max_length=255,
+        required=False
     )
 
-    qual_medicamento_controlado = forms.CharField(
-        label='Qual medicamento controlado?',
+    mobilidade_reduzida = forms.ChoiceField(
+        label="Limitações físicas ou mobilidade reduzida?",
+        choices=SIM_NAO_CHOICES,
+        required=True
+    )
+    qual_mobilidade_reduzida = forms.CharField(
+        label="Detalhe a limitação",
         max_length=255,
-        required=False  # Inicialmente não obrigatório
+        required=False
+    )
+
+    tipo_sanguineo = forms.ChoiceField(
+        label="Tipo sanguíneo",
+        choices=TIPO_SANGUINEO_CHOICES,
+        required=True
     )
 
     indicado_por = forms.CharField(
-        label='Indicado por',
+        label="Indicado por",
         max_length=200,
-        required=False  # Torna o campo obrigatório
+        required=False
     )
 
-    def clean_qual_problema_saude(self):
-        valor = self.cleaned_data.get('qual_problema_saude', '')
-        return valor.title() if valor else valor
+    informacoes_extras = forms.CharField(
+        label="Informações extras",
+        widget=forms.Textarea(attrs={'rows': 3, 'placeholder': 'Observações adicionais...'}),
+        required=False
+    )
 
-    def clean_qual_medicamento_controlado(self):
-        valor = self.cleaned_data.get('qual_medicamento_controlado', '')
-        return valor.title() if valor else valor
-
-    def clean_indicado_por(self):
-        valor = self.cleaned_data.get('indicado_por', '')
-        return valor.title() if valor else valor
-    
     class Meta:
-        model = InscricaoSenior  # será sobrescrito dinamicamente na view
+        model = InscricaoSenior  # será substituído dinamicamente na view
         fields = [
-            'altura',
-            'peso',
-            'pressao_alta',
-            'diabetes',
-            'problema_saude',
-            'qual_problema_saude',
-            'medicamento_controlado',
-            'qual_medicamento_controlado',
-            'indicado_por',
+            'foto', 'altura', 'peso',
+            'pressao_alta', 'diabetes',
+            'problema_saude', 'qual_problema_saude',
+            'medicamento_controlado', 'qual_medicamento_controlado', 'protocolo_administracao',
+            'mobilidade_reduzida', 'qual_mobilidade_reduzida',
+            'tipo_sanguineo', 'indicado_por', 'informacoes_extras',
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
+        for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
     def clean(self):
-        cleaned_data = super().clean()
-        problema_saude = cleaned_data.get('problema_saude')
-        qual_problema_saude = cleaned_data.get('qual_problema_saude')
-        medicamento_controlado = cleaned_data.get('medicamento_controlado')
-        qual_medicamento_controlado = cleaned_data.get('qual_medicamento_controlado')
-
-        if problema_saude == 'sim' and not qual_problema_saude:
+        cleaned = super().clean()
+        if cleaned.get('problema_saude') == 'sim' and not cleaned.get('qual_problema_saude'):
             self.add_error('qual_problema_saude', 'Por favor, especifique o problema de saúde.')
+        if cleaned.get('medicamento_controlado') == 'sim':
+            if not cleaned.get('qual_medicamento_controlado'):
+                self.add_error('qual_medicamento_controlado', 'Por favor, especifique o medicamento controlado.')
+            if not cleaned.get('protocolo_administracao'):
+                self.add_error('protocolo_administracao', 'Por favor, informe o protocolo de administração.')
+        if cleaned.get('mobilidade_reduzida') == 'sim' and not cleaned.get('qual_mobilidade_reduzida'):
+            self.add_error('qual_mobilidade_reduzida', 'Por favor, detalhe a limitação.')
+        return cleaned
 
-        if medicamento_controlado == 'sim' and not qual_medicamento_controlado:
-            self.add_error('qual_medicamento_controlado', 'Por favor, especifique o medicamento controlado.')
-
-        return cleaned_data
 
 
 class VideoEventoForm(forms.ModelForm):

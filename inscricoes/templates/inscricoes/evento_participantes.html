@@ -18,6 +18,8 @@
             --dark-bg: #E0E0E0;
             --text-color: #333;
             --light-text: #777;
+            /* cor do botão de voltar e do novo Relatórios */
+            --back-button-color: #777;
         }
 
         body {
@@ -35,6 +37,53 @@
             color: var(--secondary-color);
             text-align: center;
             font-weight: 500;
+        }
+
+        /* Estilos para os botões de relatório e voltar */
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            background: var(--back-button-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link:hover {
+            
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .report-button {
+            padding: 12px 20px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            background: var(--back-button-color);
+        }
+
+        .report-button:hover {
+            transform: translateY(-2px);
         }
 
         table {
@@ -129,22 +178,6 @@
             background: #388E3C;
         }
 
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-            color: #388E3C;
-        }
-
         form.inline-form {
             display: inline-flex;
             align-items: center;
@@ -162,34 +195,6 @@
             color: var(--text-color);
         }
 
-        /* Estilos para os botões de relatório */
-        .report-buttons {
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.6rem;
-            justify-content: center;
-        }
-
-        .report-buttons a {
-            padding: 12px 20px;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .report-buttons a:hover {
-            transform: translateY(-2px);
-        }
-
         /* Responsivo */
         @media (max-width: 768px) {
             h1 {
@@ -204,10 +209,6 @@
                 font-size: 0.9em;
                 padding: 8px 12px;
             }
-
-            .report-buttons {
-                font-size: 0.8rem;
-            }
         }
 
         /* Total de Participantes */
@@ -221,41 +222,16 @@
 </head>
 <body>
 
-<a href="{% url 'inscricoes:admin_paroquia_painel' %}" class="back-link">
-    <i class="fas fa-arrow-left"></i> Voltar ao Painel
-</a>
-<h1>{{ evento.nome }}</h1>
-
-<!-- BOTÕES DE RELATÓRIOS -->
-<div class="report-buttons">
-    <a href="{% url 'inscricoes:relatorio_crachas' evento.id %}"
-       class="btn btn-cracha"
-       target="_blank">
-        <i class="fas fa-id-card"></i> Imprimir Crachás
+<div class="top-buttons">
+    <a href="{% url 'inscricoes:admin_paroquia_painel' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Voltar ao Painel
     </a>
-    <a href="{% url 'inscricoes:relatorio_fichas_sorteio' evento.id %}"
-       target="_blank"
-       class="btn btn-ficha">
-        <i class="fas fa-ticket-alt"></i> Fichas Sorteio
+    <a href="{% url 'inscricoes:relatorios_evento' evento.id %}" class="report-button">
+        📊 Relatórios
     </a>
-    <a href="{% url 'inscricoes:relatorio_inscritos' evento.id %}"
-       class="btn btn-view">
-        <i class="fas fa-list-alt"></i> Relatório Inscritos
-    </a>
-    <a href="{% url 'inscricoes:relatorio_financeiro' evento.id %}"
-       class="btn btn-pagamento">
-        <i class="fas fa-money-bill-wave"></i> Relatório Financeiro
-    </a>
-    <a href="{% url 'inscricoes:pagina_video_evento' evento.slug %}" class="btn btn-edit" target="_blank">
-        <i class="fas fa-video"></i> Adicionar/Editar Vídeo
-    </a>
-    <a href="{% url 'inscricoes:imprimir_todas_fichas' evento.id %}"
-   class="btn btn-ficha"
-   target="_blank">
-  <i class="fas fa-print"></i>Todas as Fichas
-</a>
-
 </div>
+
+<h1>{{ evento.nome }}</h1>
 
 <label for="searchInput" style="font-weight:600;"><i class="fas fa-search"></i> Buscar participante:</label>
 <input type="text" id="searchInput" placeholder="Digite o nome para buscar..." />

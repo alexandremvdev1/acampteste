@@ -146,6 +146,7 @@
             border-color: #007bff;
             outline: none;
             box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            text-transform: capitalize;
         }
 
         button {
@@ -303,187 +304,206 @@
     </div>
 
     <form method="post" novalidate enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+    {% csrf_token %}
+    {{ form.non_field_errors }}
 
-        <div class="form-group">
-            <label for="{{ form.foto.id_for_label }}">Foto (Mostre seu melhor ângulo! 😉)</label>
-            {{ form.foto.errors }}
-            {{ form.foto }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.foto.id_for_label }}">Foto (Mostre seu melhor ângulo! 😉)</label>
+        {{ form.foto.errors }}
+        {{ form.foto }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.altura.id_for_label }}">Altura (em metros)</label>
-            {{ form.altura.errors }}
-            {{ form.altura }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.altura.id_for_label }}">Altura (em metros)</label>
+        {{ form.altura.errors }}
+        {{ form.altura }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.peso.id_for_label }}">Peso (em kg)</label>
-            {{ form.peso.errors }}
-            {{ form.peso }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.peso.id_for_label }}">Peso (em kg)</label>
+        {{ form.peso.errors }}
+        {{ form.peso }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.pressao_alta.id_for_label }}">Tem pressão alta?</label>
-            {{ form.pressao_alta.errors }}
-            {{ form.pressao_alta }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.pressao_alta.id_for_label }}">Tem pressão alta?</label>
+        {{ form.pressao_alta.errors }}
+        {{ form.pressao_alta }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.diabetes.id_for_label }}">Tem diabetes?</label>
-            {{ form.diabetes.errors }}
-            {{ form.diabetes }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.diabetes.id_for_label }}">Tem diabetes?</label>
+        {{ form.diabetes.errors }}
+        {{ form.diabetes }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.problema_saude.id_for_label }}">Possui algum outro problema de saúde?</label>
-            {{ form.problema_saude.errors }}
-            {{ form.problema_saude }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.problema_saude.id_for_label }}">Possui algum outro problema de saúde?</label>
+        {{ form.problema_saude.errors }}
+        {{ form.problema_saude }}
+    </div>
 
-        <div class="form-group {% if form.problema_saude.value != 'sim' %}hidden{% endif %}"
-            id="qual_problema_saude_group">
-            <label for="{{ form.qual_problema_saude.id_for_label }}">Qual problema de saúde?</label>
-            {{ form.qual_problema_saude.errors }}
-            {{ form.qual_problema_saude }}
-        </div>
+    <div class="form-group {% if form.problema_saude.value != 'sim' %}hidden{% endif %}"
+         id="qual_problema_saude_group">
+        <label for="{{ form.qual_problema_saude.id_for_label }}">Qual problema de saúde?</label>
+        {{ form.qual_problema_saude.errors }}
+        {{ form.qual_problema_saude }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.medicamento_controlado.id_for_label }}">Usa algum medicamento controlado?</label>
-            {{ form.medicamento_controlado.errors }}
-            {{ form.medicamento_controlado }}
-        </div>
+    <div class="form-group">
+        <label for="{{ form.medicamento_controlado.id_for_label }}">Usa algum medicamento controlado?</label>
+        {{ form.medicamento_controlado.errors }}
+        {{ form.medicamento_controlado }}
+    </div>
 
-        <div class="form-group {% if form.medicamento_controlado.value != 'sim' %}hidden{% endif %}"
-            id="qual_medicamento_controlado_group">
-            <label for="{{ form.qual_medicamento_controlado.id_for_label }}">Qual medicamento controlado?</label>
-            {{ form.qual_medicamento_controlado.errors }}
-            {{ form.qual_medicamento_controlado }}
-        </div>
+    <div class="form-group {% if form.medicamento_controlado.value != 'sim' %}hidden{% endif %}"
+         id="qual_medicamento_controlado_group">
+        <label for="{{ form.qual_medicamento_controlado.id_for_label }}">Qual medicamento controlado?</label>
+        {{ form.qual_medicamento_controlado.errors }}
+        {{ form.qual_medicamento_controlado }}
+    </div>
 
-        <div class="form-group">
-            <label for="{{ form.indicado_por.id_for_label }}">Indicado Por</label>
-            {{ form.indicado_por.errors }}
-            {{ form.indicado_por }}
-        </div>
+    <div class="form-group {% if form.medicamento_controlado.value != 'sim' %}hidden{% endif %}"
+         id="protocolo_administracao_group">
+        <label for="{{ form.protocolo_administracao.id_for_label }}">Protocolo de administração</label>
+        {{ form.protocolo_administracao.errors }}
+        {{ form.protocolo_administracao }}
+    </div>
 
-        <button type="submit">Enviar</button>
-    </form>
+    <div class="form-group">
+        <label for="{{ form.mobilidade_reduzida.id_for_label }}">Limitações físicas ou mobilidade reduzida?</label>
+        {{ form.mobilidade_reduzida.errors }}
+        {{ form.mobilidade_reduzida }}
+    </div>
 
-    <p class="politica-link">
-        <a href="#" onclick="openModal('modalPolitica')">
-            Política de Privacidade
-        </a>
-    </p>
+    <div class="form-group {% if form.mobilidade_reduzida.value != 'sim' %}hidden{% endif %}"
+         id="qual_mobilidade_reduzida_group">
+        <label for="{{ form.qual_mobilidade_reduzida.id_for_label }}">Detalhe a limitação</label>
+        {{ form.qual_mobilidade_reduzida.errors }}
+        {{ form.qual_mobilidade_reduzida }}
+    </div>
 
-    <!-- Modal da Política de Privacidade -->
-    <div id="modalPolitica" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('modalPolitica')">&times;</span>
-            <h3>Política de Privacidade</h3>
-            {% if politica %}
+    <div class="form-group">
+        <label for="{{ form.tipo_sanguineo.id_for_label }}">Tipo sanguíneo</label>
+        {{ form.tipo_sanguineo.errors }}
+        {{ form.tipo_sanguineo }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.indicado_por.id_for_label }}">Indicado Por</label>
+        {{ form.indicado_por.errors }}
+        {{ form.indicado_por }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.informacoes_extras.id_for_label }}">Informações extras</label>
+        {{ form.informacoes_extras.errors }}
+        {{ form.informacoes_extras }}
+    </div>
+
+    <button type="submit">Enviar</button>
+</form>
+
+<p class="politica-link">
+    <a href="#" onclick="openModal('modalPolitica')">Política de Privacidade</a>
+</p>
+
+<!-- Modal da Política de Privacidade -->
+<div id="modalPolitica" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('modalPolitica')">&times;</span>
+        <h3>Política de Privacidade</h3>
+        {% if politica %}
             {{ politica.texto|linebreaks }}
-            {# Texto da política de privacidade #}
-            {% else %}
+        {% else %}
             <p>Política de privacidade não definida.</p>
-            {% endif %}
-        </div>
+        {% endif %}
     </div>
+</div>
 
-    <!-- Modal WhatsApp -->
-    <div id="modalWhatsApp" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('modalWhatsApp')">&times;</span>
-            <h3>Fale conosco pelo WhatsApp</h3>
-            <p>Estamos prontos para ajudar você!</p>
-            <a href="https://wa.me/5511999999999" target="_blank" class="btn-whatsapp">Abrir WhatsApp</a>
-        </div>
+<!-- Modal WhatsApp -->
+<div id="modalWhatsApp" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('modalWhatsApp')">&times;</span>
+        <h3>Fale conosco pelo WhatsApp</h3>
+        <p>Estamos prontos para ajudar você!</p>
+        <a href="https://wa.me/5511999999999" target="_blank" class="btn-whatsapp">Abrir WhatsApp</a>
     </div>
+</div>
 
-    <!-- Caixinha flutuante WhatsApp -->
-    <div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp" onclick="openModal('modalWhatsApp')">🙋🏼‍♂️</div>
+<!-- Caixinha flutuante WhatsApp -->
+<div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp" onclick="openModal('modalWhatsApp')">🙋🏼‍♂️</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // ─────────────────────────────────────────────────
-            // Funções de modal (abre/fecha/overlay/ESC)
-            // ─────────────────────────────────────────────────
-            function openModal(id) {
-                const m = document.getElementById(id);
-                if (!m) return;
-                m.style.display = 'block';
-                document.body.classList.add('modal-open');
-            }
-            function closeModal(id) {
-                const m = document.getElementById(id);
-                if (!m) return;
-                m.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            }
-            document.querySelectorAll('[data-open-modal]').forEach(btn =>
-                btn.addEventListener('click', () => openModal(btn.dataset.openModal))
-            );
-            document.querySelectorAll('.modal .close').forEach(btn =>
-                btn.addEventListener('click', () => closeModal(btn.closest('.modal').id))
-            );
-            window.addEventListener('click', e => {
-                if (e.target.classList.contains('modal')) closeModal(e.target.id);
-            });
-            window.addEventListener('keydown', e => {
-                if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal').forEach(m => {
-                        if (m.style.display === 'block') closeModal(m.id);
-                    });
-                }
-            });
-
-            // ─────────────────────────────────────────────────
-            // Campos condicionais de saúde
-            // ─────────────────────────────────────────────────
-            [
-                { selectId: 'id_problema_saude', groupId: 'qual_problema_saude_group' },
-                { selectId: 'id_medicamento_controlado', groupId: 'qual_medicamento_controlado_group' }
-            ].forEach(({ selectId, groupId }) => {
-                const sel = document.getElementById(selectId),
-                    grp = document.getElementById(groupId);
-                if (!sel || !grp) return;
-                const toggle = () => grp.classList.toggle('hidden', sel.value !== 'sim');
-                sel.addEventListener('change', toggle);
-                toggle();
-            });
-
-            // ─────────────────────────────────────────────────
-            // Máscaras de Peso e Altura
-            // ─────────────────────────────────────────────────
-            if (window.Inputmask) {
-                // Peso: apenas inteiro, ex “70”
-                const peso = document.getElementById('id_peso');
-                if (peso) {
-                    Inputmask({
-                        alias: 'numeric',
-                        digits: 0,
-                        rightAlign: false,
-                        placeholder: '',
-                        showMaskOnFocus: false,
-                        showMaskOnHover: false,
-                        clearIncomplete: true
-                    }).mask(peso);
-                }
-
-                // Altura: máscara “9.99” → digitar “170” vira “1.70”
-                const altura = document.getElementById('id_altura');
-                if (altura) {
-                    Inputmask('9.99', {
-                        placeholder: '',
-                        showMaskOnFocus: false,
-                        showMaskOnHover: false,
-                        clearIncomplete: true
-                    }).mask(altura);
-                }
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Funções de modal (abre/fecha/overlay/ESC)
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (!m) return;
+            m.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (!m) return;
+            m.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+        document.querySelectorAll('[data-open-modal]').forEach(btn =>
+            btn.addEventListener('click', () => openModal(btn.dataset.openModal))
+        );
+        document.querySelectorAll('.modal .close').forEach(btn =>
+            btn.addEventListener('click', () => closeModal(btn.closest('.modal').id))
+        );
+        window.addEventListener('click', e => {
+            if (e.target.classList.contains('modal')) closeModal(e.target.id);
+        });
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(m => {
+                    if (m.style.display === 'block') closeModal(m.id);
+                });
             }
         });
-    </script>
-</body>
 
-</html>
+        // Campos condicionais
+        [
+            { selectId: 'id_problema_saude', groupId: 'qual_problema_saude_group' },
+            { selectId: 'id_medicamento_controlado', groupId: 'qual_medicamento_controlado_group' },
+            { selectId: 'id_medicamento_controlado', groupId: 'protocolo_administracao_group' },
+            { selectId: 'id_mobilidade_reduzida', groupId: 'qual_mobilidade_reduzida_group' }
+        ].forEach(({ selectId, groupId }) => {
+            const sel = document.getElementById(selectId),
+                  grp = document.getElementById(groupId);
+            if (!sel || !grp) return;
+            const toggle = () => grp.classList.toggle('hidden', sel.value !== 'sim');
+            sel.addEventListener('change', toggle);
+            toggle();
+        });
+
+        // Máscaras de Peso e Altura
+        if (window.Inputmask) {
+            const peso = document.getElementById('id_peso');
+            if (peso) {
+                Inputmask({
+                    alias: 'numeric',
+                    digits: 0,
+                    rightAlign: false,
+                    placeholder: '',
+                    showMaskOnFocus: false,
+                    showMaskOnHover: false,
+                    clearIncomplete: true
+                }).mask(peso);
+            }
+            const altura = document.getElementById('id_altura');
+            if (altura) {
+                Inputmask('9.99', {
+                    placeholder: '',
+                    showMaskOnFocus: false,
+                    showMaskOnHover: false,
+                    clearIncomplete: true
+                }).mask(altura);
+            }
+        }
+    });
+</script>
