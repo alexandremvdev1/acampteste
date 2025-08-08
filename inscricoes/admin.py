@@ -42,23 +42,68 @@ class PagamentoAdmin(admin.ModelAdmin):
 
 @admin.register(InscricaoSenior)
 class InscricaoSeniorAdmin(admin.ModelAdmin):
-    list_display = ('inscricao', 'data_nascimento', 'paroquia', 'batizado')  # Alterado 'igreja' para 'paroquia'
-    search_fields = ('inscricao__participante__nome', 'paroquia')  # Alterado 'igreja' para 'paroquia'
+    list_display = (
+        'inscricao', 'data_nascimento', 'paroquia', 'batizado',
+        'alergia_alimento', 'qual_alergia_alimento',
+        'alergia_medicamento', 'qual_alergia_medicamento',
+    )
+    list_filter = (
+        'paroquia', 'batizado',
+        'alergia_alimento', 'alergia_medicamento',
+    )
+    search_fields = (
+        'inscricao__participante__nome', 'paroquia__nome',
+        'qual_alergia_alimento', 'qual_alergia_medicamento',
+    )
 
+# Repita a mesma ideia para os outros níveis de inscrição:
 @admin.register(InscricaoJuvenil)
 class InscricaoJuvenilAdmin(admin.ModelAdmin):
-    list_display = ('inscricao', 'data_nascimento', 'paroquia', 'batizado')  # Alterado 'igreja' para 'paroquia'
-    search_fields = ('inscricao__participante__nome', 'paroquia')  # Alterado 'igreja' para 'paroquia'
+    list_display = (
+        'inscricao', 'data_nascimento', 'paroquia', 'batizado',
+        'alergia_alimento', 'qual_alergia_alimento',
+        'alergia_medicamento', 'qual_alergia_medicamento',
+    )
+    list_filter = (
+        'paroquia', 'batizado',
+        'alergia_alimento', 'alergia_medicamento',
+    )
+    search_fields = (
+        'inscricao__participante__nome', 'paroquia__nome',
+        'qual_alergia_alimento', 'qual_alergia_medicamento',
+    )
 
 @admin.register(InscricaoMirim)
 class InscricaoMirimAdmin(admin.ModelAdmin):
-    list_display = ('inscricao', 'data_nascimento', 'paroquia', 'batizado')  # Alterado 'igreja' para 'paroquia'
-    search_fields = ('inscricao__participante__nome', 'paroquia')  # Alterado 'igreja' para 'paroquia'
+    list_display = (
+        'inscricao', 'data_nascimento', 'paroquia', 'batizado',
+        'alergia_alimento', 'qual_alergia_alimento',
+        'alergia_medicamento', 'qual_alergia_medicamento',
+    )
+    list_filter = (
+        'paroquia', 'batizado',
+        'alergia_alimento', 'alergia_medicamento',
+    )
+    search_fields = (
+        'inscricao__participante__nome', 'paroquia__nome',
+        'qual_alergia_alimento', 'qual_alergia_medicamento',
+    )
 
 @admin.register(InscricaoServos)
 class InscricaoServosAdmin(admin.ModelAdmin):
-    list_display = ('inscricao', 'data_nascimento', 'paroquia', 'batizado')  # Alterado 'igreja' para 'paroquia'
-    search_fields = ('inscricao__participante__nome', 'paroquia')  # Alterado 'igreja' para 'paroquia'
+    list_display = (
+        'inscricao', 'data_nascimento', 'paroquia', 'batizado',
+        'alergia_alimento', 'qual_alergia_alimento',
+        'alergia_medicamento', 'qual_alergia_medicamento',
+    )
+    list_filter = (
+        'paroquia', 'batizado',
+        'alergia_alimento', 'alergia_medicamento',
+    )
+    search_fields = (
+        'inscricao__participante__nome', 'paroquia__nome',
+        'qual_alergia_alimento', 'qual_alergia_medicamento',
+    )
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):

@@ -66,22 +66,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'acampamentos.wsgi.application'
 
-# logo após BASE_DIR = ...
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# depois de BASE_DIR = Path(...)
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# URL do Neon Postgres — pode vir de DATABASE_URL no ambiente
+NEON_DATABASE_URL = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://neondb_owner:npg_PTS6NApchb4l@ep-falling-union-adr7n4av-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+)
 
-
+DATABASES = {
+    'default': dj_database_url.parse(
+        NEON_DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [

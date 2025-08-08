@@ -1,16 +1,17 @@
 import uuid
-from django.db import models
-from django.utils.text import slugify
-from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.utils.translation import gettext_lazy as _
 from datetime import date
-from django.urls import reverse
-from django.core.mail import send_mail
+
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.contrib.sites.models import Site
-import uuid
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.db import models
+from django.urls import reverse
+from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
+
 from cloudinary.models import CloudinaryField
+
 
 class Paroquia(models.Model):
     STATUS_CHOICES = [
@@ -317,11 +318,13 @@ from django.db import models
 from django.db import models
 
 class BaseInscricao(models.Model):
-    """Abstract base class for common fields in Inscricao models."""
-    inscricao = models.OneToOneField(Inscricao, on_delete=models.CASCADE)
+    """Campos comuns às Inscrições (Sênior, Juvenil, Mirim, Servos)."""
+    inscricao = models.OneToOneField(
+        'Inscricao', on_delete=models.CASCADE, verbose_name="Inscrição"
+    )
     data_nascimento = models.DateField(verbose_name="Data de Nascimento")
-    altura = models.FloatField(blank=True, null=True)
-    peso = models.FloatField(blank=True, null=True)
+    altura = models.FloatField(blank=True, null=True, verbose_name="Altura (m)")
+    peso = models.FloatField(blank=True, null=True, verbose_name="Peso (kg)")
 
     SIM_NAO_CHOICES = [
         ('sim', 'Sim'),
@@ -365,7 +368,6 @@ class BaseInscricao(models.Model):
         null=True,
         verbose_name="Nome do Cônjuge"
     )
-
     conjuge_inscrito = models.CharField(
         max_length=3,
         choices=SIM_NAO_CHOICES,
@@ -375,7 +377,7 @@ class BaseInscricao(models.Model):
     )
 
     paroquia = models.ForeignKey(
-        Paroquia,
+        'Paroquia',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -383,13 +385,12 @@ class BaseInscricao(models.Model):
     )
 
     pastoral_movimento = models.ForeignKey(
-        PastoralMovimento,
+        'PastoralMovimento',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="Pastoral/Movimento"
     )
-
     outra_pastoral_movimento = models.CharField(
         max_length=200,
         blank=True,
@@ -404,7 +405,6 @@ class BaseInscricao(models.Model):
         null=True,
         verbose_name="Dizimista?"
     )
-
     crismado = models.CharField(
         max_length=3,
         choices=SIM_NAO_CHOICES,
@@ -414,13 +414,8 @@ class BaseInscricao(models.Model):
     )
 
     TAMANHO_CAMISA_CHOICES = [
-        ('PP', 'PP'),
-        ('P', 'P'),
-        ('M', 'M'),
-        ('G', 'G'),
-        ('GG', 'GG'),
-        ('XG', 'XG'),
-        ('XGG', 'XGG'),
+        ('PP', 'PP'), ('P', 'P'), ('M', 'M'),
+        ('G', 'G'), ('GG', 'GG'), ('XG', 'XG'), ('XGG', 'XGG'),
     ]
     tamanho_camisa = models.CharField(
         max_length=5,
@@ -457,6 +452,7 @@ class BaseInscricao(models.Model):
         null=True,
         verbose_name="Qual medicamento controlado?"
     )
+
     protocolo_administracao = models.CharField(
         max_length=255,
         blank=True,
@@ -464,7 +460,6 @@ class BaseInscricao(models.Model):
         verbose_name="Protocolo de administração"
     )
 
-    # Limitações físicas / mobilidade reduzida
     mobilidade_reduzida = models.CharField(
         max_length=3,
         choices=SIM_NAO_CHOICES,
@@ -479,17 +474,40 @@ class BaseInscricao(models.Model):
         verbose_name="Qual limitação/mobilidade reduzida?"
     )
 
-    # Tipos sanguíneos
+    # ─── NOVOS CAMPOS DE ALERGIA ─────────────────────────────────────────────
+    alergia_alimento = models.CharField(
+        max_length=3,
+        choices=SIM_NAO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Possui alergia a algum alimento?"
+    )
+    qual_alergia_alimento = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Qual alimento causa alergia?"
+    )
+
+    alergia_medicamento = models.CharField(
+        max_length=3,
+        choices=SIM_NAO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Possui alergia a algum medicamento?"
+    )
+    qual_alergia_medicamento = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Qual medicamento causa alergia?"
+    )
+    # ──────────────────────────────────────────────────────────────────────
+
     TIPO_SANGUINEO_CHOICES = [
-        ('A+',  'A+'),
-        ('A-',  'A-'),
-        ('B+',  'B+'),
-        ('B-',  'B-'),
-        ('AB+', 'AB+'),
-        ('AB-', 'AB-'),
-        ('O+',  'O+'),
-        ('O-',  'O-'),
-        ('NS',  'Não sei'),
+        ('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'),
+        ('B-', 'B-'), ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'), ('NS', 'Não sei'),
     ]
     tipo_sanguineo = models.CharField(
         max_length=3,
@@ -506,33 +524,14 @@ class BaseInscricao(models.Model):
         verbose_name="Indicado Por"
     )
 
-    # Informações extras
     informacoes_extras = models.TextField(
         blank=True,
         null=True,
-        verbose_name="Informações extras (qualquer detalhe relevante não coberto acima)"
+        verbose_name="Informações extras"
     )
 
     class Meta:
         abstract = True
-
-
-class InscricaoSenior(BaseInscricao):
-    def __str__(self):
-        return f"Inscrição Senior de {self.inscricao.participante.nome}"
-
-class InscricaoJuvenil(BaseInscricao):
-    def __str__(self):
-        return f"Inscrição Juvenil de {self.inscricao.participante.nome}"
-
-class InscricaoMirim(BaseInscricao):
-    def __str__(self):
-        return f"Inscrição Mirim de {self.inscricao.participante.nome}"
-
-class InscricaoServos(BaseInscricao):
-    def __str__(self):
-        return f"Inscrição Servos de {self.inscricao.participante.nome}"
-
 
 
 class InscricaoSenior(BaseInscricao):
