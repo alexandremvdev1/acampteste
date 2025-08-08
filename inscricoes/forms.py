@@ -408,6 +408,29 @@ class DadosSaudeForm(forms.ModelForm):
         required=False
     )
 
+    # Novos campos de alergia
+    alergia_alimento = forms.ChoiceField(
+        label="Possui alergia a algum alimento?",
+        choices=SIM_NAO_CHOICES,
+        required=True
+    )
+    qual_alergia_alimento = forms.CharField(
+        label="Qual alimento causa alergia?",
+        max_length=255,
+        required=False
+    )
+
+    alergia_medicamento = forms.ChoiceField(
+        label="Possui alergia a algum medicamento?",
+        choices=SIM_NAO_CHOICES,
+        required=True
+    )
+    qual_alergia_medicamento = forms.CharField(
+        label="Qual medicamento causa alergia?",
+        max_length=255,
+        required=False
+    )
+
     tipo_sanguineo = forms.ChoiceField(
         label="Tipo sanguíneo",
         choices=TIPO_SANGUINEO_CHOICES,
@@ -427,32 +450,46 @@ class DadosSaudeForm(forms.ModelForm):
     )
 
     class Meta:
-        model = InscricaoSenior  # será substituído dinamicamente na view
+        model = InscricaoSenior  # substituído dinamicamente na view
         fields = [
             'foto', 'altura', 'peso',
             'pressao_alta', 'diabetes',
             'problema_saude', 'qual_problema_saude',
             'medicamento_controlado', 'qual_medicamento_controlado', 'protocolo_administracao',
             'mobilidade_reduzida', 'qual_mobilidade_reduzida',
+            'alergia_alimento', 'qual_alergia_alimento',
+            'alergia_medicamento', 'qual_alergia_medicamento',
             'tipo_sanguineo', 'indicado_por', 'informacoes_extras',
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        # adiciona classe Bootstrap e placeholders
+        for name, field in self.fields.items():
             field.widget.attrs.update({'class': 'form-control'})
 
     def clean(self):
         cleaned = super().clean()
+
         if cleaned.get('problema_saude') == 'sim' and not cleaned.get('qual_problema_saude'):
             self.add_error('qual_problema_saude', 'Por favor, especifique o problema de saúde.')
+
         if cleaned.get('medicamento_controlado') == 'sim':
             if not cleaned.get('qual_medicamento_controlado'):
                 self.add_error('qual_medicamento_controlado', 'Por favor, especifique o medicamento controlado.')
             if not cleaned.get('protocolo_administracao'):
                 self.add_error('protocolo_administracao', 'Por favor, informe o protocolo de administração.')
+
         if cleaned.get('mobilidade_reduzida') == 'sim' and not cleaned.get('qual_mobilidade_reduzida'):
             self.add_error('qual_mobilidade_reduzida', 'Por favor, detalhe a limitação.')
+
+        # validação de alergias
+        if cleaned.get('alergia_alimento') == 'sim' and not cleaned.get('qual_alergia_alimento'):
+            self.add_error('qual_alergia_alimento', 'Por favor, especifique o alimento.')
+
+        if cleaned.get('alergia_medicamento') == 'sim' and not cleaned.get('qual_alergia_medicamento'):
+            self.add_error('qual_alergia_medicamento', 'Por favor, especifique o medicamento.')
+
         return cleaned
 
 
