@@ -26,6 +26,9 @@ from django.views.decorators.http import require_GET
 import json
 from django.conf import settings
 from django.utils.timezone import now
+from django.utils.dateparse import parse_datetime
+from datetime import timedelta, datetime, timezone as py_tz
+
 
 from .forms import (
     ContatoForm,
