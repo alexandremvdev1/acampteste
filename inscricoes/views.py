@@ -1816,13 +1816,14 @@ def status_pagamento(request, inscricao_id):
 def iniciar_pagamento_pix(request, inscricao_id):
     inscricao = get_object_or_404(Inscricao, id=inscricao_id)
 
+    # Regras de negócio
     if not inscricao.foi_selecionado:
         messages.error(request, "Inscrição ainda não selecionada.")
         return redirect("inscricoes:ver_inscricao", inscricao.id)
     if inscricao.pagamento_confirmado:
         return redirect("inscricoes:mp_success", inscricao.id)
 
-    # credenciais da paróquia
+    # Credenciais da paróquia
     try:
         cfg = inscricao.paroquia.mp_config
     except MercadoPagoConfig.DoesNotExist:
@@ -1836,11 +1837,12 @@ def iniciar_pagamento_pix(request, inscricao_id):
 
     mp = mercadopago.SDK(access_token)
 
-    # webhook público (https)
-    notification_url = request.build_absolute_uri(reverse("inscricoes:mp_webhook"))
+    # URL absoluta e pública (HTTPS) para o webhook
+    base = (getattr(settings, "SITE_URL", "") or "https://eismeaqui.app.br").rstrip("/") + "/"
+    notification_url = urljoin(base, reverse("inscricoes:mp_webhook").lstrip("/"))
 
-    # expira em 30min (opcional)
-    expires_at = (datetime.now(py_tz.utc) + timedelta(minutes=30)).isoformat()
+    # Expira em 30 min — formato exigido pelo MP: YYYY-MM-DDTHH:MM:SS.000Z
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
     body = {
         "transaction_amount": float(inscricao.evento.valor_inscricao),
@@ -1855,21 +1857,35 @@ def iniciar_pagamento_pix(request, inscricao_id):
     try:
         resp = mp.payment().create(body)
         data = resp.get("response", {}) or {}
+        logging.info("PIX create response: %r", data)
+
+        # Tratamento de erro da API
         if data.get("status") == 400 or data.get("error"):
             msg = data.get("message") or "Falha ao criar pagamento PIX."
-            if settings.DEBUG:
-                return HttpResponse(f"<pre>{data}</pre>", content_type="text/html")
-            messages.error(request, msg)
+            logging.error("PIX_FAIL: %s | %r", msg, data)
+            if settings.DEBUG or request.GET.get("debug") == "1":
+                return HttpResponse(f"<h3>Erro ao criar PIX</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
+                                    content_type="text/html")
+            messages.error(request, "Não foi possível iniciar o PIX. Tente novamente.")
             return redirect("inscricoes:ver_inscricao", inscricao.id)
 
+        # Extrai dados do PIX (QR)
         payment_id = data.get("id")
         pio = (data.get("point_of_interaction") or {})
         tdata = (pio.get("transaction_data") or {})
-        qr_code_text = tdata.get("qr_code")            # copia e cola
-        qr_code_base64 = tdata.get("qr_code_base64")   # imagem do QR (base64)
-        ticket_url = tdata.get("ticket_url")           # página do MP (opcional)
+        qr_code_text = tdata.get("qr_code")
+        qr_code_base64 = tdata.get("qr_code_base64")
+        ticket_url = tdata.get("ticket_url")  # página do MP com o QR
 
-        # marca/garante pagamento pendente
+        if not (qr_code_text and qr_code_base64):
+            logging.error("PIX sem qr_code/qr_code_base64: %r", data)
+            if settings.DEBUG or request.GET.get("debug") == "1":
+                return HttpResponse(f"<h3>PIX sem QR</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
+                                    content_type="text/html")
+            messages.error(request, "Não foi possível obter o QR do PIX. Tente de novo.")
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+        # Registra/atualiza pagamento como pendente
         Pagamento.objects.update_or_create(
             inscricao=inscricao,
             defaults={
@@ -1880,18 +1896,21 @@ def iniciar_pagamento_pix(request, inscricao_id):
             }
         )
 
+        # Renderiza a página com o QR imediatamente (sem sair do seu site)
         return render(request, "pagamentos/pix.html", {
             "inscricao": inscricao,
             "payment_id": payment_id,
             "qr_code_text": qr_code_text,
-            "qr_code_base64": qr_code_base64,
+            "qr_code_base64": qr_code_base64,  # "data:image/png;base64,..." pronto pra <img>
             "ticket_url": ticket_url,
+            "expires_at": expires_at,
+            "valor": float(inscricao.evento.valor_inscricao),
         })
 
     except Exception as e:
         logging.exception("Erro ao criar pagamento PIX: %s", e)
-        if settings.DEBUG:
-            return HttpResponse(f"<pre>{e}</pre>", content_type="text/html")
+        if settings.DEBUG or request.GET.get("debug") == "1":
+            return HttpResponse(f"<h3>Exceção ao criar PIX</h3><pre>{e}</pre>", content_type="text/html")
         messages.error(request, "Erro ao iniciar PIX. Tente novamente.")
         return redirect("inscricoes:ver_inscricao", inscricao.id)
 
