@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <title>Aguardando pagamento...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 520px; margin: 32px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+    .btn { display: inline-block; margin-top: 12px; padding: 10px 16px; border-radius: 8px; background:#0066ff; color: #fff; text-decoration: none; }
+    .muted { color:#666; font-size: .95rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Quase lá!</h1>
+    <p>O checkout do Mercado Pago abriu em uma nova aba. Conclua o pagamento por lá.</p>
+    <p class="muted">Assim que o pagamento for confirmado, você será redirecionado automaticamente aqui.</p>
+
+    <a class="btn" href="{{ init_point }}" target="_blank" rel="noopener">Abrir checkout novamente</a>
+  </div>
+
+  <script>
+    // Abre a aba (se o navegador não bloquear popups)
+    try { window.open("{{ init_point }}", "_blank"); } catch(e) {}
+
+    // Polling a cada 6s
+    const inscricaoId = "{{ inscricao.id }}";
+    const sucessoUrl  = "{{ request.build_absolute_uri|escapejs }}".replace(/pagamento\\/aguardando\\/.+?\\//, "pagamento/sucesso/{{ inscricao.id }}/");
+    const falhaUrl    = "{{ request.build_absolute_uri|escapejs }}".replace(/pagamento\\/aguardando\\/.+?\\//, "pagamento/falha/{{ inscricao.id }}/");
+
+    async function checar() {
+      try {
+        const r = await fetch(`/api/pagamento/status/${inscricaoId}/`, { cache: "no-store" });
+        const j = await r.json();
+        if (j.status === "confirmado") {
+          window.location.href = `/pagamento/sucesso/{{ inscricao.id }}/`;
+          return;
+        }
+        if (j.status === "cancelado") {
+          window.location.href = `/pagamento/falha/{{ inscricao.id }}/`;
+          return;
+        }
+      } catch(e) {
+        // ignora e tenta de novo
+      }
+      setTimeout(checar, 6000);
+    }
+    setTimeout(checar, 6000);
+  </script>
+</body>
+</html>

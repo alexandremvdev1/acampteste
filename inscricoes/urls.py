@@ -107,6 +107,10 @@ urlpatterns = [
 
     path("contato/", views.pagina_de_contato, name="pagina_de_contato"),
 
+    path("pagamento/aguardando/<int:inscricao_id>/", views.aguardando_pagamento, name="aguardando_pagamento"),
+    path("api/pagamento/status/<int:inscricao_id>/", views.status_pagamento, name="status_pagamento"),
+
+
 ]
 
 if settings.DEBUG:

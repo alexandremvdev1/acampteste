@@ -1,70 +1,68 @@
 import os
 import datetime
-import json
-import logging
-import traceback
-from io import BytesIO
 from datetime import date
-from urllib.parse import urljoin
-
-import mercadopago
-import qrcode
-
-from django.conf import settings
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import Http404, HttpResponse, JsonResponse, FileResponse
+from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.hashers import make_password
+from django.utils import timezone
 from django.db import IntegrityError
 from django.db.models import Q, Sum
-from django.forms import modelformset_factory
-from django.http import (
-    Http404, HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden
-)
-from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import MercadoPagoConfig
+from .forms import MercadoPagoConfigForm
+import mercadopago
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
-from django.utils.timezone import now
+from .models import Inscricao
+import logging
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
+import json
+from django.conf import settings
+from django.utils.timezone import now
 
 from .forms import (
-    AlterarCredenciaisForm,
-    ConjugeForm,
     ContatoForm,
     DadosSaudeForm,
-    EventoForm,
+    PastoralMovimentoForm,
+    VideoEventoForm,
+    AlterarCredenciaisForm,
+    PoliticaPrivacidadeForm,
+    ParoquiaForm,
+    UserAdminParoquiaForm,
+    ParticipanteInicialForm,
+    ParticipanteEnderecoForm,
+    InscricaoSeniorForm,
     InscricaoJuvenilForm,
     InscricaoMirimForm,
-    InscricaoSeniorForm,
     InscricaoServosForm,
-    MercadoPagoConfigForm, 
-    ParoquiaForm,
-    ParticipanteEnderecoForm,
-    ParticipanteInicialForm,
-    VideoEventoForm,
-    PoliticaPrivacidadeForm,
+    EventoForm,
+    ConjugeForm
 )
 
 from .models import (
-    Conjuge,
+    PastoralMovimento,
+    VideoEventoAcampamento,
     CrachaTemplate,
+    Paroquia,
     EventoAcampamento,
     Inscricao,
+    InscricaoSenior,    
     InscricaoJuvenil,
-    InscricaoMirim,
-    InscricaoSenior,
-    InscricaoServos,
-    MercadoPagoConfig,
-    Pagamento,
-    Paroquia,
-    Participante,
-    PastoralMovimento,
-    PoliticaPrivacidade,
+    InscricaoMirim,     
+    InscricaoServos,     
+    Conjuge,
     User,
-    VideoEventoAcampamento,
-    Contato,
+    Pagamento,
+    Participante,
+    PoliticaPrivacidade,
+    Contato
 )
 
 
@@ -1701,3 +1699,114 @@ def qr_code_png(request, token):
     buffer.seek(0)
 
     return HttpResponse(buffer, content_type="image/png")
+
+# views.py (adicione abaixo das suas imports já corrigidas)
+
+@login_required
+def aguardando_pagamento(request, inscricao_id):
+    """
+    Cria a preferência no MP e mostra uma página 'Aguardando pagamento'.
+    A página abre o Checkout em nova aba e começa a fazer polling no backend.
+    """
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+
+    # Regras
+    if not inscricao.foi_selecionado:
+        messages.error(request, "Inscrição ainda não selecionada.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+    if inscricao.pagamento_confirmado:
+        return redirect("inscricoes:mp_success", inscricao.id)
+
+    # Config MP
+    try:
+        cfg = inscricao.paroquia.mp_config
+    except MercadoPagoConfig.DoesNotExist:
+        messages.error(request, "Pagamento não configurado.")
+        return redirect("inscricoes:pagina_de_contato")
+
+    access_token = (cfg.access_token or "").strip()
+    if not access_token:
+        messages.error(request, "Pagamento não configurado.")
+        return redirect("inscricoes:pagina_de_contato")
+
+    sdk = mercadopago.SDK(access_token)
+
+    # URLs absolutas no seu domínio
+    sucesso_url = request.build_absolute_uri(reverse("inscricoes:mp_success", args=[inscricao.id]))
+    falha_url   = request.build_absolute_uri(reverse("inscricoes:mp_failure", args=[inscricao.id]))
+    pend_url    = request.build_absolute_uri(reverse("inscricoes:mp_pending", args=[inscricao.id]))
+    # notification_url precisa ser público e HTTPS
+    webhook_url = request.build_absolute_uri(reverse("inscricoes:mp_webhook"))
+
+    pref_data = {
+        "items": [{
+            "title": f"Inscrição – {inscricao.evento.nome}"[:60],
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": float(inscricao.evento.valor_inscricao),
+        }],
+        "payer": {"email": inscricao.participante.email},
+        "external_reference": str(inscricao.id),
+        "back_urls": {"success": sucesso_url, "failure": falha_url, "pending": pend_url},
+        "auto_return": "approved",               # só cartão aprovado redireciona
+        "notification_url": webhook_url,        # webhook é a 'fonte da verdade'
+    }
+
+    try:
+        mp_pref = sdk.preference().create(pref_data)
+        resp = mp_pref.get("response", {}) or {}
+        if resp.get("status") == 400 or resp.get("error") or resp.get("message"):
+            msg = resp.get("message") or "Falha ao criar preferência no Mercado Pago."
+            if settings.DEBUG:
+                return HttpResponse(f"<pre>{resp}</pre>", content_type="text/html")
+            messages.error(request, msg)
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+        init_point = resp.get("init_point") or resp.get("sandbox_init_point")
+        if not init_point:
+            messages.error(request, "Preferência criada sem link de checkout.")
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+        # marca/garante pagamento pendente (auditoria)
+        Pagamento.objects.update_or_create(
+            inscricao=inscricao,
+            defaults={
+                "valor": inscricao.evento.valor_inscricao,
+                "status": Pagamento.StatusPagamento.PENDENTE,
+                "metodo": Pagamento.MetodoPagamento.PIX,
+            },
+        )
+
+        # Renderiza página que abre o MP em nova aba e faz polling
+        return render(request, "pagamentos/aguardando.html", {
+            "inscricao": inscricao,
+            "init_point": init_point,
+        })
+    except Exception as e:
+        logging.exception("Erro ao criar preferência MP: %s", e)
+        if settings.DEBUG:
+            return HttpResponse(f"<pre>{e}</pre>", content_type="text/html")
+        messages.error(request, "Erro ao iniciar pagamento.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+
+@require_GET
+def status_pagamento(request, inscricao_id):
+    """
+    API simples para o polling no front.
+    Retorna o status atual do Pagamento da inscrição.
+    """
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    pgto = Pagamento.objects.filter(inscricao=inscricao).first()
+
+    status = "pendente"
+    if pgto:
+        if pgto.status == Pagamento.StatusPagamento.CONFIRMADO:
+            status = "confirmado"
+        elif pgto.status == Pagamento.StatusPagamento.CANCELADO:
+            status = "cancelado"
+
+    return JsonResponse({
+        "status": status,
+        "pagamento_confirmado": inscricao.pagamento_confirmado,
+    })

@@ -240,10 +240,12 @@
             Para garantir sua vaga, aperte abaixo e realize o pagamento:
         </p>
         <p><strong>Valor da inscrição: R$ {{ evento.valor_inscricao|floatformat:2 }}</strong></p>
-        <a href="{% url 'inscricoes:iniciar_pagamento' inscricao.id %}" class="btn-pagar" target="_blank"
-            rel="noopener" aria-label="Realizar pagamento">
-            Realizar Pagamento
-        </a>
+    <a href="{% url 'inscricoes:aguardando_pagamento' inscricao.id %}"
+        class="btn-pagar"
+        aria-label="Realizar pagamento e ir para a página de acompanhamento">
+        Realizar Pagamento
+    </a>
+
     </div>
     {% endif %}
 
