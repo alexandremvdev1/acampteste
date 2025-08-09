@@ -3,7 +3,7 @@ import os
 import json
 import logging
 from urllib.parse import urljoin
-from datetime import datetime, timedelta, timezone
+from datetime import datetime as dt, timedelta, timezone as dt_tz
 
 # ——— Django
 from django.conf import settings
@@ -13,16 +13,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Q, Sum
-from django.http import (
-    Http404,
-    HttpResponse,
-    JsonResponse,
-    FileResponse,
-)
+from django.http import Http404, HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.utils import timezone
-from django.utils.timezone import now
+from django.utils import timezone as dj_tz
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -67,12 +61,11 @@ from .forms import (
     InscricaoServosForm,
     EventoForm,
     ConjugeForm,
-    # Se você usa este em editar_inscricao:
-    # PagamentoForm,
+    # PagamentoForm,  # descomente se usar
 )
 
-# Caso precise do User em algum lugar:
 User = get_user_model()
+
 
 
 
@@ -1848,8 +1841,8 @@ def iniciar_pagamento_pix(request, inscricao_id):
     base = (getattr(settings, "SITE_URL", "") or "https://eismeaqui.app.br").rstrip("/") + "/"
     notification_url = urljoin(base, reverse("inscricoes:mp_webhook").lstrip("/"))
 
-    # Expira em 30 min — formato exigido pelo MP: YYYY-MM-DDTHH:MM:SS.000Z
-    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    # Expiração em 30 min — exigido pelo MP: YYYY-MM-DDTHH:MM:SS.000Z (UTC)
+    expires_at = (dj_tz.now().astimezone(dt_tz.utc) + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
     body = {
         "transaction_amount": float(inscricao.evento.valor_inscricao),
@@ -1866,17 +1859,19 @@ def iniciar_pagamento_pix(request, inscricao_id):
         data = resp.get("response", {}) or {}
         logging.info("PIX create response: %r", data)
 
-        # Tratamento de erro da API
+        # Erro da API
         if data.get("status") == 400 or data.get("error"):
             msg = data.get("message") or "Falha ao criar pagamento PIX."
             logging.error("PIX_FAIL: %s | %r", msg, data)
             if settings.DEBUG or request.GET.get("debug") == "1":
-                return HttpResponse(f"<h3>Erro ao criar PIX</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
-                                    content_type="text/html")
+                return HttpResponse(
+                    f"<h3>Erro ao criar PIX</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
+                    content_type="text/html"
+                )
             messages.error(request, "Não foi possível iniciar o PIX. Tente novamente.")
             return redirect("inscricoes:ver_inscricao", inscricao.id)
 
-        # Extrai dados do PIX (QR)
+        # Dados do PIX (QR)
         payment_id = data.get("id")
         pio = (data.get("point_of_interaction") or {})
         tdata = (pio.get("transaction_data") or {})
@@ -1887,8 +1882,10 @@ def iniciar_pagamento_pix(request, inscricao_id):
         if not (qr_code_text and qr_code_base64):
             logging.error("PIX sem qr_code/qr_code_base64: %r", data)
             if settings.DEBUG or request.GET.get("debug") == "1":
-                return HttpResponse(f"<h3>PIX sem QR</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
-                                    content_type="text/html")
+                return HttpResponse(
+                    f"<h3>PIX sem QR</h3><pre>{json.dumps(data, indent=2, ensure_ascii=False)}</pre>",
+                    content_type="text/html"
+                )
             messages.error(request, "Não foi possível obter o QR do PIX. Tente de novo.")
             return redirect("inscricoes:ver_inscricao", inscricao.id)
 
@@ -1903,12 +1900,12 @@ def iniciar_pagamento_pix(request, inscricao_id):
             }
         )
 
-        # Renderiza a página com o QR imediatamente (sem sair do seu site)
+        # Renderiza a página com o QR no seu site
         return render(request, "pagamentos/pix.html", {
             "inscricao": inscricao,
             "payment_id": payment_id,
             "qr_code_text": qr_code_text,
-            "qr_code_base64": qr_code_base64,  # "data:image/png;base64,..." pronto pra <img>
+            "qr_code_base64": qr_code_base64,  # data URI pronto para <img src="{{ qr_code_base64 }}">
             "ticket_url": ticket_url,
             "expires_at": expires_at,
             "valor": float(inscricao.evento.valor_inscricao),
