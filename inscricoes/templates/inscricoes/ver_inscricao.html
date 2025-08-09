@@ -231,24 +231,28 @@
         {% endif %}
     </section>
 
-    {# Botão de pagamento: só se selecionado e ainda não pagou #}
     {% if inscricao.foi_selecionado and not inscricao.pagamento_confirmado %}
-    <div style="text-align:center; margin-bottom:25px;">
-        <p>
-            🎉 Ficamos imensamente felizes em saber que você foi selecionado(a)!  
-            🙏 Deus tem grandes bênçãos reservadas para você.
-            Para garantir sua vaga, aperte abaixo e realize o pagamento:
-        </p>
-        <p><strong>Valor da inscrição: R$ {{ evento.valor_inscricao|floatformat:2 }}</strong></p>
-    <a href="{% url 'inscricoes:aguardando_pagamento' inscricao.id %}"
-        class="btn-pagar"
-        aria-label="Realizar pagamento e ir para a página de acompanhamento">
-        Realizar Pagamento
-    </a>
+  <div style="text-align:center; margin-bottom:25px;">
+    <p>🎉 Você foi selecionado(a)! Para garantir sua vaga, escolha uma forma de pagamento:</p>
+    <p><strong>Valor: R$ {{ evento.valor_inscricao|floatformat:2 }}</strong></p>
 
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <!-- PIX (mostra QR e copia e cola aqui no site) -->
+      <a href="{% url 'inscricoes:iniciar_pagamento_pix' inscricao.id %}"
+         class="btn-pagar"
+         aria-label="Pagar com PIX (recomendado)">
+         Pagar com PIX
+      </a>
+
+      <!-- Cartão (abre MP e volta sozinho só se cartão aprovado) -->
+      <a href="{% url 'inscricoes:aguardando_pagamento' inscricao.id %}"
+         class="btn-pagar"
+         aria-label="Pagar com Cartão (Mercado Pago)">
+         Pagar com Cartão
+      </a>
     </div>
-    {% endif %}
-
+  </div>
+{% endif %}
     <!-- Info valor e reembolso -->
     <section class="info-valor" aria-label="Informações sobre pagamento e reembolso">
         <p>

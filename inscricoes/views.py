@@ -1809,3 +1809,100 @@ def status_pagamento(request, inscricao_id):
         "status": status,
         "pagamento_confirmado": inscricao.pagamento_confirmado,
     })
+
+def iniciar_pagamento_pix(request, inscricao_id):
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+
+    if not inscricao.foi_selecionado:
+        messages.error(request, "Inscrição ainda não selecionada.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+    if inscricao.pagamento_confirmado:
+        return redirect("inscricoes:mp_success", inscricao.id)
+
+    # credenciais da paróquia
+    try:
+        cfg = inscricao.paroquia.mp_config
+    except MercadoPagoConfig.DoesNotExist:
+        messages.error(request, "Pagamento não configurado para esta paróquia.")
+        return redirect("inscricoes:pagina_de_contato")
+
+    access_token = (cfg.access_token or "").strip()
+    if not access_token:
+        messages.error(request, "Pagamento não configurado.")
+        return redirect("inscricoes:pagina_de_contato")
+
+    mp = mercadopago.SDK(access_token)
+
+    # webhook público (https)
+    notification_url = request.build_absolute_uri(reverse("inscricoes:mp_webhook"))
+
+    # expira em 30min (opcional)
+    expires_at = (datetime.now(py_tz.utc) + timedelta(minutes=30)).isoformat()
+
+    body = {
+        "transaction_amount": float(inscricao.evento.valor_inscricao),
+        "description": f"Inscrição – {inscricao.evento.nome}"[:60],
+        "payment_method_id": "pix",
+        "payer": {"email": inscricao.participante.email or "sem-email@example.com"},
+        "external_reference": str(inscricao.id),
+        "notification_url": notification_url,
+        "date_of_expiration": expires_at,
+    }
+
+    try:
+        resp = mp.payment().create(body)
+        data = resp.get("response", {}) or {}
+        if data.get("status") == 400 or data.get("error"):
+            msg = data.get("message") or "Falha ao criar pagamento PIX."
+            if settings.DEBUG:
+                return HttpResponse(f"<pre>{data}</pre>", content_type="text/html")
+            messages.error(request, msg)
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+        payment_id = data.get("id")
+        pio = (data.get("point_of_interaction") or {})
+        tdata = (pio.get("transaction_data") or {})
+        qr_code_text = tdata.get("qr_code")            # copia e cola
+        qr_code_base64 = tdata.get("qr_code_base64")   # imagem do QR (base64)
+        ticket_url = tdata.get("ticket_url")           # página do MP (opcional)
+
+        # marca/garante pagamento pendente
+        Pagamento.objects.update_or_create(
+            inscricao=inscricao,
+            defaults={
+                "valor": inscricao.evento.valor_inscricao,
+                "status": Pagamento.StatusPagamento.PENDENTE,
+                "metodo": Pagamento.MetodoPagamento.PIX,
+                "transacao_id": str(payment_id or ""),
+            }
+        )
+
+        return render(request, "pagamentos/pix.html", {
+            "inscricao": inscricao,
+            "payment_id": payment_id,
+            "qr_code_text": qr_code_text,
+            "qr_code_base64": qr_code_base64,
+            "ticket_url": ticket_url,
+        })
+
+    except Exception as e:
+        logging.exception("Erro ao criar pagamento PIX: %s", e)
+        if settings.DEBUG:
+            return HttpResponse(f"<pre>{e}</pre>", content_type="text/html")
+        messages.error(request, "Erro ao iniciar PIX. Tente novamente.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+
+@require_GET
+def status_pagamento(request, inscricao_id):
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    pgto = Pagamento.objects.filter(inscricao=inscricao).first()
+
+    status = "pendente"
+    if pgto:
+        if pgto.status == Pagamento.StatusPagamento.CONFIRMADO:
+            status = "confirmado"
+        elif pgto.status == Pagamento.StatusPagamento.CANCELADO:
+            status = "cancelado"
+
+    return JsonResponse({"status": status, "pagamento_confirmado": inscricao.pagamento_confirmado})

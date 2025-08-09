@@ -110,6 +110,10 @@ urlpatterns = [
     path("pagamento/aguardando/<int:inscricao_id>/", views.aguardando_pagamento, name="aguardando_pagamento"),
     path("api/pagamento/status/<int:inscricao_id>/", views.status_pagamento, name="status_pagamento"),
 
+    path("pagamento/pix/<int:inscricao_id>/", views.iniciar_pagamento_pix, name="iniciar_pagamento_pix"),
+    path("api/pagamento/status/<int:inscricao_id>/", views.status_pagamento, name="status_pagamento"),  # se ainda não tiver
+    path("pagamento/aguardando/<int:inscricao_id>/", views.aguardando_pagamento, name="aguardando_pagamento"),  # opcional: cartões
+
 
 ]
 
