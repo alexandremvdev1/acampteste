@@ -1,34 +1,54 @@
+# ——— Python stdlib
 import os
-import datetime
-from datetime import date
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import Http404, HttpResponse, JsonResponse, FileResponse
-from django.views.decorators.http import require_POST
+import json
+import logging
+from urllib.parse import urljoin
+from datetime import datetime, timedelta, timezone
+
+# ——— Django
+from django.conf import settings
 from django.contrib import messages
-from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Q, Sum
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import MercadoPagoConfig
-from .forms import MercadoPagoConfigForm
-import mercadopago
-from django.shortcuts import get_object_or_404
+from django.http import (
+    Http404,
+    HttpResponse,
+    JsonResponse,
+    FileResponse,
+)
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from .models import Inscricao
-import logging
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
-import json
-from django.conf import settings
+from django.utils import timezone
 from django.utils.timezone import now
 from django.utils.dateparse import parse_datetime
-from datetime import timedelta, datetime, timezone as py_tz
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
+# ——— Terceiros
+import mercadopago
+
+# ——— App (models e forms)
+from .models import (
+    MercadoPagoConfig,
+    PastoralMovimento,
+    VideoEventoAcampamento,
+    CrachaTemplate,
+    Paroquia,
+    EventoAcampamento,
+    Inscricao,
+    InscricaoSenior,
+    InscricaoJuvenil,
+    InscricaoMirim,
+    InscricaoServos,
+    Conjuge,
+    Pagamento,
+    Participante,
+    PoliticaPrivacidade,
+    Contato,
+)
 
 from .forms import (
     ContatoForm,
@@ -46,27 +66,14 @@ from .forms import (
     InscricaoMirimForm,
     InscricaoServosForm,
     EventoForm,
-    ConjugeForm
+    ConjugeForm,
+    # Se você usa este em editar_inscricao:
+    # PagamentoForm,
 )
 
-from .models import (
-    PastoralMovimento,
-    VideoEventoAcampamento,
-    CrachaTemplate,
-    Paroquia,
-    EventoAcampamento,
-    Inscricao,
-    InscricaoSenior,    
-    InscricaoJuvenil,
-    InscricaoMirim,     
-    InscricaoServos,     
-    Conjuge,
-    User,
-    Pagamento,
-    Participante,
-    PoliticaPrivacidade,
-    Contato
-)
+# Caso precise do User em algum lugar:
+User = get_user_model()
+
 
 
 @login_required
