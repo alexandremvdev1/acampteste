@@ -1702,7 +1702,6 @@ def qr_code_png(request, token):
 
 # views.py (adicione abaixo das suas imports já corrigidas)
 
-@login_required
 def aguardando_pagamento(request, inscricao_id):
     """
     Cria a preferência no MP e mostra uma página 'Aguardando pagamento'.
