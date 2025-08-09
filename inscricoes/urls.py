@@ -101,6 +101,12 @@ urlpatterns = [
     path('evento/<uuid:evento_id>/relatorio/ficha-farmacia/',views.relatorio_ficha_farmacia,name='relatorio_ficha_farmacia'),
     path('qr/<str:token>.png', views.qr_code_png, name='qr_code_png'),
 
+    path("pagamento/sucesso/<int:inscricao_id>/", views.mp_success, name="mp_success"),
+    path("pagamento/pendente/<int:inscricao_id>/", views.mp_pending, name="mp_pending"),
+    path("pagamento/falha/<int:inscricao_id>/",   views.mp_failure, name="mp_failure"),
+
+    path("contato/", views.pagina_de_contato, name="pagina_de_contato"),
+
 ]
 
 if settings.DEBUG:

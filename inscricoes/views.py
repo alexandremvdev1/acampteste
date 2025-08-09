@@ -22,6 +22,10 @@ from django.urls import reverse
 from .models import Inscricao
 import logging
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
+import json
+from django.conf import settings
+from django.utils.timezone import now
 
 from .forms import (
     ContatoForm,
@@ -1269,126 +1273,273 @@ def mp_config(request):
         'paroquia': paroquia,
     })
 
+# ===== Helpers ===============================================================
+
+def _mp_client_by_paroquia(paroquia):
+    cfg = getattr(paroquia, "mp_config", None)
+    if not cfg or not cfg.access_token:
+        raise ValueError("Mercado Pago não configurado para esta paróquia.")
+    return mercadopago.SDK(cfg.access_token.strip())
+
+def _sincronizar_pagamento(mp_client, inscricao, payment_id):
+    """
+    Busca o pagamento no MP, garante que o external_reference bate com a inscrição
+    e sincroniza o registro OneToOne Pagamento dessa inscrição.
+    """
+    payment = mp_client.payment().get(payment_id)["response"]
+
+    # Segurança: confere vínculo
+    if str(payment.get("external_reference")) != str(inscricao.id):
+        raise ValueError("Pagamento não corresponde à inscrição.")
+
+    # Atualiza sempre o mesmo registro (OneToOne)
+    pagamento, _ = Pagamento.objects.get_or_create(inscricao=inscricao)
+    pagamento.transacao_id = str(payment.get("id") or "")
+    pagamento.metodo = payment.get("payment_method_id", Pagamento.MetodoPagamento.PIX)
+    pagamento.valor = payment.get("transaction_amount", 0) or 0
+
+    status = payment.get("status")
+    if status == "approved":
+        pagamento.status = Pagamento.StatusPagamento.CONFIRMADO
+        inscricao.pagamento_confirmado = True
+        inscricao.inscricao_concluida = True
+        inscricao.save(update_fields=["pagamento_confirmado", "inscricao_concluida"])
+    elif status in ("pending", "in_process"):
+        pagamento.status = Pagamento.StatusPagamento.PENDENTE
+    else:
+        pagamento.status = Pagamento.StatusPagamento.CANCELADO
+
+    pagamento.data_pagamento = parse_datetime(payment.get("date_approved")) if payment.get("date_approved") else None
+    pagamento.save()
+    return status
+
+
+# ===== Iniciar pagamento =====================================================
+
 def iniciar_pagamento(request, inscricao_id):
     inscricao = get_object_or_404(Inscricao, id=inscricao_id)
 
-    # 1) pega config do Mercado Pago
+    # Regras de negócio
+    if not inscricao.foi_selecionado:
+        messages.error(request, "Inscrição ainda não selecionada. Aguarde a seleção para pagar.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+    if inscricao.pagamento_confirmado:
+        messages.info(request, "Pagamento já confirmado para esta inscrição.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+    # Config da Paróquia
     try:
         config = inscricao.paroquia.mp_config
     except MercadoPagoConfig.DoesNotExist:
-        messages.error(request, 'Pagamento não configurado. Entre em contato com a organização.')
-        return redirect('inscricoes:pagina_de_contato')
+        messages.error(request, "Pagamento não configurado para esta paróquia.")
+        return redirect("inscricoes:pagina_de_contato")
 
-    if not (config.access_token and config.access_token.strip()):
-        messages.error(request, 'Pagamento não configurado. Entre em contato com a organização.')
-        return redirect('inscricoes:pagina_de_contato')
+    access_token = (config.access_token or "").strip()
+    if not access_token:
+        messages.error(request, "Pagamento não configurado. Entre em contato com a organização.")
+        return redirect("inscricoes:pagina_de_contato")
 
-    sdk = mercadopago.SDK(config.access_token.strip())
+    sdk = mercadopago.SDK(access_token)
+
+    # URLs baseadas no request (local)…
+    sucesso_url = request.build_absolute_uri(reverse("inscricoes:mp_success", args=[inscricao.id]))
+    falha_url   = request.build_absolute_uri(reverse("inscricoes:mp_failure", args=[inscricao.id]))
+    pend_url    = request.build_absolute_uri(reverse("inscricoes:mp_pending", args=[inscricao.id]))
+    webhook_url = request.build_absolute_uri(reverse("inscricoes:mp_webhook"))
+
+    # …mas se você tiver um domínio público HTTPS em settings.SITE_DOMAIN, usa ele.
+    site_domain = (getattr(settings, "SITE_DOMAIN", "") or "").rstrip("/")
+    if site_domain.startswith("https://"):
+        sucesso_url = urljoin(site_domain, reverse("inscricoes:mp_success", args=[inscricao.id]))
+        falha_url   = urljoin(site_domain, reverse("inscricoes:mp_failure", args=[inscricao.id]))
+        pend_url    = urljoin(site_domain, reverse("inscricoes:mp_pending", args=[inscricao.id]))
+        webhook_url = urljoin(site_domain, reverse("inscricoes:mp_webhook"))
+
     pref_data = {
         "items": [{
-            "title": f"Inscrição {inscricao.evento.nome}",
+            "title": f"Inscrição – {inscricao.evento.nome}"[:60],
             "quantity": 1,
+            "currency_id": "BRL",
             "unit_price": float(inscricao.evento.valor_inscricao),
         }],
         "payer": {"email": inscricao.participante.email},
-        "back_urls": {
-            "success": request.build_absolute_uri(inscricao.inscricao_url),
-            "failure": request.build_absolute_uri(inscricao.inscricao_url),
-            "pending": request.build_absolute_uri(inscricao.inscricao_url),
+        "external_reference": str(inscricao.id),
+        "back_urls": {"success": sucesso_url, "failure": falha_url, "pending": pend_url},
+        "notification_url": webhook_url,
+        # "payment_methods": {"installments": 1},  # habilite se quiser travar parcelas
+        # "binary_mode": True,                     # opcional (aprova ou rejeita; sem "in_process")
+        "metadata": {
+            "inscricao_id": inscricao.id,
+            "paroquia_id": inscricao.paroquia_id,
+            "evento_id": str(inscricao.evento_id),
+            "criado_em": now().isoformat(),
         },
-        "auto_return": "approved",
-        "external_reference": str(inscricao.id),  # Adicionado external_reference
     }
 
-    mp_pref = sdk.preference().create(pref_data)
-    resp = mp_pref.get('response', {})
+    # Só adiciona auto_return se o success for HTTPS (exigência do MP)
+    if sucesso_url.startswith("https://"):
+        pref_data["auto_return"] = "approved"
 
-    init_point = resp.get('init_point') or resp.get('sandbox_init_point')
-    if not init_point:
-        logging.error("MP preference sem init_point: %r", resp)
-        messages.error(request, 'Erro ao iniciar pagamento. Tente novamente mais tarde.')
-        return redirect(inscricao.inscricao_url)
+    try:
+        mp_pref = sdk.preference().create(pref_data)
+        resp = mp_pref.get("response", {}) or {}
+        logging.info("MP Preference response: %r", resp)
 
-    if not init_point.lower().startswith(('http://', 'https://')):
-        init_point = 'https://' + init_point
+        # Erros comuns do MP (status 400 / message / error)
+        if resp.get("status") == 400 or resp.get("error") or resp.get("message"):
+            msg = resp.get("message") or "Falha ao criar preferência no Mercado Pago."
+            if settings.DEBUG:
+                return HttpResponse(f"<h3>Erro do MP</h3><pre>{resp}</pre>", content_type="text/html")
+            messages.error(request, msg)
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
 
-    return redirect(init_point)
+        init_point = resp.get("init_point") or resp.get("sandbox_init_point")
+        if not init_point:
+            if settings.DEBUG:
+                return HttpResponse("<h3>Preferência sem init_point</h3><pre>%s</pre>" % resp, content_type="text/html")
+            messages.error(request, "Preferência criada sem link de checkout. Tente novamente.")
+            return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+        # Normaliza
+        if not init_point.lower().startswith(("http://", "https://")):
+            init_point = "https://" + init_point
+
+        # Agora sim, cria/atualiza registro pendente para auditoria
+        Pagamento.objects.update_or_create(
+            inscricao=inscricao,
+            defaults={
+                "valor": inscricao.evento.valor_inscricao,
+                "status": Pagamento.StatusPagamento.PENDENTE,
+                "metodo": Pagamento.MetodoPagamento.PIX,  # o método real vem no webhook
+            },
+        )
+
+        return redirect(init_point)
+
+    except Exception as e:
+        logging.exception("Erro ao criar preferência do Mercado Pago: %s", e)
+        if settings.DEBUG:
+            return HttpResponse(f"<h3>Exceção ao criar preferência</h3><pre>{e}</pre>", content_type="text/html")
+        messages.error(request, "Erro ao iniciar pagamento. Tente novamente mais tarde.")
+        return redirect("inscricoes:ver_inscricao", inscricao.id)
+
+# ===== Páginas de retorno (UX) ==============================================
+
+@require_GET
+def mp_success(request, inscricao_id):
+    """Usuário voltou do Checkout com status success. Validamos no servidor e mostramos confirmação."""
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    payment_id = request.GET.get("payment_id")
+
+    if payment_id:
+        try:
+            mp = _mp_client_by_paroquia(inscricao.paroquia)
+            _sincronizar_pagamento(mp, inscricao, payment_id)
+        except Exception as e:
+            logging.exception("Erro ao validar sucesso MP: %s", e)
+            messages.warning(request, "Pagamento recebido. Aguardando confirmação final do provedor.")
+            # Cai para a página de sucesso mesmo assim (UX), mas status pode ficar pendente até o webhook.
+
+    return render(request, "pagamentos/sucesso.html", {"inscricao": inscricao})
 
 
-def pagina_de_contato(request):
-    # Tente obter a primeira paróquia ativa do banco de dados
-    paroquia = Paroquia.objects.filter(status='ativa').first()
+@require_GET
+def mp_pending(request, inscricao_id):
+    """Pagamento pendente/análise (PIX/boleto, cartão em análise)."""
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    return render(request, "pagamentos/pendente.html", {"inscricao": inscricao})
 
-    # Se não houver paróquia ativa, você pode criar uma mensagem de erro
-    # ou usar dados padrão. Aqui, passaremos None para o template.
-    context = {'paroquia': paroquia}
 
-    return render(request, 'inscricoes/pagina_de_contato.html', context)
+@require_GET
+def mp_failure(request, inscricao_id):
+    """Falha/cancelamento. Incentiva tentar novamente."""
+    inscricao = get_object_or_404(Inscricao, id=inscricao_id)
+    messages.error(request, "Pagamento não foi concluído. Você pode tentar novamente.")
+    return render(request, "pagamentos/falhou.html", {"inscricao": inscricao})
 
+
+# ===== Webhook (fonte da verdade) ===========================================
 
 @require_POST
 @csrf_exempt
 def mp_webhook(request):
+    """
+    Produção: consulta pagamento na API do MP e sincroniza por external_reference.
+    DEBUG: se payload trouxer 'test': {'inscricao_id': ..., 'status': ...},
+           atualiza direto sem chamar o MP.
+    """
     try:
-        logging.info("Webhook do Mercado Pago recebido!")
-        data = json.loads(request.body)
-        logging.info(f"Dados recebidos do webhook: {data}")
+        payload = json.loads(request.body or "{}")
 
-        payment_id = data['data']['id']
-        logging.info(f"ID do pagamento: {payment_id}")
+        # ------- ATALHO DE TESTE LOCAL (somente em DEBUG) -------
+        if settings.DEBUG:
+            test = payload.get("test")
+            if isinstance(test, dict) and test.get("inscricao_id"):
+                inscricao = get_object_or_404(Inscricao, id=test["inscricao_id"])
+                status = (test.get("status") or "approved").lower()
 
-        # Obtenha a configuração do Mercado Pago
-        config = MercadoPagoConfig.objects.first()  # Adapte para sua lógica
-        if not config:
-            logging.error("MercadoPagoConfig não encontrada.")
-            return HttpResponse(status=500)
+                # Atualiza/garante Pagamento OneToOne
+                pagamento, _ = Pagamento.objects.get_or_create(
+                    inscricao=inscricao,
+                    defaults={"valor": inscricao.evento.valor_inscricao}
+                )
 
-        mp = mercadopago.SDK(config.access_token)
-        payment = mp.payment().get(payment_id)['response']
-        logging.info(f"Dados do pagamento do Mercado Pago: {payment}")
+                if status in ("approved", "confirmado"):
+                    pagamento.status = Pagamento.StatusPagamento.CONFIRMADO
+                    inscricao.pagamento_confirmado = True
+                    inscricao.inscricao_concluida = True
+                    inscricao.save(update_fields=["pagamento_confirmado", "inscricao_concluida"])
+                elif status in ("pending", "in_process", "pendente"):
+                    pagamento.status = Pagamento.StatusPagamento.PENDENTE
+                else:
+                    pagamento.status = Pagamento.StatusPagamento.CANCELADO
 
-        inscricao_id = payment.get('external_reference')
+                pagamento.transacao_id = str(payload.get("data", {}).get("id") or "TESTE_LOCAL")
+                pagamento.save()
+                logging.info("Webhook DEBUG aplicado para inscrição %s com status %s", inscricao.id, status)
+                return HttpResponse(status=200)
+        # --------------------------------------------------------
+
+        # Fluxo normal (produção): extrai payment_id e descobre external_reference
+        payment_id = (payload.get("data") or {}).get("id") or payload.get("id")
+        if not payment_id:
+            logging.warning("Webhook sem payment_id: %s", payload)
+            return HttpResponse(status=200)
+
+        # 1ª consulta (qualquer token) só para descobrir external_reference
+        cfg_any = MercadoPagoConfig.objects.first()
+        if not cfg_any or not cfg_any.access_token:
+            logging.error("Nenhuma configuração do MP encontrada.")
+            return HttpResponse(status=200)
+
+        mp_any = mercadopago.SDK(cfg_any.access_token.strip())
+        payment_tmp = mp_any.payment().get(payment_id).get("response", {})
+        inscricao_id = payment_tmp.get("external_reference")
         if not inscricao_id:
-            logging.error(f"external_reference não encontrado no pagamento {payment_id}")
-            return HttpResponse(status=400)
+            logging.error("Pagamento %s sem external_reference.", payment_id)
+            return HttpResponse(status=200)
 
         inscricao = get_object_or_404(Inscricao, id=inscricao_id)
 
-        # Verifique se o pagamento já existe
-        pagamento, created = Pagamento.objects.get_or_create(
-            transacao_id=payment_id,
-            defaults={
-                'inscricao': inscricao,
-                'metodo': payment.get('payment_method_id', Pagamento.MetodoPagamento.PIX),
-                'valor': payment.get('transaction_amount', 0),
-                'data_pagamento': parse_datetime(payment.get('date_approved')) if payment.get('date_approved') else None,
-            }
-        )
+        # Reconsulta com a credencial da paróquia correta e sincroniza
+        mp = _mp_client_by_paroquia(inscricao.paroquia)
+        _sincronizar_pagamento(mp, inscricao, payment_id)
 
-        # Atualize o status do pagamento com base na resposta do Mercado Pago
-        status = payment.get('status')
-        if status == 'approved':
-            pagamento.status = Pagamento.StatusPagamento.CONFIRMADO
-            inscricao.pagamento_confirmado = True
-            inscricao.save(update_fields=['pagamento_confirmado'])
-            logging.info(f"Pagamento {payment_id} confirmado!")
-        elif status == 'pending':
-            pagamento.status = Pagamento.StatusPagamento.PENDENTE
-            logging.info(f"Pagamento {payment_id} pendente.")
-        else:
-            pagamento.status = Pagamento.StatusPagamento.CANCELADO
-            logging.warning(f"Pagamento {payment_id} cancelado.")
-        pagamento.save()
-
-        logging.info(f"Webhook do Mercado Pago processado com sucesso para o pagamento {payment_id}")
+        logging.info("Webhook OK para pagamento %s (inscrição %s)", payment_id, inscricao_id)
         return HttpResponse(status=200)
 
-    except Inscricao.DoesNotExist:
-        logging.error(f"Inscrição não encontrada para o pagamento: {payment_id}")
-        return HttpResponse(status=404)
     except Exception as e:
-        logging.exception(f"Erro ao processar webhook do Mercado Pago: {e}")
-        return HttpResponse(status=500)
+        logging.exception("Erro ao processar webhook MP: %s", e)
+        return HttpResponse(status=200)  # evita reentrega infinita
+
+
+# ===== Página de contato (sem alterações lógicas) ===========================
+
+def pagina_de_contato(request):
+    paroquia = Paroquia.objects.filter(status='ativa').first()
+    context = {'paroquia': paroquia}
+    return render(request, 'inscricoes/pagina_de_contato.html', context)
 
 @login_required
 def imprimir_todas_fichas(request, evento_id):

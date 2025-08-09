@@ -135,8 +135,6 @@ class EventoAcampamento(models.Model):
         else:
             return "Inscrições Encerradas"
 
-
-
 class Inscricao(models.Model):
     participante = models.ForeignKey('Participante', on_delete=models.CASCADE)
     evento = models.ForeignKey('EventoAcampamento', on_delete=models.CASCADE)
@@ -323,16 +321,6 @@ class Pagamento(models.Model):
     def __str__(self):
         return f"Pagamento de {self.inscricao}"
 
-
-class PastoralMovimento(models.Model):
-    nome = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.nome
-
-from django.db import models
-
-from django.db import models
 
 class BaseInscricao(models.Model):
     """Campos comuns às Inscrições (Sênior, Juvenil, Mirim, Servos)."""

@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Pagamento em análise • {{ inscricao.evento.nome }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --warn:#2563eb; --text:#1f2937; --muted:#6b7280; --bg:#f9fafb; --card:#ffffff }
+    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    .wrap{max-width:880px;margin:32px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.06);overflow:hidden}
+    .hero{padding:28px 24px;border-bottom:1px solid #eef2f7;display:flex;gap:16px;align-items:center}
+    .badge{width:48px;height:48px;border-radius:50%;background:rgba(37,99,235,.12);display:grid;place-items:center;font-size:24px;color:var(--warn)}
+    h1{margin:0;font-size:22px;color:var(--text)}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:14px}
+    .body{padding:24px}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+    .btn{appearance:none;border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn-outline{background:#fff;border:1px solid #e5e7eb;color:#111827}
+    .btn-primary{background:var(--warn);color:#fff}
+    .hint{margin-top:10px;color:var(--muted);font-size:14px}
+    .spinner{width:22px;height:22px;border:3px solid #c7d2fe;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+  <script>
+    setTimeout(() => location.reload(), 20000);
+  </script>
+</head>
+<body>
+  {% include "partials/flash_messages.html" %}
+  <div class="wrap">
+    <div class="card">
+      <div class="hero">
+        <div class="badge"><div class="spinner" aria-hidden="true"></div></div>
+        <div>
+          <h1>Pagamento em análise</h1>
+          <p class="sub">Estamos aguardando a confirmação do provedor (PIX/boleto pode levar alguns minutos).</p>
+        </div>
+      </div>
+
+      <div class="body">
+        <p><b>Participante:</b> {{ inscricao.participante.nome }}<br>
+           <b>Evento:</b> {{ inscricao.evento.nome }}<br>
+           <b>Paróquia:</b> {{ inscricao.paroquia.nome }}</p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="{% url 'inscricoes:ver_inscricao' inscricao.id %}">Voltar para minha inscrição</a>
+          <button class="btn btn-outline" onclick="location.reload()">Atualizar status</button>
+        </div>
+
+        <p class="hint">Você receberá um e-mail assim que o pagamento for aprovado automaticamente pelo sistema.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

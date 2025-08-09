@@ -12685,3 +12685,11 @@ Traceback (most recent call last):
     )
 django.core.exceptions.ImproperlyConfigured: settings.DATABASES is improperly configured. Please supply the ENGINE value. Check settings documentation for more details.
 2025-08-06 15:58:00,973 | ERROR | django.server | "GET /admin/ HTTP/1.1" 500 145
+2025-08-09 16:24:09,536 | INFO | django.utils.autoreload | Watching for file changes with StatReloader
+2025-08-09 16:24:18,153 | INFO | django.server | "GET /login/ HTTP/1.1" 200 5300
+2025-08-09 16:24:21,478 | INFO | django | LOGIN: alexandre | IP: 127.0.0.1
+2025-08-09 16:24:22,052 | INFO | django.server | "POST /login/ HTTP/1.1" 302 0
+2025-08-09 16:24:22,419 | INFO | django | 2025-08-09 16:24:22.419773 | alexandre acessou /
+2025-08-09 16:24:22,421 | INFO | django.server | "GET / HTTP/1.1" 302 0
+2025-08-09 16:24:22,861 | INFO | django | 2025-08-09 16:24:22.861331 | alexandre acessou /admin-geral/dashboard/
+2025-08-09 16:24:25,236 | INFO | django.server | "GET /admin-geral/dashboard/ HTTP/1.1" 200 14104
