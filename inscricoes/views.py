@@ -1,68 +1,70 @@
 import os
 import datetime
+import json
+import logging
+import traceback
+from io import BytesIO
 from datetime import date
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import Http404, HttpResponse, JsonResponse, FileResponse
-from django.views.decorators.http import require_POST
+from urllib.parse import urljoin
+
+import mercadopago
+import qrcode
+
+from django.conf import settings
 from django.contrib import messages
-from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.db.models import Q, Sum
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import MercadoPagoConfig
-from .forms import MercadoPagoConfigForm
-import mercadopago
-from django.shortcuts import get_object_or_404
+from django.forms import modelformset_factory
+from django.http import (
+    Http404, HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden
+)
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from .models import Inscricao
-import logging
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
-import json
-from django.conf import settings
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from .forms import (
+    AlterarCredenciaisForm,
+    ConjugeForm,
     ContatoForm,
     DadosSaudeForm,
-    PastoralMovimentoForm,
-    VideoEventoForm,
-    AlterarCredenciaisForm,
-    PoliticaPrivacidadeForm,
-    ParoquiaForm,
-    UserAdminParoquiaForm,
-    ParticipanteInicialForm,
-    ParticipanteEnderecoForm,
-    InscricaoSeniorForm,
+    EventoForm,
     InscricaoJuvenilForm,
     InscricaoMirimForm,
+    InscricaoSeniorForm,
     InscricaoServosForm,
-    EventoForm,
-    ConjugeForm
+    MercadoPagoConfigForm, 
+    ParoquiaForm,
+    ParticipanteEnderecoForm,
+    ParticipanteInicialForm,
+    VideoEventoForm,
+    PoliticaPrivacidadeForm,
 )
 
 from .models import (
-    PastoralMovimento,
-    VideoEventoAcampamento,
+    Conjuge,
     CrachaTemplate,
-    Paroquia,
     EventoAcampamento,
     Inscricao,
-    InscricaoSenior,    
     InscricaoJuvenil,
-    InscricaoMirim,     
-    InscricaoServos,     
-    Conjuge,
-    User,
+    InscricaoMirim,
+    InscricaoSenior,
+    InscricaoServos,
+    MercadoPagoConfig,
     Pagamento,
+    Paroquia,
     Participante,
+    PastoralMovimento,
     PoliticaPrivacidade,
-    Contato
+    User,
+    VideoEventoAcampamento,
+    Contato,
 )
 
 
