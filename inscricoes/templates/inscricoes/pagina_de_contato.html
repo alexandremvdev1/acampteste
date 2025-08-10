@@ -1,260 +1,202 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Ops! Pagamento Indisponível 😔</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        body {
-            background: #f8f9fa;
-            color: #333;
-            padding: 20px;
-            font-family: 'Arial', sans-serif;
-            /* Fonte mais agradável */
-            text-align: center;
-            /* Centraliza o texto no body */
-        }
+  <meta charset="UTF-8">
+  <title>Pagamento indisponível • {{ paroquia.nome|default:"" }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        .card {
-            max-width: 550px;
-            /* Aumentei um pouco a largura */
-            margin: auto;
-            border-radius: 12px;
-            /* Mais arredondado */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            /* Sombra mais suave */
-            border: none;
-            /* Removi a borda padrão */
-        }
+  <style>
+    :root{
+      --bg:#0b1020; --card:#11162a; --text:#f4f6fb; --muted:#c1c7d3; --line:rgba(255,255,255,.10);
+      --shadow:0 18px 50px rgba(0,0,0,.35);
+      --brand:#4f7cff; --danger:#ef4444; --whats:#25D366; --email:#3b82f6; --neutral:#6b7280;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f3f5f9; --card:#ffffff; --text:#0e1320; --muted:#5b6473; --line:#e9edf5;
+        --shadow:0 16px 36px rgba(10,36,99,.10);
+      }
+    }
 
-        .card-header {
-            background: #e44d26;
-            /* Tom de vermelho/laranja mais moderno */
-            color: #fff;
-            font-weight: 700;
-            /* Mais forte */
-            text-align: center;
-            padding: 15px;
-            /* Mais espaço interno */
-            border-radius: 12px 12px 0 0;
-            /* Arredondado apenas em cima */
-            font-size: 1.25rem;
-            /* Tamanho da fonte maior */
-        }
+    *{ box-sizing:border-box }
+    html,body{
+      margin:0;
+      background:
+        radial-gradient(1100px 1100px at -10% -10%, rgba(79,124,255,.16), transparent 40%),
+        radial-gradient(1100px 1100px at 110% 10%, rgba(34,197,94,.14), transparent 40%),
+        var(--bg);
+      color:var(--text);
+      font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+      min-height:100dvh;
+    }
 
-        .card-body {
-            padding: 20px;
-            text-align: center;
-            /* Centraliza o texto no card-body */
-        }
+    .wrap{
+      min-height:100dvh;
+      display:grid; place-items:center;
+      padding:28px 16px;
+    }
 
-        .contact-btns {
-            margin-top: 20px;
-            /* Adicionei margem no topo */
-        }
+    .card{
+      width:min(560px, 90vw);
+      background:var(--card);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      outline:1px solid var(--line);
+      overflow:hidden;
+    }
 
-        .contact-btns .btn {
-            margin-bottom: 12px;
-            /* Mais espaço entre os botões */
-            border-radius: 6px;
-            /* Botões mais arredondados */
-            font-weight: 500;
-            /* Um pouco mais forte */
-            display: block;
-            /* Faz com que os botões ocupem a largura total */
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 300px;
-            /* Define uma largura máxima para os botões */
-        }
+    .head{
+      padding:18px 18px 0; text-align:center;
+    }
+    .logo{
+      max-height:56px; width:auto; object-fit:contain; display:block; margin:0 auto 10px;
+      filter: drop-shadow(0 4px 14px rgba(0,0,0,.18));
+    }
 
-        .contact-btns .btn i {
-            margin-right: 8px;
-            /* Espaço para o ícone */
-        }
+    .hero{
+      padding:18px; text-align:center; border-bottom:1px solid var(--line);
+    }
+    .emoji{
+      width:56px; height:56px; border-radius:50%;
+      display:grid; place-items:center; margin:0 auto 8px;
+      background:radial-gradient(circle at 30% 30%, #ef4444, #b91c1c);
+      color:#fff; font-size:26px; font-weight:900; box-shadow:0 0 0 6px rgba(239,68,68,.18);
+    }
+    h1{ margin:6px 0 4px; font-size:clamp(18px, 5vw, 24px) }
+    .sub{ margin:0; color:var(--muted); }
 
-        @media (max-width: 576px) {
-            .card {
-                margin: 20px 15px;
-                /* Mais margem nas laterais em telas pequenas */
-            }
-        }
+    .body{ padding:18px; text-align:center }
+    .notice{
+      margin:10px auto 0; color:var(--muted);
+    }
 
-        /* WhatsApp flutuante */
-        #whatsapp-float {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #25d366;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-            /* Sombra mais pronunciada */
-            z-index: 1000;
-            transition: transform .3s;
-        }
+    .actions{
+      margin:16px auto 6px;
+      display:grid; gap:10px; grid-template-columns:1fr;
+      width:100%;
+    }
+    @media (min-width:520px){ .actions{ grid-template-columns:1fr 1fr } }
 
-        #whatsapp-float:hover {
-            transform: scale(1.1);
-        }
+    .btn{
+      appearance:none; border:0; cursor:pointer; text-decoration:none;
+      display:inline-block; padding:12px 14px; border-radius:12px; font-weight:800; text-align:center;
+      transition:transform .12s ease, box-shadow .12s ease;
+      outline:1px solid var(--line);
+      user-select:none; -webkit-tap-highlight-color: transparent;
+    }
+    .btn:hover{ transform:translateY(-1px) }
+    .btn:focus-visible{ outline:2px solid #93c5fd; outline-offset:2px }
+    .btn-whats{ background:linear-gradient(135deg, var(--whats), #1ebc59); color:#fff; outline:none; }
+    .btn-email{ background:linear-gradient(135deg, var(--email), #215de6); color:#fff; outline:none; }
+    .btn-neutral{ background:linear-gradient(135deg, #2f384a, #202535); color:#e7ebf6; }
+    @media (prefers-color-scheme: light){
+      .btn-neutral{ background:#fff; color:#111827; border:1px solid #e5e7eb; outline:none }
+    }
 
-        #whatsapp-float i {
-            color: #fff;
-            font-size: 30px;
-        }
+    .paroquia{
+      padding:14px 16px; text-align:center; border-top:1px solid var(--line);
+      color:var(--muted); font-size:.95rem;
+    }
+    .paroquia .p-logo{
+      max-height:46px; width:auto; object-fit:contain; display:block; margin:0 auto 6px;
+    }
+    .small{ font-size:.92rem; color:var(--muted); margin-top:6px }
 
-        .paroquia-info {
-            text-align: center;
-            margin-top: 10px;
-            /* Reduzi o margin-top */
-            margin-bottom: 10px;
-            /* Adicionei um margin-bottom */
-            color: #777;
-            font-size: 0.9rem;
-        }
+    /* WhatsApp flutuante (opcional) */
+    .float-whats{
+      position: fixed; bottom:18px; right:18px; z-index: 50;
+      width:56px; height:56px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--whats); color:#fff; text-decoration:none;
+      box-shadow:0 10px 20px rgba(37,211,102,.35);
+    }
+    .float-whats:focus-visible{ outline:2px solid #93c5fd; outline-offset:2px }
 
-        .paroquia-info p {
-            margin-bottom: 5px;
-            /* Reduzi o espaçamento entre os parágrafos */
-        }
-
-        .paroquia-logo {
-            max-width: 150px;
-            margin: 0 auto 5px;
-            /* Reduzi o margin-bottom */
-        }
-
-        /* Cores personalizadas para os botões */
-        .btn-whatsapp {
-            background-color: #25d366;
-            color: #fff;
-            border: none;
-        }
-
-        .btn-whatsapp:hover {
-            background-color: #128c7e;
-        }
-
-        .btn-suporte-whatsapp {
-            background-color: #128c7e;
-            color: #fff;
-            border: none;
-        }
-
-        .btn-suporte-whatsapp:hover {
-            background-color: #075e54;
-        }
-
-        .btn-email {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-        }
-
-        .btn-email:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-telefone {
-            background-color: #6c757d;
-            color: #fff;
-            border: none;
-        }
-
-        .btn-telefone:hover {
-            background-color: #545b62;
-        }
-
-        .btn-pequeno {
-            display: inline-block;
-            width: 48%;
-            /* Ajuste para ocupar metade da largura */
-            margin: 0 auto 12px auto;
-            color: white;
-            padding: 8px;
-            /* Reduzindo o padding */
-            font-size: 0.6rem;
-            /* Reduzindo a fonte */
-            font-weight: 500;
-            border: none;
-            border-radius: 6px;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .contact-btns-pequenos {
-            display: flex;
-            justify-content: space-between;
-            width: 80%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-    </style>
+    /* garante que nada “vaze” da tela */
+    img, video{ max-width:100%; height:auto }
+  </style>
 </head>
-
 <body>
-    <div class="card">
-        <div class="card-header">
-            🚫 Pagamento Temporariamente Indisponível 😔
-        </div>
-        <div class="card-body">
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-warning" role="alert">
-                {{ message }}
-            </div>
-            {% endfor %}
-            {% endif %}
-            <p>Olá! ainda estamos implementando a função de pagamento via Mercado Pago.
-                😕</p>
-            <p>Para garantir sua inscrição e concluir o pagamento, entre em contato com a nossa equipe. Estamos prontos
-                para te ajudar! 😊</p>
+  <div class="wrap">
+    <div class="card" role="status" aria-live="polite">
+      <div class="head">
+        {% if politica and politica.logo %}
+          <img class="logo" src="{{ politica.logo.url }}" alt="Logo">
+        {% elif paroquia and paroquia.logo %}
+          <img class="logo" src="{{ paroquia.logo.url }}" alt="Logo da Paróquia">
+        {% endif %}
+      </div>
 
-            <div class="contact-btns">
-                <!-- WhatsApp da Paróquia -->
-                <a href="https://wa.me/{% if paroquia %}+{{ paroquia.telefone }}{% else %}#{% endif %}?text=Olá!%20Preciso%20de%20ajuda%20para%20concluir%20meu%20pagamento."
-                    class="btn btn-whatsapp" target="_blank" rel="noopener">
-                    <i class="fab fa-whatsapp"></i>Falar com a equipe
-                </a>
+      <div class="hero">
+        <div class="emoji" aria-hidden="true">!</div>
+        <h1>Pagamento temporariamente indisponível</h1>
+        <p class="sub">Estamos finalizando a integração com o Mercado Pago.</p>
+      </div>
 
-                <!-- Botões de Suporte (WhatsApp e Email) -->
-                <div class="contact-btns-pequenos">
-                    <a href="https://wa.me/5563920013103" class="btn btn-pequeno btn-suporte-whatsapp" target="_blank"
-                        rel="noopener">
-                        <i class=></i>Suporte Sistema
-                    </a>
-                    <a href="mailto:alexandremv.dev@gmail.com" class="btn btn-pequeno btn-email">
-                        <i class=></i>Suporte Email
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="paroquia-info">
-            {% if paroquia %}
-            {% if paroquia.logo %}
-            <img src="{{ paroquia.logo.url }}" alt="Logo da Paróquia" class="paroquia-logo">
-            {% endif %}
-            <p><strong>{{ paroquia.nome }}</strong></p>
-            <p>{{ paroquia.cidade }}, {{ paroquia.estado }}</p>
-            <p>Telefone: {{ paroquia.telefone }}</p>
-            {% else %}
-            <p>Nenhuma paróquia ativa encontrada.</p>
-            {% endif %}
-        </div>
+      <div class="body">
+        {% if messages %}
+          {% for message in messages %}
+            <p class="notice">{{ message }}</p>
+          {% endfor %}
+        {% else %}
+          <p class="notice">
+            Para garantir sua inscrição, fale com a organização. Responderemos rapidinho. 😊
+          </p>
+        {% endif %}
+
+        <div class="actions" aria-label="Meios de contato">
+          {# WhatsApp da paróquia #}
+          {% if paroquia and paroquia.telefone %}
+            {# remove +55 caso exista; server-side use slice:'3:' costuma funcionar no seu projeto #}
+            <a class="btn btn-whats"
+               href="https://wa.me/{{ paroquia.telefone|slice:'3:' }}?text=Olá!%20Preciso%20de%20ajuda%20para%20concluir%20meu%20pagamento."
+               target="_blank" rel="noopener">
+              Falar com a equipe
+            </a>
+          {% else %}
+            <a class="btn btn-neutral" href="/" aria-label="Voltar à página inicial">Voltar ao início</a>
+          {% endif %}
+
+          {# Suporte do sistema (WhatsApp) #}
+          <a class="btn btn-neutral"
+             href="https://wa.me/5563920013103?text=Suporte:%20Pagamento%20indisponível"
+             target="_blank" rel="noopener">
+            Suporte via WhatsApp
+          </a>
+
+          {# E-mail de suporte #}
+          <a class="btn btn-email" href="mailto:alexandremv.dev@gmail.com?subject=Ajuda%20no%20pagamento">
+            Suporte por e-mail
+          </a>
+
+        <p class="small">
+          Se preferir, você pode realizar o pagamento presencialmente com a secretaria da paróquia.
+        </p>
+      </div>
+
+      <div class="paroquia">
+        {% if paroquia and paroquia.logo %}
+          <img class="p-logo" src="{{ paroquia.logo.url }}" alt="Logo da Paróquia">
+        {% endif %}
+        {% if paroquia %}
+          <div><strong>{{ paroquia.nome }}</strong></div>
+          <div>{{ paroquia.cidade }} • {{ paroquia.estado }}</div>
+          {% if paroquia.telefone %}<div>Tel: {{ paroquia.telefone }}</div>{% endif %}
+        {% else %}
+          <div><strong>Organização</strong></div>
+          <div>Entre em contato para concluir o pagamento</div>
+        {% endif %}
+      </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
-    </script>
-</body>
+  </div>
 
+  {# Botão flutuante do WhatsApp da paróquia (opcional) #}
+  {% if paroquia and paroquia.telefone %}
+    <a class="float-whats"
+       href="https://wa.me/{{ paroquia.telefone|slice:'3:' }}?text=Olá!%20Preciso%20de%20ajuda%20para%20concluir%20meu%20pagamento."
+       aria-label="Contato WhatsApp"
+       target="_blank" rel="noopener">WA</a>
+  {% endif %}
+</body>
 </html>
