@@ -1962,3 +1962,27 @@ def minhas_inscricoes_por_cpf(request):
         "participante": participante,
         "inscricoes": inscricoes,
     })
+
+def portal_participante(request):
+    participante = None
+    inscricoes = []
+
+    if request.method == "POST":
+        cpf = (request.POST.get("cpf") or "").replace(".", "").replace("-", "")
+        if not cpf.isdigit():
+            messages.error(request, "CPF inválido. Digite apenas números.")
+        else:
+            participante = Participante.objects.filter(cpf=cpf).first()
+            if participante:
+                # lista TODAS as inscrições do participante
+                inscricoes = (Inscricao.objects
+                               .filter(participante=participante)
+                               .select_related("evento","paroquia"))
+            else:
+                messages.info(request, "Nenhum participante encontrado para este CPF.")
+
+    return render(request, "inscricoes/portal_participante.html", {
+        "participante": participante,
+        "inscricoes": inscricoes,
+        "cpf_informado": request.POST.get("cpf") if request.method == "POST" else "",
+    })

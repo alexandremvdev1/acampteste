@@ -115,6 +115,7 @@ urlpatterns = [
     path("pagamento/aguardando/<int:inscricao_id>/", views.aguardando_pagamento, name="aguardando_pagamento"),  # opcional: cartões
 
     path("minhas-inscricoes/", views.minhas_inscricoes_por_cpf, name="minhas_inscricoes_por_cpf"),
+    path("minhas-inscricoes/", views.portal_participante, name="portal_participante"),
 
 ]
 
