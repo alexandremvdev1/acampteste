@@ -20,6 +20,9 @@ from django.utils import timezone as dj_tz
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
+from django.utils import timezone
+hoje = timezone.localdate()
+
 
 # ——— Terceiros
 import mercadopago
