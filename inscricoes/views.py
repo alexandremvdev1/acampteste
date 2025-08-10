@@ -2,8 +2,13 @@
 import os
 import json
 import logging
+from io import BytesIO
 from urllib.parse import urljoin
-from datetime import datetime as dt, timedelta, timezone as dt_tz
+from datetime import timedelta, timezone as dt_tz
+
+# ——— Terceiros
+import mercadopago
+import qrcode
 
 # ——— Django
 from django.conf import settings
@@ -20,12 +25,6 @@ from django.utils import timezone as dj_tz
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
-from django.utils import timezone
-hoje = timezone.localdate()
-
-
-# ——— Terceiros
-import mercadopago
 
 # ——— App (models e forms)
 from .models import (
@@ -46,7 +45,6 @@ from .models import (
     PoliticaPrivacidade,
     Contato,
 )
-
 from .forms import (
     ContatoForm,
     DadosSaudeForm,
@@ -64,12 +62,10 @@ from .forms import (
     InscricaoServosForm,
     EventoForm,
     ConjugeForm,
-    # PagamentoForm,  # descomente se usar
+    PagamentoForm,  # necessário em editar_inscricao
 )
 
 User = get_user_model()
-
-
 
 
 @login_required
@@ -106,7 +102,8 @@ def admin_geral_dashboard(request):
     total_usuarios = User.objects.filter(tipo_usuario='admin_paroquia').count()
 
     ultimas_paroquias = Paroquia.objects.order_by('-id')[:5]
-    proximos_eventos = EventoAcampamento.objects.filter(data_inicio__gte=datetime.date.today()).order_by('data_inicio')[:5]
+    proximos_eventos = (
+    EventoAcampamento.objects.filter(data_inicio__gte=dj_tz.localdate()).order_by('data_inicio')[:5])
     inscricoes_recentes = Inscricao.objects.order_by('-data_inscricao')[:5]
 
     context = {
@@ -551,7 +548,7 @@ def incluir_pagamento(request, inscricao_id):
 def inscricao_inicial(request, slug):
     evento   = get_object_or_404(EventoAcampamento, slug=slug)
     politica = PoliticaPrivacidade.objects.first()
-    hoje     = date.today()
+    hoje = dj_tz.localdate()
 
     # —> Se hoje estiver fora do período de inscrições, exibe template de encerradas
     if hoje < evento.inicio_inscricoes or hoje > evento.fim_inscricoes:
