@@ -213,3 +213,6 @@ LOGGING = {
         'django.security':  {'handlers': ['file'], 'level': 'WARNING', 'propagate': False},
     },
 }
+
+from decimal import Decimal
+FEE_DEFAULT_PERCENT = Decimal("5.0")  # 5% por padrão
