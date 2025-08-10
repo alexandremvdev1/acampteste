@@ -1156,30 +1156,15 @@ def download_logs(request):
     else:
         return HttpResponse("Arquivo de log não encontrado.", status=404)
     
+@require_GET
 def pagina_video_evento(request, slug):
     evento = get_object_or_404(EventoAcampamento, slug=slug)
-
-    try:
-        video = evento.video
-    except VideoEventoAcampamento.DoesNotExist:
-        video = None
-
-    if request.method == 'POST':
-        form = VideoEventoForm(request.POST, request.FILES, instance=video)
-        if form.is_valid():
-            novo_video = form.save(commit=False)
-            novo_video.evento = evento
-            novo_video.save()
-            return redirect('inscricoes:evento_participantes', evento_id=evento.id)
-    else:
-        form = VideoEventoForm(instance=video)
-
-    return render(request, 'inscricoes/video_evento.html', {
-        'evento': evento,
-        'form': form,
-        'video': video,
+    # Se houver relação OneToOne chamada "video"
+    video = getattr(evento, "video", None)
+    return render(request, "inscricoes/video_evento_publico.html", {
+        "evento": evento,
+        "video": video,
     })
-
 
 User = get_user_model()
 

@@ -2,55 +2,58 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Vídeo do Evento - {{ evento.nome }}</title>
+    <title>Vídeo de Boas-Vindas - {{ evento.nome }}</title>
     <style>
         body {
             font-family: sans-serif;
-            max-width: 600px;
+            max-width: 700px;
             margin: 30px auto;
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
         }
         h1 {
             text-align: center;
             color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        h3 {
+            text-align: center;
+            color: #34495e;
+            font-weight: normal;
+            margin-bottom: 20px;
         }
         video {
             width: 100%;
-            margin-top: 15px;
-            border-radius: 6px;
+            border-radius: 8px;
+            background: #000;
         }
-        form {
-            margin-top: 20px;
+        .muted {
+            color: #777;
+            text-align: center;
+            font-size: 14px;
+            margin-top: 8px;
         }
-        label {
+        a.btn {
+            display: block;
+            margin: 20px auto 0;
+            width: fit-content;
+            background: #3498db;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
             font-weight: bold;
         }
-        input[type="file"], input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #2980b9;
+        a.btn:hover {
+            background: #2980b9;
         }
     </style>
 </head>
 <body>
-    <h1>🎬 Vídeo do Evento</h1>
+    <h1>🎬 Vídeo de Boas-Vindas</h1>
 
     {% if video %}
         <h3>{{ video.titulo }}</h3>
@@ -58,12 +61,11 @@
             <source src="{{ video.arquivo.url }}" type="video/mp4">
             Seu navegador não suporta vídeo.
         </video>
+        <p class="muted">Assista atentamente antes do evento.</p>
+    {% else %}
+        <p style="text-align:center;color:#999;">Nenhum vídeo disponível para este evento.</p>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
+    <a href="{% url 'inscricoes:ver_inscricao' inscricao.id %}" class="btn">⬅ Voltar para inscrição</a>
 </body>
 </html>
