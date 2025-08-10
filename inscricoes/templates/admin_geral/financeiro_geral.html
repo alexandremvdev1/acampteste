@@ -1,0 +1,299 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Relatório Financeiro • Admin Geral</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #fff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --line: #e5e7eb;
+            --brand: #0ea5e9;
+            --ok: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 20px auto;
+            /* Reduzi a margem superior e inferior */
+            padding: 0 14px
+        }
+
+        h1 {
+            margin: 0 0 14px;
+            color: var(--text);
+            font-size: 20px;
+            /* Reduzi o tamanho da fonte */
+            text-align: center
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .06);
+            padding: 12px;
+            /* Reduzi o preenchimento */
+        }
+
+        form.filters {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            /* Alterei para auto-fit e minmax */
+            align-items: end;
+            margin-bottom: 12px
+        }
+
+        @media(max-width:900px) {
+            form.filters {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))
+            }
+        }
+
+        @media(max-width:600px) {
+            form.filters {
+                grid-template-columns: 1fr;
+                /* Empilha em telas menores */
+            }
+        }
+
+        label {
+            font-size: .9rem;
+            color: var(--muted)
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            /* Reduzi o preenchimento */
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: .9rem;
+            /* Reduzi o tamanho da fonte */
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            /* Alinha os botões à direita */
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            /* Reduzi o preenchimento */
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: .9rem;
+            /* Reduzi o tamanho da fonte */
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: #fff
+        }
+
+        .btn-light {
+            background: #fff;
+            border: 1px solid var(--line);
+            color: #111827
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            /* Adicionei rolagem horizontal */
+            border: 1px solid var(--line);
+            border-radius: 12px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px
+        }
+
+        th,
+        td {
+            padding: 8px;
+            /* Reduzi o preenchimento */
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: .9rem
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155
+        }
+
+        tfoot td {
+            font-weight: 800
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: .9rem;
+            text-align: center;
+            margin-top: 8px
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #ecfeff;
+            color: #075985;
+            font-weight: 700;
+            font-size: .75rem
+        }
+
+        /* Estilos para telas menores */
+        @media (max-width: 600px) {
+            .wrap {
+                padding: 0 10px;
+                /* Reduzi o preenchimento */
+            }
+
+            h1 {
+                font-size: 18px;
+                /* Reduzi o tamanho da fonte */
+            }
+
+            .card {
+                padding: 10px;
+                /* Reduzi o preenchimento */
+            }
+
+            th,
+            td {
+                padding: 6px;
+                /* Reduzi o preenchimento */
+                font-size: .85rem
+            }
+
+            .pill {
+                font-size: .7rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div style="margin-bottom: 14px;">
+            <a class="btn btn-light" href="{% url 'inscricoes:admin_geral_dashboard' %}">← Dashboard</a>
+            
+        </div>
+        <h1>Relatório Financeiro — Todas as Paróquias</h1>
+
+        <div class="card">
+            <form method="get" class="filters">
+                <div>
+                    <label>Início</label>
+                    <input type="date" name="ini" value="{{ ini|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label>Fim</label>
+                    <input type="date" name="fim" value="{{ fim|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label>Paróquia</label>
+                    <select name="paroquia">
+                        <option value="">Todas</option>
+                        {% for p in todas_paroquias %}
+                        <option value="{{ p.id }}" {% if p.id|stringformat:'s' == paroquia_id %}selected{% endif %}>
+                            {{ p.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Taxa (%)</label>
+                    <input type="number" step="0.01" name="fee" value="{{ fee_percent }}">
+                </div>
+                <div class="row-actions">
+                    <button class="btn btn-primary" type="submit">Aplicar</button>
+                    <a class="btn btn-light"
+                        href="{% url 'inscricoes:financeiro_geral_export' %}?ini={{ ini|date:'Y-m-d' }}&fim={{ fim|date:'Y-m-d' }}&paroquia={{ paroquia_id }}&fee={{ fee_percent }}">Exportar
+                        CSV</a>
+                </div>
+            </form>
+
+            <div class="table-wrap" role="region" aria-label="Tabela financeira">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paróquia</th>
+                            <th style="width:120px">Pagamentos</th>
+                            <th style="width:140px">Bruto (R$)</th>
+                            <th style="width:140px">Taxa (R$)</th>
+                            <th style="width:140px">Líquido (R$)</th>
+                            <th>Eventos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in linhas %}
+                        <tr>
+                            <td>{{ r.paroquia_nome }}</td>
+                            <td>{{ r.qtd }}</td>
+                            <td>{{ r.bruto|floatformat:2 }}</td>
+                            <td>{{ r.taxa|floatformat:2 }}</td>
+                            <td>{{ r.liquido|floatformat:2 }}</td>
+                            <td>
+                                {% if r.eventos %}
+                                {% for ev in r.eventos %}
+                                <span class="pill">{{ ev.inscricao__evento__nome }} • R$
+                                    {{ ev.total_evento|floatformat:2 }}</span>
+                                {% if not forloop.last %}&nbsp;{% endif %}
+                                {% endfor %}
+                                {% else %}
+                                <span class="muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="muted">Sem dados para os filtros informados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td></td>
+                            <td>{{ totais.bruto|floatformat:2 }}</td>
+                            <td>{{ totais.taxa|floatformat:2 }}</td>
+                            <td>{{ totais.liquido|floatformat:2 }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <p class="muted">A taxa é aplicada sobre o total bruto confirmado no período selecionado.</p>
+        </div>
+    </div>
+</body>
+
+</html>

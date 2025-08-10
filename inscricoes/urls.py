@@ -117,6 +117,9 @@ urlpatterns = [
     path("minhas-inscricoes/", views.minhas_inscricoes_por_cpf, name="minhas_inscricoes_por_cpf"),
     path("minhas-inscricoes/", views.portal_participante, name="portal_participante"),
 
+    path("admin-geral/financeiro/", views.financeiro_geral, name="financeiro_geral"),
+    path("admin-geral/financeiro/exportar.csv", views.financeiro_geral_export, name="financeiro_geral_export"),
+
 ]
 
 if settings.DEBUG:

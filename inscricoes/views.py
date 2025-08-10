@@ -1987,3 +1987,161 @@ def portal_participante(request):
         "inscricoes": inscricoes,
         "cpf_informado": request.POST.get("cpf") if request.method == "POST" else "",
     })
+
+from decimal import Decimal
+from django.db.models import Sum, Count
+from django.utils.dateparse import parse_date
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponse
+import csv
+
+@login_required
+@user_passes_test(is_admin_geral)
+def financeiro_geral(request):
+    """
+    Relatório consolidado por paróquia (e breakdown por evento).
+    Considera apenas pagamentos CONFIRMADOS.
+    Query params:
+      ?ini=YYYY-MM-DD&fim=YYYY-MM-DD&paroquia=<id>&fee=5.0
+    """
+    ini = parse_date(request.GET.get("ini") or "")
+    fim = parse_date(request.GET.get("fim") or "")
+    paroquia_id = request.GET.get("paroquia") or ""
+    fee_param = request.GET.get("fee")
+    try:
+        fee_percent = Decimal(fee_param) if fee_param is not None else settings.FEE_DEFAULT_PERCENT
+    except Exception:
+        fee_percent = settings.FEE_DEFAULT_PERCENT
+
+    pagamentos = Pagamento.objects.filter(
+        status=Pagamento.StatusPagamento.CONFIRMADO
+    ).select_related("inscricao__paroquia", "inscricao__evento")
+
+    # filtros de período (pela data_pagamento, caindo para data_inscricao se nulo)
+    if ini:
+        pagamentos = pagamentos.filter(
+            Q(data_pagamento__date__gte=ini) | Q(data_pagamento__isnull=True, inscricao__data_inscricao__date__gte=ini)
+        )
+    if fim:
+        pagamentos = pagamentos.filter(
+            Q(data_pagamento__date__lte=fim) | Q(data_pagamento__isnull=True, inscricao__data_inscricao__date__lte=fim)
+        )
+    if paroquia_id:
+        pagamentos = pagamentos.filter(inscricao__paroquia_id=paroquia_id)
+
+    # agregado por paróquia
+    por_paroquia = (
+        pagamentos.values("inscricao__paroquia_id", "inscricao__paroquia__nome")
+        .annotate(
+            total_bruto=Sum("valor"),
+            qtd=Count("id"),
+        )
+        .order_by("inscricao__paroquia__nome")
+    )
+
+    # breakdown por evento
+    por_evento = (
+        pagamentos.values(
+            "inscricao__paroquia_id", "inscricao__paroquia__nome",
+            "inscricao__evento_id", "inscricao__evento__nome"
+        )
+        .annotate(total_evento=Sum("valor"), qtd_evento=Count("id"))
+        .order_by("inscricao__paroquia__nome", "inscricao__evento__nome")
+    )
+
+    # monta índice evento por paróquia
+    eventos_idx = {}
+    for row in por_evento:
+        pid = row["inscricao__paroquia_id"]
+        eventos_idx.setdefault(pid, []).append(row)
+
+    # enriquece com taxa e líquido
+    linhas = []
+    total_geral = Decimal("0.00")
+    total_taxa  = Decimal("0.00")
+    total_liq   = Decimal("0.00")
+
+    for r in por_paroquia:
+        bruto = r["total_bruto"] or Decimal("0.00")
+        taxa = (bruto * fee_percent / Decimal("100")).quantize(Decimal("0.01"))
+        liq  = (bruto - taxa).quantize(Decimal("0.01"))
+        total_geral += bruto
+        total_taxa  += taxa
+        total_liq   += liq
+
+        linhas.append({
+            "paroquia_id": r["inscricao__paroquia_id"],
+            "paroquia_nome": r["inscricao__paroquia__nome"],
+            "qtd": r["qtd"],
+            "bruto": bruto,
+            "taxa": taxa,
+            "liquido": liq,
+            "eventos": eventos_idx.get(r["inscricao__paroquia_id"], [])
+        })
+
+    # lista de paróquias p/ filtro
+    todas_paroquias = Paroquia.objects.all().order_by("nome")
+
+    return render(request, "admin_geral/financeiro_geral.html", {
+        "linhas": linhas,
+        "fee_percent": fee_percent,
+        "ini": ini, "fim": fim,
+        "paroquia_id": paroquia_id,
+        "todas_paroquias": todas_paroquias,
+        "totais": {
+            "bruto": total_geral,
+            "taxa": total_taxa,
+            "liquido": total_liq,
+        }
+    })
+
+
+@login_required
+@user_passes_test(is_admin_geral)
+def financeiro_geral_export(request):
+    """
+    Exporta CSV do relatório consolidado (mesmos filtros da tela).
+    """
+    ini = parse_date(request.GET.get("ini") or "")
+    fim = parse_date(request.GET.get("fim") or "")
+    paroquia_id = request.GET.get("paroquia") or ""
+    fee_param = request.GET.get("fee")
+    try:
+        fee_percent = Decimal(fee_param) if fee_param is not None else settings.FEE_DEFAULT_PERCENT
+    except Exception:
+        fee_percent = settings.FEE_DEFAULT_PERCENT
+
+    pagamentos = Pagamento.objects.filter(
+        status=Pagamento.StatusPagamento.CONFIRMADO
+    ).select_related("inscricao__paroquia", "inscricao__evento")
+
+    if ini:
+        pagamentos = pagamentos.filter(
+            Q(data_pagamento__date__gte=ini) | Q(data_pagamento__isnull=True, inscricao__data_inscricao__date__gte=ini)
+        )
+    if fim:
+        pagamentos = pagamentos.filter(
+            Q(data_pagamento__date__lte=fim) | Q(data_pagamento__isnull=True, inscricao__data_inscricao__date__lte=fim)
+        )
+    if paroquia_id:
+        pagamentos = pagamentos.filter(inscricao__paroquia_id=paroquia_id)
+
+    por_paroquia = (
+        pagamentos.values("inscricao__paroquia_id", "inscricao__paroquia__nome")
+        .annotate(total_bruto=Sum("valor"), qtd=Count("id"))
+        .order_by("inscricao__paroquia__nome")
+    )
+
+    # CSV
+    resp = HttpResponse(content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = 'attachment; filename="financeiro_geral.csv"'
+    w = csv.writer(resp)
+    w.writerow(["Paróquia", "Qtd Pagamentos", "Total Bruto", f"Taxa ({fee_percent}%)", "Líquido"])
+
+    for r in por_paroquia:
+        bruto = r["total_bruto"] or Decimal("0.00")
+        taxa = (bruto * fee_percent / Decimal("100")).quantize(Decimal("0.01"))
+        liq  = (bruto - taxa).quantize(Decimal("0.01"))
+        w.writerow([r["inscricao__paroquia__nome"], r["qtd"], f"{bruto:.2f}", f"{taxa:.2f}", f"{liq:.2f}"])
+
+    return resp
