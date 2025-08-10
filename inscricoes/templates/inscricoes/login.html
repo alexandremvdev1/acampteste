@@ -1,6 +1,5 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <title>Login - Sistema</title>
@@ -18,7 +17,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #6A82FB, #FC5C7D);
+            background: linear-gradient(to right, #6A82FB, #10f310);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -29,18 +28,27 @@
 
         .login-container {
             background-color: rgba(255, 255, 255, 0.9);
-            padding: 40px;
+            padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            width: 100%;
+            width: 90%;
             max-width: 380px;
             text-align: center;
             transition: transform 0.3s ease-in-out;
-            margin: auto 0; /* centraliza verticalmente */
+            margin: auto 0;
         }
 
         .login-container:hover {
             transform: scale(1.02);
+        }
+
+        .logo-login {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         h1 {
@@ -153,9 +161,13 @@
         }
     </style>
 </head>
-
 <body>
     <div class="login-container">
+        {% if politica and politica.logo %}
+            <img src="{{ politica.logo.url }}" alt="Logo do Sistema" class="logo-login">
+        {% endif %}
+
+
         <h1>Login</h1>
 
         {% if form.errors %}
@@ -189,5 +201,4 @@
         Sistema eismeaqui.app desenvolvido por Alexandre Martins Vieira
     </footer>
 </body>
-
 </html>
