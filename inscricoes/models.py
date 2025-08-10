@@ -761,9 +761,10 @@ class User(AbstractUser):
 
 class PoliticaPrivacidade(models.Model):
     texto = models.TextField("Texto da Política de Privacidade")
-    imagem_camisa = CloudinaryField(verbose_name="Imagem da Camisa",null=True,blank=True)
-    imagem_1 = CloudinaryField(verbose_name="Imagem 1 (opcional)",null=True,blank=True)
-    imagem_2 = CloudinaryField(verbose_name="Imagem 2 (opcional)",null=True,blank=True)
+    logo = CloudinaryField(verbose_name="Logo", null=True, blank=True)  # Novo campo
+    imagem_camisa = CloudinaryField(verbose_name="Imagem da Camisa", null=True, blank=True)
+    imagem_1 = CloudinaryField(verbose_name="Imagem 1 (opcional)", null=True, blank=True)
+    imagem_2 = CloudinaryField(verbose_name="Imagem 2 (opcional)", null=True, blank=True)
 
     def __str__(self):
         return "Política de Privacidade"
