@@ -62,7 +62,6 @@ from .forms import (
     InscricaoServosForm,
     EventoForm,
     ConjugeForm,
-    PagamentoForm,  # necessário em editar_inscricao
 )
 
 User = get_user_model()
