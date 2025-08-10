@@ -1925,42 +1925,43 @@ def status_pagamento(request, inscricao_id):
 def minhas_inscricoes_por_cpf(request):
     """
     Página pública: participante digita o CPF e vê todas as inscrições dele.
-    Para cada inscrição (evento) mostra status e botões:
-      - Pagar com PIX (gera QR aqui no site)
-      - Pagar com Cartão (abre checkout do MP)
+    Mostra apenas eventos onde foi selecionado, com botões de pagamento.
     """
-    inscricoes = []
     participante = None
-    cpf_informado = ""
+    inscricoes = []
+    cpf_informado = (request.POST.get("cpf") or request.GET.get("cpf") or "").strip()
 
-    if request.method == "POST":
-        cpf_informado = (request.POST.get("cpf") or "").strip()
-        cpf_limpo = "".join([c for c in cpf_informado if c.isdigit()])
-
+    def _buscar_por_cpf(cpf_raw: str):
+        """Normaliza e busca inscrições selecionadas do participante."""
+        cpf_limpo = "".join(c for c in (cpf_raw or "") if c.isdigit())
         if len(cpf_limpo) != 11:
             messages.error(request, "Informe um CPF válido (11 dígitos).")
-        else:
-            try:
-                participante = Participante.objects.get(cpf=cpf_limpo)
-                inscricoes = (
-                    Inscricao.objects
-                    .filter(participante=participante)
-                    .select_related("evento", "paroquia")
-                    .order_by("-id")
-                )
-                if not inscricoes:
-                    messages.info(request, "Nenhuma inscrição encontrada para este CPF.")
-            except Participante.DoesNotExist:
-                messages.error(request, "CPF não encontrado em nosso sistema.")
+            return None, []
+        try:
+            p = Participante.objects.get(cpf=cpf_limpo)
+        except Participante.DoesNotExist:
+            messages.error(request, "CPF não encontrado em nosso sistema.")
+            return None, []
+        qs = (Inscricao.objects
+              .filter(participante=p, foi_selecionado=True)  # <- somente selecionadas
+              .select_related("evento", "paroquia")
+              .order_by("-id"))
+        if not qs.exists():
+            messages.info(request, "Nenhuma inscrição selecionada encontrada para este CPF.")
+        return p, list(qs)
 
-    # também permite pré-preencher via querystring ?cpf=...
-    if request.method == "GET" and request.GET.get("cpf"):
-        cpf_informado = request.GET.get("cpf").strip()
+    # Se veio CPF por POST ou por querystring (?cpf=...), tenta buscar
+    if cpf_informado:
+        participante, inscricoes = _buscar_por_cpf(cpf_informado)
+
+    # Envia a política pra exibir a logo no topo
+    politica = PoliticaPrivacidade.objects.order_by("-id").first()
 
     return render(request, "inscricoes/minhas_inscricoes.html", {
         "cpf_informado": cpf_informado,
         "participante": participante,
         "inscricoes": inscricoes,
+        "politica": politica,
     })
 
 def portal_participante(request):
