@@ -137,22 +137,22 @@ class EventoAcampamento(models.Model):
 
 class Inscricao(models.Model):
     participante = models.ForeignKey('Participante', on_delete=models.CASCADE)
-    evento = models.ForeignKey('EventoAcampamento', on_delete=models.CASCADE)
-    paroquia = models.ForeignKey('Paroquia', on_delete=models.CASCADE, related_name='inscricoes')
+    evento       = models.ForeignKey('EventoAcampamento', on_delete=models.CASCADE)
+    paroquia     = models.ForeignKey('Paroquia', on_delete=models.CASCADE, related_name='inscricoes')
     data_inscricao = models.DateTimeField(auto_now_add=True)
 
-    foi_selecionado = models.BooleanField(default=False)
-    pagamento_confirmado = models.BooleanField(default=False)
-    inscricao_concluida = models.BooleanField(default=False)
-    inscricao_enviada = models.BooleanField(default=False)
+    foi_selecionado       = models.BooleanField(default=False)
+    pagamento_confirmado  = models.BooleanField(default=False)
+    inscricao_concluida   = models.BooleanField(default=False)
+    inscricao_enviada     = models.BooleanField(default=False)
 
-    # Campos do Responsável 1
+    # Responsável 1
     responsavel_1_nome            = models.CharField(max_length=255, blank=True, null=True)
     responsavel_1_telefone        = models.CharField(max_length=20,  blank=True, null=True)
     responsavel_1_grau_parentesco = models.CharField(max_length=50,  blank=True, null=True)
     responsavel_1_ja_e_campista   = models.BooleanField(default=False)
 
-    # Campos do Responsável 2
+    # Responsável 2
     responsavel_2_nome            = models.CharField(max_length=255, blank=True, null=True)
     responsavel_2_telefone        = models.CharField(max_length=20,  blank=True, null=True)
     responsavel_2_grau_parentesco = models.CharField(max_length=50,  blank=True, null=True)
@@ -170,118 +170,234 @@ class Inscricao(models.Model):
     def __str__(self):
         return f"{self.participante.nome} – {self.evento.nome} – {self.paroquia.nome}"
 
+    # -------- Helpers --------
     @property
     def inscricao_url(self) -> str:
         """
-        URL completa para ver a inscrição (onde o participante encontrará
-        o botão de pagamento, se já selecionado).
+        URL pública para o participante ver a inscrição (e realizar pagamento).
+        Requer settings.SITE_DOMAIN (ex.: 'https://eismeaqui.app.br').
         """
         relative = reverse('inscricoes:ver_inscricao', args=[self.id])
-        return f"{settings.SITE_DOMAIN}{relative}"
+        base = getattr(settings, "SITE_DOMAIN", "").rstrip("/")
+        if not base:
+            # fallback via django.contrib.sites, se configurado
+            try:
+                current = Site.objects.get_current()
+                base = f"https://{current.domain}".rstrip("/")
+            except Exception:
+                base = ""
+        return f"{base}{relative}" if base else relative
 
+    def _site_name(self) -> str:
+        """
+        Nome do app/equipe para assinar e-mails.
+        Tenta settings.SITE_NAME; senão, o nome da paróquia; por fim, domínio atual.
+        """
+        site_name = getattr(settings, "SITE_NAME", "") or (getattr(self.paroquia, "nome", "") or "")
+        if not site_name:
+            try:
+                site_name = Site.objects.get_current().domain
+            except Exception:
+                site_name = "Nossa Equipe"
+        return site_name
+
+    def _evento_data_local(self):
+        """
+        Extrai data e local do evento com fallbacks:
+        - data: tenta evento.data_evento, senão evento.data_inicio
+        - local: tenta evento.local, senão evento.local_evento
+        Retorna (data_str, local_str).
+        """
+        ev = self.evento
+        data = getattr(ev, "data_evento", None) or getattr(ev, "data_inicio", None)
+        if data:
+            # se for datetime/date, formata; se for string, usa como está
+            try:
+                data_str = timezone.localtime(data).strftime("%d/%m/%Y")
+            except Exception:
+                try:
+                    data_str = data.strftime("%d/%m/%Y")
+                except Exception:
+                    data_str = str(data)
+        else:
+            data_str = "A definir"
+
+        local = getattr(ev, "local", None) or getattr(ev, "local_evento", None) or "Local a definir"
+        return data_str, local
+
+    # -------- Envio de e-mails (3 modelos) --------
+    def enviar_email_selecao(self):
+        """
+        1) Seleção Confirmada – “Você foi selecionado”
+        Assunto: 🎉 Parabéns! Você foi selecionado para participar do evento
+        """
+        if not self.participante.email:
+            return  # sem e-mail, não envia
+
+        nome_app = self._site_name()
+        data_evento, local_evento = self._evento_data_local()
+
+        assunto = "🎉 Parabéns! Você foi selecionado para participar do evento"
+        texto = (
+            f"Olá {self.participante.nome},\n\n"
+            f"Temos uma ótima notícia: você foi selecionado(a) para participar do {self.evento.nome}!\n"
+            "Estamos muito felizes em tê-lo(a) conosco nesta experiência especial.\n\n"
+            "Detalhes do evento:\n"
+            f"📅 Data: {data_evento}\n"
+            f"📍 Local: {local_evento}\n\n"
+            "Para garantir sua vaga, siga as instruções de pagamento na sua área de inscrição.\n\n"
+            "Nos vemos no evento!\n"
+            f"Abraços,\nEquipe {nome_app}"
+        )
+
+        html = f"""
+        <html><body style="font-family:Arial,sans-serif;color:#0f172a">
+          <p>Olá <strong>{self.participante.nome}</strong>,</p>
+          <p>Temos uma ótima notícia: você foi selecionado(a) para participar do <strong>{self.evento.nome}</strong>!</p>
+          <p>Estamos muito felizes em tê-lo(a) conosco nesta experiência especial.</p>
+          <p><strong>Detalhes do evento:</strong><br>
+          📅 Data: {data_evento}<br>
+          📍 Local: {local_evento}</p>
+          <p>Para garantir sua vaga, siga as instruções de pagamento na sua área de inscrição.</p>
+          <p>Nos vemos no evento!<br/>
+          Abraços,<br/>Equipe {nome_app}</p>
+        </body></html>
+        """
+
+        msg = EmailMultiAlternatives(
+            assunto, texto, settings.DEFAULT_FROM_EMAIL, [self.participante.email]
+        )
+        msg.attach_alternative(html, "text/html")
+        try:
+            msg.send()
+        except Exception:
+            # evita quebrar o fluxo do save()
+            pass
+
+    def enviar_email_pagamento_confirmado(self):
+        """
+        2) Pagamento Confirmado
+        Assunto: ✅ Pagamento confirmado – {{nome_evento}}
+        """
+        if not self.participante.email:
+            return
+
+        nome_app = self._site_name()
+        data_evento, local_evento = self._evento_data_local()
+
+        assunto = f"✅ Pagamento confirmado – {self.evento.nome}"
+        texto = (
+            f"Olá {self.participante.nome},\n\n"
+            f"Recebemos a confirmação do seu pagamento para o {self.evento.nome}.\n"
+            "Sua inscrição agora está totalmente garantida.\n\n"
+            "Resumo da inscrição:\n"
+            f"👤 Participante: {self.participante.nome}\n"
+            f"📅 Data: {data_evento}\n"
+            f"📍 Local: {local_evento}\n\n"
+            "Agora é só se preparar e aguardar o grande dia!\n\n"
+            f"Até breve,\nEquipe {nome_app}"
+        )
+
+        html = f"""
+        <html><body style="font-family:Arial,sans-serif;color:#0f172a">
+          <p>Olá <strong>{self.participante.nome}</strong>,</p>
+          <p>Recebemos a confirmação do seu pagamento para o <strong>{self.evento.nome}</strong>.</p>
+          <p>Sua inscrição agora está totalmente garantida.</p>
+          <p><strong>Resumo da inscrição:</strong><br>
+          👤 Participante: {self.participante.nome}<br>
+          📅 Data: {data_evento}<br>
+          📍 Local: {local_evento}</p>
+          <p>Agora é só se preparar e aguardar o grande dia!</p>
+          <p>Até breve,<br/>Equipe {nome_app}</p>
+        </body></html>
+        """
+
+        msg = EmailMultiAlternatives(
+            assunto, texto, settings.DEFAULT_FROM_EMAIL, [self.participante.email]
+        )
+        msg.attach_alternative(html, "text/html")
+        try:
+            msg.send()
+        except Exception:
+            pass
+
+    def enviar_email_recebida(self):
+        """
+        3) Inscrição Enviada
+        Assunto: 📩 Inscrição recebida – {{nome_evento}}
+        """
+        if not self.participante.email:
+            return
+
+        nome_app = self._site_name()
+        data_envio = timezone.localtime(self.data_inscricao).strftime("%d/%m/%Y %H:%M")
+
+        assunto = f"📩 Inscrição recebida – {self.evento.nome}"
+        texto = (
+            f"Olá {self.participante.nome},\n\n"
+            f"Recebemos sua inscrição para o {self.evento.nome}.\n"
+            "Nossa equipe vai analisar e, em breve, você receberá um e-mail confirmando sua participação.\n\n"
+            "Resumo do envio:\n"
+            f"📅 Data do envio: {data_envio}\n"
+            f"📍 Evento: {self.evento.nome}\n\n"
+            "Fique de olho no seu e-mail para os próximos passos.\n\n"
+            f"Atenciosamente,\nEquipe {nome_app}"
+        )
+
+        html = f"""
+        <html><body style="font-family:Arial,sans-serif;color:#0f172a">
+          <p>Olá <strong>{self.participante.nome}</strong>,</p>
+          <p>Recebemos sua inscrição para o <strong>{self.evento.nome}</strong>.</p>
+          <p>Nossa equipe vai analisar e, em breve, você receberá um e-mail confirmando sua participação.</p>
+          <p><strong>Resumo do envio:</strong><br>
+          📅 Data do envio: {data_envio}<br>
+          📍 Evento: {self.evento.nome}</p>
+          <p>Fique de olho no seu e-mail para os próximos passos.</p>
+          <p>Atenciosamente,<br/>Equipe {nome_app}</p>
+        </body></html>
+        """
+
+        msg = EmailMultiAlternatives(
+            assunto, texto, settings.DEFAULT_FROM_EMAIL, [self.participante.email]
+        )
+        msg.attach_alternative(html, "text/html")
+        try:
+            msg.send()
+        except Exception:
+            pass
+
+    # -------- Disparo automático no save() --------
     def save(self, *args, **kwargs):
-        enviar_selecao = False
-        enviar_pagamento = False
-        enviar_recebida = False
+        enviar_selecao   = False
+        enviar_pagto_ok  = False
+        enviar_recebida  = False
 
         if self.pk:
             antigo = Inscricao.objects.get(pk=self.pk)
+
+            # Seleção mudou: False -> True
             if not antigo.foi_selecionado and self.foi_selecionado:
                 enviar_selecao = True
+
+            # Pagamento mudou: False -> True
             if not antigo.pagamento_confirmado and self.pagamento_confirmado:
-                enviar_pagamento = True
+                enviar_pagto_ok = True
+                # conclui tudo quando pagamento confirma
                 self.inscricao_concluida = True
+
+            # Inscrição enviada: False -> True
             if not antigo.inscricao_enviada and self.inscricao_enviada:
                 enviar_recebida = True
 
         super().save(*args, **kwargs)
 
+        # E-mails pós-save (não interrompem o fluxo se der erro)
         if enviar_selecao:
             self.enviar_email_selecao()
-        if enviar_pagamento:
-            self.enviar_email_video_boas_vindas()
+        if enviar_pagto_ok:
+            self.enviar_email_pagamento_confirmado()
         if enviar_recebida:
             self.enviar_email_recebida()
-
-    def enviar_email_selecao(self):
-        url   = self.inscricao_url
-        valor = f"R$ {self.evento.valor_inscricao:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-        assunto = f"🎉 {self.participante.nome}, você foi selecionado(a)!"
-        texto = (
-            f"Olá {self.participante.nome},\n\n"
-            f"Que alegria informar que você foi selecionado(a) para “{self.evento.nome}”!\n"
-            f"Valor da Inscrição: {valor}\n\n"
-            "Para prosseguir, acesse sua inscrição:\n"
-            f"{url}\n\n"
-            "Abraços,\n"
-            f"Equipe {self.paroquia.nome}"
-        )
-        html = f"""
-        <html><body style="font-family:Arial,sans-serif;color:#333;">
-          <p>Olá <strong>{self.participante.nome}</strong>,</p>
-          <p>👏 <strong>Parabéns!</strong> Você foi selecionado(a) para <em>{self.evento.nome}</em>!</p>
-          <p>🙏 Deus tem grandes bênçãos reservadas para você.</p>
-          <p><strong>Valor:</strong> {valor}</p>
-          <div style="text-align:left;margin:30px 0;">
-            <a href="{url}"
-               style="display:inline-block;
-                      background:#28a745;color:#fff;
-                      padding:12px 24px;border-radius:6px;
-                      text-decoration:none;font-weight:bold;
-                      font-size:16px;"
-               aria-label="Ver inscrição e efetuar pagamento">
-              ▶️ Ver Inscrição e Pagar
-            </a>
-          </div>
-          <p>Qualquer dúvida, responda este e-mail.</p>
-          <p>Abraços,<br/>Equipe <em>{self.paroquia.nome}</em></p>
-        </body></html>
-        """
-        msg = EmailMultiAlternatives(
-            assunto,
-            texto,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.participante.email]
-        )
-        msg.attach_alternative(html, "text/html")
-        msg.send()
-
-    def enviar_email_video_boas_vindas(self):
-        assunto = f"✅ Pagamento confirmado – Bem-vindo(a) ao {self.evento.nome}!"
-        texto = f"Olá {self.participante.nome}, seu pagamento foi confirmado. Inscrição concluída!"
-        try:
-            site = Site.objects.get_current()
-            path = reverse('inscricoes:pagina_video_evento', kwargs={'slug': self.evento.slug})
-            link = f"https://{site.domain}{path}"
-            html = f"""
-            <p>Seja muito bem-vindo(a)!</p>
-            <p>Assista ao vídeo de boas-vindas clicando aqui:<br/><a href="{link}">{link}</a></p>
-            """
-        except Site.DoesNotExist:
-            html = None
-
-        msg = EmailMultiAlternatives(
-            assunto,
-            texto,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.participante.email]
-        )
-        if html:
-            msg.attach_alternative(html, "text/html")
-        msg.send()
-
-    def enviar_email_recebida(self):
-        assunto = f"📨 Inscrição recebida – {self.evento.nome}"
-        texto = (
-            f"Olá {self.participante.nome}!\n\n"
-            "Recebemos sua inscrição com sucesso. Em breve entraremos em contato."
-        )
-        send_mail(
-            assunto,
-            texto,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.participante.email]
-        )
 
 
 class Pagamento(models.Model):
