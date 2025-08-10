@@ -761,10 +761,19 @@ class User(AbstractUser):
 
 class PoliticaPrivacidade(models.Model):
     texto = models.TextField("Texto da Política de Privacidade")
-    logo = CloudinaryField(verbose_name="Logo", null=True, blank=True)  # Novo campo
+    logo = CloudinaryField(verbose_name="Logo", null=True, blank=True)
     imagem_camisa = CloudinaryField(verbose_name="Imagem da Camisa", null=True, blank=True)
     imagem_1 = CloudinaryField(verbose_name="Imagem 1 (opcional)", null=True, blank=True)
     imagem_2 = CloudinaryField(verbose_name="Imagem 2 (opcional)", null=True, blank=True)
+
+    # Novos campos para dados do dono do sistema
+    cpf_cnpj = models.CharField("CPF/CNPJ", max_length=18, blank=True, null=True)
+    email_contato = models.EmailField("E-mail de Contato", blank=True, null=True)
+    telefone_contato = models.CharField("Telefone de Contato", max_length=20, blank=True, null=True)
+    endereco = models.CharField("Endereço", max_length=255, blank=True, null=True)
+    numero = models.CharField("Número", max_length=10, blank=True, null=True)
+    bairro = models.CharField("Bairro", max_length=100, blank=True, null=True)
+    estado = models.CharField("Estado", max_length=2, blank=True, null=True)
 
     def __str__(self):
         return "Política de Privacidade"
