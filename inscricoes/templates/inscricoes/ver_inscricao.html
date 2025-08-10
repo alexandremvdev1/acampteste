@@ -202,6 +202,48 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        .btn-pagar {
+            flex: 1 1 45%; /* Ocupa quase metade, com gap */
+            min-width: 140px;
+            text-align: center;
+            padding: 12px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #fff;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-pagar:hover {
+            opacity: 0.9;
+        }
+
+        .btn-pagar-pix {
+            background-color: #009443; /* Verde PIX */
+        }
+
+        .btn-pagar-cartao {
+            background-color: #007bff; /* Azul Cartão */
+        }
+
+        .pagamento-opcoes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+         margin-top: 10px;
+        }
+
+        @media (max-width: 480px) {
+        .btn-pagar {
+            flex: 1 1 calc(50% - 10px); /* Mantém lado a lado no celular */
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+  }
+</style>
+
     </style>
 </head>
 
@@ -232,25 +274,24 @@
     </section>
 
     {% if inscricao.foi_selecionado and not inscricao.pagamento_confirmado %}
-  <div style="text-align:center; margin-bottom:25px;">
+  <div style="text-align:center; margin-bottom:15px;">
     <p>🎉 Você foi selecionado(a)! Para garantir sua vaga, escolha uma forma de pagamento:</p>
     <p><strong>Valor: R$ {{ evento.valor_inscricao|floatformat:2 }}</strong></p>
 
-    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <!-- PIX (mostra QR e copia e cola aqui no site) -->
-      <a href="{% url 'inscricoes:iniciar_pagamento_pix' inscricao.id %}"
-         class="btn-pagar"
-         aria-label="Pagar com PIX (recomendado)">
-         Pagar com PIX
-      </a>
+    <div class="pagamento-opcoes">
+  <a href="{% url 'inscricoes:iniciar_pagamento_pix' inscricao.id %}"
+     class="btn-pagar btn-pagar-pix"
+     aria-label="Pagar com PIX (recomendado)">
+     Pagar com PIX
+  </a>
 
-      <!-- Cartão (abre MP e volta sozinho só se cartão aprovado) -->
-      <a href="{% url 'inscricoes:aguardando_pagamento' inscricao.id %}"
-         class="btn-pagar"
-         aria-label="Pagar com Cartão (Mercado Pago)">
-         Pagar com Cartão
-      </a>
-    </div>
+  <a href="{% url 'inscricoes:aguardando_pagamento' inscricao.id %}"
+     class="btn-pagar btn-pagar-cartao"
+     aria-label="Pagar com Cartão (Mercado Pago)">
+     Pagar com Cartão
+  </a>
+</div>
+
   </div>
 {% endif %}
     <!-- Info valor e reembolso -->
