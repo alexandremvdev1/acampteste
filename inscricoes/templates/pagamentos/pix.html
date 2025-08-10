@@ -5,166 +5,241 @@
   <title>Pagamento PIX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    :root{
-      --bg:#0b1020; --card:#11162a; --text:#f4f6fb; --muted:#c1c7d3;
-      --brand:#39b885; --brand-2:#4f7cff; --shadow:0 16px 50px rgba(0,0,0,.38);
+    /* Reset e limites para evitar scroll lateral */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { overflow-x: hidden; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: #0b1020;
+      color: #f4f6fb;
+      font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 16px;
     }
     @media (prefers-color-scheme: light){
-      :root{ --bg:#f3f5f9; --card:#ffffff; --text:#0e1320; --muted:#5b6473; --shadow:0 12px 28px rgba(10,36,99,.12) }
-    }
-    *{ box-sizing:border-box }
-    body{
-      margin:0;
-      background:
-        radial-gradient(1100px 1100px at -10% -10%, rgba(57,184,133,.18), transparent 40%),
-        radial-gradient(1200px 1200px at 110% 10%, rgba(79,124,255,.16), transparent 40%),
-        var(--bg);
-      min-height:100dvh; display:grid; place-items:center; padding:28px 18px;
-      color:var(--text); font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
-    }
-    .card{
-      width:min(760px, 96vw); background:var(--card); box-shadow:var(--shadow);
-      border-radius:22px; padding:26px 22px; position:relative; overflow:hidden;
-      outline:1px solid rgba(255,255,255,.06);
-    }
-    .header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
-    .title{ display:flex; align-items:center; gap:12px }
-    .ring{
-      width:38px; height:38px; border-radius:50%;
-      background:radial-gradient(circle at 30% 25%, #4f7cff, #39b885);
-      box-shadow:0 0 0 4px rgba(79,124,255,.15);
-    }
-    h1{ margin:0; font-size:clamp(20px, 2.2vw, 26px) }
-    .muted{ color:var(--muted) }
-
-    .grid{
-      display:grid; grid-template-columns: 1fr 1.1fr; gap:22px; margin-top:18px;
-    }
-    @media (max-width: 820px){ .grid{ grid-template-columns: 1fr } }
-
-    .panel{
-      background:rgba(255,255,255,.04); border-radius:16px; padding:16px;
-      outline:1px solid rgba(255,255,255,.06);
+      body { background: #f5f7fb; color: #0e1320; }
     }
 
-    .qr{ display:grid; place-items:center; }
-    .qr img{ width:min(320px, 70vw); aspect-ratio:1/1; object-fit:contain; border-radius:12px; }
-
-    .price{
-      margin:6px 0 14px; font-size:clamp(22px, 3.8vw, 30px); font-weight:800;
-      background:linear-gradient(90deg, #39b885, #4f7cff); -webkit-background-clip:text; background-clip:text;
-      color:transparent; letter-spacing:.3px;
+    .card {
+      width: min(560px, 100%);
+      background: #11162a;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 34px rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    @media (prefers-color-scheme: light){
+      .card { background: #fff; border-color: #eef2f7; box-shadow: 0 10px 28px rgba(10,36,99,.10); }
     }
 
-    .code{
-      background:#0c1224; color:#eaf0ff; border-radius:12px; padding:12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size:.92rem; word-break:break-all; line-height:1.4; position:relative;
-      outline:1px solid rgba(255,255,255,.06);
+    .title {
+      display: flex; align-items: center; gap: 10px; justify-content: center;
+      text-align: center; margin-bottom: 6px;
     }
-    @media (prefers-color-scheme: light){ .code{ background:#f5f7fc; color:#0e1320 } }
-
-    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px }
-    .btn{
-      appearance:none; border:0; cursor:pointer; text-decoration:none;
-      display:inline-flex; align-items:center; gap:10px; padding:12px 14px;
-      border-radius:12px; font-weight:800; color:#07132a; background:#e8fff6;
-      transition:transform .12s ease, box-shadow .12s ease; box-shadow:0 10px 18px rgba(57,184,133,.22);
+    .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: linear-gradient(135deg, #39b885, #4f7cff);
+      flex: 0 0 12px;
     }
-    .btn:hover{ transform:translateY(-1px) }
-    .btn.primary{ background:linear-gradient(135deg, #39b885, #2aa16f); color:#ffffff; box-shadow:0 12px 22px rgba(57,184,133,.28) }
-    .btn.secondary{ background:linear-gradient(135deg, #4f7cff, #3f5eea); color:#fff; box-shadow:0 12px 22px rgba(79,124,255,.28) }
-    .btn.ghost{ background:linear-gradient(135deg, #2f384a, #202535); color:#e7ebf6; box-shadow:none }
+    h1 { margin: 0; font-size: 20px; }
 
-    .meta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    .chip{
-      padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06);
-      color:#e2e7f5; font-weight:700; font-size:.85rem; letter-spacing:.2px;
+    .meta-top {
+      text-align: center;
+      font-size: 14px;
+      color: #c1c7d3;
+      margin-bottom: 12px;
+    }
+    .meta-top b { color: #fff; }
+    @media (prefers-color-scheme: light){
+      .meta-top { color: #5b6473; }
+      .meta-top b { color: #0e1320; }
     }
 
-    .timer{
-      display:flex; align-items:center; gap:10px; margin-top:8px;
-      padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.04);
-      outline:1px solid rgba(255,255,255,.06); color:#e2e7f5; font-weight:700;
-    }
-    .timer .dot{
-      width:10px; height:10px; border-radius:50%; background:#39b885;
-      box-shadow:0 0 0 0 rgba(57,184,133,.55); animation: pulse 1.6s infinite;
-    }
-    @keyframes pulse { to { box-shadow:0 0 0 10px rgba(57,184,133,0) } }
+    .muted { color: #c1c7d3; font-size: 14px; text-align: center; margin: 4px 0 12px; }
+    @media (prefers-color-scheme: light){ .muted { color: #5b6473; } }
 
-    .foot{
-      margin-top:16px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      color:var(--muted); font-size:.92rem;
+    .qr {
+      display: grid; place-items: center; gap: 10px;
+      margin: 8px 0 12px;
     }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace }
+    .qr img {
+      width: min(320px, 86vw);
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 1/1;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .price {
+      text-align: center;
+      font-weight: 800;
+      font-size: 22px;
+      margin: 6px 0 12px;
+      background: linear-gradient(90deg, #39b885, #4f7cff);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    .code {
+      background: #0c1224;
+      color: #eaf0ff;
+      border-radius: 10px;
+      padding: 12px;
+      font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      max-width: 100%;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    @media (prefers-color-scheme: light){
+      .code { background: #f5f7fc; color: #0e1320; border-color: #eef2f7; }
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    @media (max-width: 420px){
+      .row { grid-template-columns: 1fr; }
+    }
+
+    .btn {
+      appearance: none; border: 0; border-radius: 10px;
+      padding: 12px; font-weight: 800; cursor: pointer;
+      text-align: center; width: 100%;
+      transition: transform .12s ease, box-shadow .12s ease;
+      outline: 1px solid transparent;
+      text-decoration: none;            /* <- sem sublinhado */
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:link, .btn:visited, .btn:hover, .btn:active { text-decoration: none; } /* reforço */
+
+    .btn:focus { outline: 2px solid rgba(79,124,255,.35); outline-offset: 2px; }
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #39b885, #2aa16f);
+      box-shadow: 0 10px 18px rgba(57,184,133,.22);
+    }
+    .btn-secondary {
+      color: #fff;
+      background: linear-gradient(135deg, #4f7cff, #3f5eea);
+      box-shadow: 0 10px 18px rgba(79,124,255,.22);
+    }
+    .btn-ghost {
+      background: transparent; color: inherit; border: 1px solid rgba(255,255,255,.16);
+    }
+    @media (prefers-color-scheme: light){
+      .btn-ghost { border-color: #e5e7eb; }
+    }
+
+    .timer {
+      display: inline-flex; align-items: center; gap: 8px;
+      justify-content: center;
+      padding: 8px 10px; border-radius: 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: #c1c7d3; font-weight: 700; font-size: 14px;
+      margin: 6px auto 0;
+    }
+    @media (prefers-color-scheme: light){
+      .timer { background: #f7f9ff; border-color: #eef2f7; color: #5b6473; }
+    }
+    .timer-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #39b885;
+      box-shadow: 0 0 0 0 rgba(57,184,133,.55);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse { to { box-shadow: 0 0 0 8px rgba(57,184,133,0); } }
+
+    .foot {
+      margin-top: 12px;
+      text-align: center;
+      color: #aab1bf;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    @media (prefers-color-scheme: light){ .foot { color: #6b7280; } }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <div class="title">
-        <span class="ring" aria-hidden="true"></span>
-        <div>
-          <h1>Finalize com PIX</h1>
-          <div class="muted">Escaneie o QR ou copie o código PIX para pagar.</div>
-        </div>
-      </div>
-      <div class="meta">
-        <span class="chip">Inscrição #{{ inscricao.id }}</span>
-        <span class="chip">Evento: {{ inscricao.evento.nome }}</span>
-      </div>
+  <main class="card" role="main" aria-labelledby="t">
+    <div class="title">
+      <span class="dot" aria-hidden="true"></span>
+      <h1 id="t">Pagamento PIX</h1>
     </div>
 
-    <div class="grid">
-      <section class="panel qr" aria-label="QR Code PIX">
-        {% if qr_code_base64 %}
-          <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code PIX"/>
-        {% endif %}
-        <div class="timer" id="timer" aria-live="polite">
-          <span class="dot" aria-hidden="true"></span>
-          Expira em <span class="mono" id="countdown">--:--</span>
-        </div>
-      </section>
-
-      <section class="panel" aria-label="Detalhes do pagamento">
-        <div class="price">R$ {{ valor|floatformat:2 }}</div>
-
-        {% if qr_code_text %}
-          <div class="code" id="pix-code" aria-label="Código PIX copia e cola">{{ qr_code_text }}</div>
-          <div class="row">
-            <button class="btn primary" id="copy-btn" type="button">📋 Copiar código</button>
-            {% if ticket_url %}
-              <a class="btn secondary" href="{{ ticket_url }}" target="_blank" rel="noopener">🔎 Ver no Mercado Pago</a>
-            {% endif %}
-            <a class="btn ghost" href="{% url 'inscricoes:ver_inscricao' inscricao.id %}">↩️ Voltar à inscrição</a>
-          </div>
-        {% endif %}
-
-        <p class="muted" style="margin-top:12px">
-          Assim que o pagamento for identificado, você será redirecionado automaticamente.
-        </p>
-      </section>
+    <!-- Participante + Evento -->
+    <div class="meta-top">
+      <div><small>Participante:</small> <b>{{ inscricao.participante.nome }}</b></div>
+      <div style="margin-top:2px;"><small>Evento:</small> <b>{{ inscricao.evento.nome }}</b></div>
     </div>
+
+    <p class="muted">Escaneie o QR ou copie o código para pagar.</p>
+
+    <section class="qr" aria-label="QR Code">
+      {% if qr_code_base64 %}
+        <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code PIX"/>
+      {% else %}
+        <div class="muted">Não foi possível carregar o QR Code.</div>
+      {% endif %}
+      <div class="timer" id="timer" aria-live="polite">
+        <span class="timer-dot" aria-hidden="true"></span>
+        Expira em <span class="mono" id="countdown">--:--</span>
+      </div>
+    </section>
+
+    <div class="price">R$ {{ valor|floatformat:2 }}</div>
+
+    {% if qr_code_text %}
+      <div id="pix-code" class="code" aria-label="Código PIX copia e cola">{{ qr_code_text }}</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-primary" id="copy-btn" type="button">📋 Copiar código</button>
+        {% if ticket_url %}
+          <a class="btn btn-secondary" href="{{ ticket_url }}" target="_blank" rel="noopener">🔎 Ver no Mercado Pago</a>
+        {% else %}
+          <a class="btn btn-ghost" href="{% url 'inscricoes:ver_inscricao' inscricao.id %}">↩️ Voltar</a>
+        {% endif %}
+      </div>
+      {% if ticket_url %}
+        <div class="row" style="margin-top:8px">
+          <a class="btn btn-ghost" href="{% url 'inscricoes:ver_inscricao' inscricao.id %}">↩️ Voltar à inscrição</a>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <p class="muted" style="text-align:center; margin-top:12px;">
+      A confirmação é automática. Você será redirecionado(a) quando o pagamento for identificado.
+    </p>
 
     <div class="foot">
-      <span>Pagamento seguro por Mercado Pago</span>
-      <span class="mono">ID: {{ payment_id }}</span>
+      Mercado Pago • ID: {{ payment_id }}
     </div>
-  </div>
+  </main>
 
   <script>
-    // Copiar código
+    // Copiar código PIX
     const btn = document.getElementById('copy-btn');
     btn?.addEventListener('click', async () => {
-      const code = document.getElementById('pix-code').innerText;
+      const el = document.getElementById('pix-code');
+      if (!el) return;
       try {
-        await navigator.clipboard.writeText(code);
+        await navigator.clipboard.writeText(el.innerText.trim());
         btn.textContent = '✅ Copiado!';
-        setTimeout(() => btn.textContent = '📋 Copiar código', 1800);
+        setTimeout(() => btn.textContent = '📋 Copiar código', 1600);
       } catch(e) {
         btn.textContent = 'Tente novamente';
-        setTimeout(() => btn.textContent = '📋 Copiar código', 1800);
+        setTimeout(() => btn.textContent = '📋 Copiar código', 1600);
       }
     });
 
@@ -192,14 +267,8 @@
         const r = await fetch(`/api/pagamento/status/${inscricaoId}/`, { cache: "no-store" });
         if (!r.ok) throw new Error();
         const j = await r.json();
-        if (j.status === "confirmado") {
-          window.location.href = `/pagamento/sucesso/{{ inscricao.id }}/`;
-          return;
-        }
-        if (j.status === "cancelado") {
-          window.location.href = `/pagamento/falha/{{ inscricao.id }}/`;
-          return;
-        }
+        if (j.status === "confirmado") { window.location.href = `/pagamento/sucesso/{{ inscricao.id }}/`; return; }
+        if (j.status === "cancelado")  { window.location.href = `/pagamento/falha/{{ inscricao.id }}/`;   return; }
       } catch(e) {}
       setTimeout(checar, 5000);
     }

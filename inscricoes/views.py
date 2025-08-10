@@ -9,6 +9,7 @@ from datetime import timedelta, timezone as dt_tz
 # ——— Terceiros
 import mercadopago
 import qrcode
+from django.views.decorators.http import require_http_methods
 
 # ——— Django
 from django.conf import settings
@@ -436,9 +437,12 @@ def editar_inscricao(request, pk):
 @login_required
 def deletar_inscricao(request, pk):
     inscricao = get_object_or_404(Inscricao, pk=pk)
+
     if request.method == 'POST':
+        evento_id = inscricao.evento.id
         inscricao.delete()
-        return redirect('inscricoes:admin_paroquia_painel')
+        return redirect('inscricoes:evento_participantes', evento_id=evento_id)
+
     return render(request, 'inscricoes/confirma_delecao.html', {'obj': inscricao})
 
 @login_required
@@ -510,7 +514,7 @@ def incluir_pagamento(request, inscricao_id):
                     'valor': valor_decimal,
                     'metodo': metodo,
                     'status': Pagamento.StatusPagamento.CONFIRMADO,
-                    'data_pagamento': timezone.now(),
+                    'data_pagamento': dj_tz.now(),
                 }
             )
             # Se enviou comprovante, salva no campo (substitui se já tinha)
@@ -1916,3 +1920,45 @@ def status_pagamento(request, inscricao_id):
             status = "cancelado"
 
     return JsonResponse({"status": status, "pagamento_confirmado": inscricao.pagamento_confirmado})
+
+@require_http_methods(["GET", "POST"])
+def minhas_inscricoes_por_cpf(request):
+    """
+    Página pública: participante digita o CPF e vê todas as inscrições dele.
+    Para cada inscrição (evento) mostra status e botões:
+      - Pagar com PIX (gera QR aqui no site)
+      - Pagar com Cartão (abre checkout do MP)
+    """
+    inscricoes = []
+    participante = None
+    cpf_informado = ""
+
+    if request.method == "POST":
+        cpf_informado = (request.POST.get("cpf") or "").strip()
+        cpf_limpo = "".join([c for c in cpf_informado if c.isdigit()])
+
+        if len(cpf_limpo) != 11:
+            messages.error(request, "Informe um CPF válido (11 dígitos).")
+        else:
+            try:
+                participante = Participante.objects.get(cpf=cpf_limpo)
+                inscricoes = (
+                    Inscricao.objects
+                    .filter(participante=participante)
+                    .select_related("evento", "paroquia")
+                    .order_by("-id")
+                )
+                if not inscricoes:
+                    messages.info(request, "Nenhuma inscrição encontrada para este CPF.")
+            except Participante.DoesNotExist:
+                messages.error(request, "CPF não encontrado em nosso sistema.")
+
+    # também permite pré-preencher via querystring ?cpf=...
+    if request.method == "GET" and request.GET.get("cpf"):
+        cpf_informado = request.GET.get("cpf").strip()
+
+    return render(request, "inscricoes/minhas_inscricoes.html", {
+        "cpf_informado": cpf_informado,
+        "participante": participante,
+        "inscricoes": inscricoes,
+    })

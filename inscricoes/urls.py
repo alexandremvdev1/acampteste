@@ -114,6 +114,7 @@ urlpatterns = [
     path("api/pagamento/status/<int:inscricao_id>/", views.status_pagamento, name="status_pagamento"),  # se ainda não tiver
     path("pagamento/aguardando/<int:inscricao_id>/", views.aguardando_pagamento, name="aguardando_pagamento"),  # opcional: cartões
 
+    path("minhas-inscricoes/", views.minhas_inscricoes_por_cpf, name="minhas_inscricoes_por_cpf"),
 
 ]
 

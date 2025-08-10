@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Confirmar exclusão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{ --bg:#f8fafc; --card:#fff; --text:#0f172a; --muted:#64748b; --danger:#dc2626; --line:#e5e7eb; }
+    *{ box-sizing: border-box }
+    body{ margin:0; background:var(--bg); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .wrap{ max-width:560px; margin:38px auto; padding:0 16px; }
+    .card{ background:var(--card); border-radius:14px; padding:22px; box-shadow:0 10px 28px rgba(0,0,0,.06); }
+    h1{ margin:0 0 8px; font-size:20px; color:var(--text); }
+    p{ margin:0; color:var(--muted); }
+    .box{ background:#f3f4f6; border:1px solid var(--line); border-radius:10px; padding:12px; margin:14px 0 0 }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px }
+    .btn{ appearance:none; border:1px solid var(--line); background:#fff; color:#111827; padding:12px 14px; border-radius:10px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block; flex:1 1 180px; text-align:center }
+    .btn-danger{ background:var(--danger); color:#fff; border-color:transparent }
+    .btn:hover{ filter:brightness(.98) }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Excluir inscrição?</h1>
+      <p>Esta ação é permanente e não poderá ser desfeita.</p>
+
+      {% if obj %}
+      <div class="box">
+        <div><strong>Participante:</strong> {{ obj.participante.nome }}</div>
+        <div><strong>Evento:</strong> {{ obj.evento.nome }}</div>
+        <div><strong>ID:</strong> {{ obj.id }}</div>
+      </div>
+      {% endif %}
+
+      <form method="post" class="row">
+        {% csrf_token %}
+        <a class="btn" href="{% url 'inscricoes:evento_participantes' obj.evento.id %}">Cancelar</a>
+        <button class="btn btn-danger" type="submit">Sim, excluir</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

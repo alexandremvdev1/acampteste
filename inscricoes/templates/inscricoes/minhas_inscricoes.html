@@ -1,0 +1,143 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Minhas Inscrições</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--ok:#16a34a;--warn:#f59e0b;--danger:#dc2626;--btn:#0ea5e9;
+      --pix:#009443;--cardpay:#2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:920px;margin:32px auto;padding:0 16px}
+    .title{margin:0 0 16px;color:var(--text);font-size:24px;text-align:center}
+    .card{background:var(--card);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.06);padding:20px}
+
+    /* form 100% responsivo */
+    form{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;width:100%}
+    input[type=text]{
+      flex:1 1 320px;   /* cresce até preencher, base 320px */
+      min-width:0;      /* evita overflow do flex-item */
+      width:100%;
+      padding:12px 14px;border-radius:10px;border:1px solid #e5e7eb;font-size:16px
+    }
+    .btn{appearance:none;border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn-primary{background:var(--btn);color:#fff}
+    .btn-light{background:#fff;border:1px solid #e5e7eb;color:#111827}
+    .btn-pay{background:var(--pix);color:#fff}
+    .btn-card{background:var(--cardpay);color:#fff}
+
+    .muted{color:var(--muted);font-size:14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .item{background:#f3f4f6;border-radius:12px;padding:14px}
+    .item small{display:block;color:var(--muted);margin-bottom:4px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+    .badge.ok{background:rgba(22,163,74,.12);color:var(--ok)}
+    .badge.warn{background:rgba(245,158,11,.12);color:var(--warn)}
+    .badge.danger{background:rgba(220,38,38,.12);color:var(--danger)}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .who{color:#334155;font-weight:600}
+
+    /* área dos botões de pagamento: lado a lado no desktop, 100% no mobile */
+    .pay-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .pay-actions .btn{flex:1 1 200px;text-align:center}
+
+    /* Ver detalhes separado embaixo */
+    .details{margin-top:10px}
+
+    /* Mobile-first refinements */
+    @media (max-width: 576px){
+      .wrap{margin:16px auto;padding:0 10px}
+      .title{font-size:20px}
+      .card{padding:16px}
+      form{flex-direction:column;align-items:stretch}
+      input[type=text]{flex:1 1 auto;width:100%}
+      .grid{grid-template-columns:1fr}
+      .pay-actions .btn{flex:1 1 100%} /* botões de pagamento empilham */
+      .details .btn{width:100%}       /* 'Ver detalhes' ocupa a largura toda */
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Minhas Inscrições</h1>
+
+    <div class="card">
+      {% include "partials/flash_messages.html" %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input
+          type="text"
+          name="cpf"
+          inputmode="numeric"
+          placeholder="Digite seu CPF (somente números)"
+          value="{{ cpf_informado|default_if_none:'' }}"
+          maxlength="14"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+          aria-label="CPF do participante"
+        >
+        <button class="btn btn-primary" type="submit">Buscar</button>
+      </form>
+
+      {% if participante %}
+        <div class="header">
+          <div class="who">{{ participante.nome }}</div>
+          <div class="muted">CPF: {{ participante.cpf }}</div>
+        </div>
+
+        {% if inscricoes %}
+          <div class="grid">
+            {% for ins in inscricoes %}
+              {% if ins.foi_selecionado %}
+              <div class="item">
+                <small>Evento</small>
+                <div style="font-weight:700;color:#0f172a">{{ ins.evento.nome }}</div>
+
+                <small>Paróquia</small>
+                <div>{{ ins.evento.paroquia.nome }}</div>
+
+                <small>Data</small>
+                <div>{{ ins.evento.data_inicio|date:"d/m/Y" }}</div>
+
+                <div class="row" style="margin-top:8px">
+                  <span class="badge {% if ins.pagamento_confirmado %}ok{% elif ins.foi_selecionado %}warn{% else %}danger{% endif %}">
+                    {% if ins.pagamento_confirmado %}Pagamento confirmado
+                    {% elif ins.foi_selecionado %}Selecionado, aguardando pagamento
+                    {% else %}Aguardando seleção
+                    {% endif %}
+                  </span>
+                </div>
+
+                <div class="row">
+                  <small>Valor: <b>R$ {{ ins.evento.valor_inscricao|floatformat:2 }}</b></small>
+                </div>
+
+                {% if not ins.pagamento_confirmado %}
+                <div class="pay-actions" style="margin-top:10px;">
+                  <a class="btn btn-pay"  href="{% url 'inscricoes:iniciar_pagamento_pix' ins.id %}">Pagar com PIX</a>
+                  <a class="btn btn-card" href="{% url 'inscricoes:aguardando_pagamento' ins.id %}">Pagar com Cartão</a>
+                </div>
+                {% endif %}
+
+                <div class="details">
+                  <a class="btn btn-light" href="{% url 'inscricoes:ver_inscricao' ins.id %}">Ver detalhes</a>
+                </div>
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted">Nenhuma inscrição localizada para este CPF.</p>
+        {% endif %}
+      {% else %}
+        <p class="muted">Digite seu CPF acima para ver seus eventos e realizar o pagamento.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

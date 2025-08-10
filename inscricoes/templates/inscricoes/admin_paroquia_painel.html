@@ -280,7 +280,38 @@
         <!-- Botão Mercado Pago -->
         <a href="{% url 'inscricoes:mp_config' %}" class="btn">💳 Mercado Pago</a>
     </div>
+<div class="card" style="margin-top:16px;">
+  <div class="card-header">Link público do Portal do Participante</div>
+  <div class="card-info">
+    Envie este link para que o participante acesse com CPF e efetue o pagamento:
+  </div>
 
+  <div class="card-link" id="portal-link">
+    <a href="{% url 'inscricoes:minhas_inscricoes_por_cpf' %}" target="_blank">
+      {{ request.build_absolute_uri|slice:"://"|yesno:""|default:"" }}{% url 'inscricoes:minhas_inscricoes_por_cpf' %}
+    </a>
+  </div>
+
+  <div class="card-actions">
+    <a href="{% url 'inscricoes:minhas_inscricoes_por_cpf' %}" class="view-btn" target="_blank">🔗 Abrir portal</a>
+    <a href="#" class="edit-btn" onclick="copyPortalLink(event)">📋 Copiar link</a>
+  </div>
+</div>
+
+<script>
+  function copyPortalLink(e){
+    e.preventDefault();
+    const a = document.querySelector('#portal-link a');
+    if(!a) return;
+    const url = a.href;
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = e.currentTarget;
+      const old = btn.textContent;
+      btn.textContent = '✅ Copiado!';
+      setTimeout(()=> btn.textContent = old, 1800);
+    });
+  }
+</script>
     <h2>Eventos Recentes</h2>
 
     {% if eventos %}
