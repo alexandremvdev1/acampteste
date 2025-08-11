@@ -5,6 +5,8 @@ import logging
 from io import BytesIO
 from urllib.parse import urljoin
 from datetime import timedelta, timezone as dt_tz
+from django.utils import timezone
+
 
 # ——— Terceiros
 import mercadopago
