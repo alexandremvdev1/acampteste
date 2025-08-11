@@ -1,453 +1,218 @@
-{# templates/inscricoes/imprimir_todas_fichas.html #}
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Todas as Fichas – {{ evento.nome }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        /* --- Cola todo o CSS do seu ficha_inscricao.html aqui --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<title>Todas as Fichas – {{ evento.nome|default:"não informado" }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  /* Forçar 1 ficha por página A4 */
+  @page { size: A4 portrait; margin: 6mm; }
+  :root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#ffffff}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);font-size:12px;line-height:1.2}
 
-        .container {
-            width: 98%;
-            max-width: 1200px;
-            background: #fff;
-            padding: 6px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            margin: 2px;
-        }
+  .sheet{max-width:210mm;margin:0 auto;padding:6mm;position:relative;page-break-after: always;}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+  .t-left{min-width:0}
+  .t-title{font-weight:700;margin:0;font-size:14px;line-height:1}
+  .t-sub{margin:3px 0 0 0;color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120mm}
+  .media{display:flex;align-items:center;gap:6px}
+  .photo{width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:#f3f4f6}
+  .qr{width:72px;height:72px;border:1px dashed var(--line);border-radius:4px;padding:2px;background:#fff}
 
-        .event-header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
+  .grid{display:grid;grid-template-columns:repeat(18,1fr);grid-auto-flow:dense;gap:4px}
+  .sec{margin-bottom:6px}
+  .sec h3{margin:0 0 4px 0;font-size:11px;color:#111}
+  .f{display:flex;flex-direction:column;min-width:0}
+  .f label{font-size:9px;color:var(--muted);margin-bottom:1px;line-height:1}
+  .v{border:1px solid var(--line);border-radius:4px;padding:4px 6px;min-height:22px;display:flex;align-items:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#fff}
+  .v-wrap{white-space:normal;word-break:break-word}
 
-        .event-banner {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
+  .span-18{grid-column:span 18}.span-16{grid-column:span 16}.span-12{grid-column:span 12}
+  .span-10{grid-column:span 10}.span-9{grid-column:span 9}
+  .span-8{grid-column:span 8}.span-7{grid-column:span 7}
+  .span-6{grid-column:span 6}.span-5{grid-column:span 5}
+  .span-4{grid-column:span 4}.span-3{grid-column:span 3}
+  .span-2{grid-column:span 2}.span-1{grid-column:span 1}
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 6px;
-            font-size: 1.1em;
-        }
+  .footer{margin-top:6px;text-align:center;font-size:9px;color:var(--muted)}
+  .footer img{display:block;margin:0 auto 4px auto;max-height:16px}
 
-        h2 {
-            color: #555;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 2px;
-            margin-top: 10px;
-            font-size: 1em;
-        }
+  .btn-print{background:#2563eb;color:#fff;border:none;padding:6px 10px;font-size:11px;border-radius:4px;cursor:pointer}
+  .toolbar{display:flex;justify-content:center;gap:8px;padding:8px}
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            /* Ajuste para telas menores */
-            gap: 2px;
-            margin-bottom: 2px;
-        }
-
-        .form-group {
-            margin-bottom: 1px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 1px;
-            color: #777;
-            font-size: 0.6em;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select {
-            width: 100%;
-            padding: 3px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            /* Campos arredondados */
-            box-sizing: border-box;
-            margin-top: 1px;
-            font-size: 0.6em;
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 6px;
-        }
-
-        .btn {
-            padding: 5px 8px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            font-size: 0.6em;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-
-        .photo-container {
-            text-align: center;
-            margin-bottom: 6px;
-        }
-
-        .photo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            margin-bottom: 2px;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 8px;
-            color: #aaa;
-            font-size: 0.5em;
-        }
-
-        /* Estilos para telas menores */
-        @media (max-width: 600px) {
-            .container {
-                width: 98%;
-                padding: 5px;
-            }
-
-            h1 {
-                font-size: 0.9em;
-            }
-
-            h2 {
-                font-size: 0.8em;
-            }
-
-            .grid-container {
-                grid-template-columns: 1fr;
-                /* Uma coluna em telas muito pequenas */
-            }
-
-            .btn {
-                padding: 4px 6px;
-                font-size: 0.5em;
-            }
-        }
-
-        /* Força quebra de página após cada ficha */
-        .page-break {
-            page-break-after: always;
-        }
-
-        @media print {
-            body {
-                background: none;
-            }
-
-            .btn-container,
-            .footer {
-                display: none;
-            }
-        }
-    </style>
+  @media print{
+    body{font-size:10px}
+    .t-title{font-size:12px}
+    .t-sub{font-size:9px;max-width:140mm}
+    .photo{width:50px;height:50px}
+    .qr{width:64px;height:64px}
+    .toolbar{display:none!important}
+  }
+</style>
 </head>
-
 <body>
-    {% for inscricao in inscricoes %}
-    <div class="container">
-        <div class="event-header">
-            <h2>{{ inscricao.evento.nome }}</h2>
-        </div>
 
-        <h1>FICHA DE INSCRIÇÃO</h1>
+<!-- Barra para impressão (oculta no print) -->
+<div class="toolbar">
+  <button class="btn-print" onclick="window.print()">Imprimir</button>
+</div>
 
-        <div class="photo-container">
-            {% if inscricao.participante.foto %}
-            <img src="{{ inscricao.participante.foto.url }}" alt="Foto do Participante" class="photo">
-            {% else %}
-            <div class="photo">Sem foto</div>
-            {% endif %}
-        </div>
-
-        <h2>Dados do Participante</h2>
-        <div class="grid-container">
-            <div class="form-group" style="grid-column: span 2;">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" value="{{ inscricao.participante.nome }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="data_nascimento">Data Nasc:</label>
-                {% with base=inscricao.inscricaosenior|default:inscricao.inscricaojuvenil|default:inscricao.inscricaomirim|default:inscricao.inscricaoservos %}
-                <input type="text" id="data_nascimento" value="{{ base.data_nascimento|date:'d/m/Y' }}"
-                    readonly>
-                {% endwith %}
-            </div>
-            <div class="form-group">
-                <label for="cpf">CPF:</label>
-                <input type="text" id="cpf" value="{{ inscricao.participante.cpf }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" value="{{ inscricao.participante.telefone }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" value="{{ inscricao.participante.email }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="cep">CEP:</label>
-                <input type="text" id="cep" value="{{ inscricao.participante.CEP }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="endereco">Endereço:</label>
-                <input type="text" id="endereco" value="{{ inscricao.participante.endereco }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="numero">Número:</label>
-                <input type="text" id="numero" value="{{ inscricao.participante.numero }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="bairro">Bairro:</label>
-                <input type="text" id="bairro" value="{{ inscricao.participante.bairro }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="cidade">Cidade:</label>
-                <input type="text" id="cidade" value="{{ inscricao.participante.cidade }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="estado">Estado:</label>
-                <input type="text" id="estado" value="{{ inscricao.participante.estado }}" readonly>
-            </div>
-        </div>
-
-        <h2>Dados Adicionais</h2>
-        <div class="grid-container">
-            {% with base=inscricao.inscricaosenior|default:inscricao.inscricaojuvenil|default:inscricao.inscricaomirim|default:inscricao.inscricaoservos %}
-            <div class="form-group">
-                <label for="altura">Altura:</label>
-                <input type="text" id="altura" value="{{ base.altura }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="peso">Peso:</label>
-                <input type="text" id="peso" value="{{ base.peso }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="batizado">Batizado?</label>
-                <input type="text" id="batizado" value="{{ base.get_batizado_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="estado_civil">Estado Civil:</label>
-                <input type="text" id="estado_civil" value="{{ base.get_estado_civil_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="casado_igreja">Casado Igreja?</label>
-                <input type="text" id="casado_igreja" value="{{ base.get_casado_na_igreja_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="paroquia">Paróquia:</label>
-                <input type="text" id="paroquia" value="{{ base.paroquia }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="pastoral">Pastoral:</label>
-                <input type="text" id="pastoral" value="{{ base.pastoral_movimento }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="dizimista">Dizimista?</label>
-                <input type="text" id="dizimista" value="{{ base.get_dizimista_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="crismado">Crismado?</label>
-                <input type="text" id="crismado" value="{{ base.get_crismado_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="tamanho_camisa">Tam. Camisa:</label>
-                <input type="text" id="tamanho_camisa" value="{{ base.tamanho_camisa }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="problema_saude">Prob. Saúde?</label>
-                <input type="text" id="problema_saude" value="{{ base.get_problema_saude_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="qual_problema_saude">Qual Prob.?</label>
-                <input type="text" id="qual_problema_saude" value="{{ base.qual_problema_saude }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="medicamento">Medicamento?</label>
-                <input type="text" id="medicamento" value="{{ base.get_medicamento_controlado_display }}"
-                    readonly>
-            </div>
-            <div class="form-group">
-                <label for="qual_medicamento_controlado">Qual Medic.?</label>
-                <input type="text" id="qual_medicamento_controlado" value="{{ base.qual_medicamento_controlado }}"
-                    readonly>
-            </div>
-            <div class="form-group">
-                <label for="indicado_por">Indicado Por:</label>
-                <input type="text" id="indicado_por" value="{{ base.indicado_por }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="pressao_alta">Pressão Alta?</label>
-                <input type="text" id="pressao_alta" value="{{ base.get_pressao_alta_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="diabetes">Diabetes?</label>
-                <input type="text" id="diabetes" value="{{ base.get_diabetes_display }}" readonly>
-            </div>
-            {% endwith %}
-        </div>
-
-        <h2>Dados do Cônjuge</h2>
-        {% if inscricao.conjuge %}
-        <div class="grid-container">
-            <div class="form-group">
-                <label for="nome_conjuge">Nome Cônjuge:</label>
-                <input type="text" id="nome_conjuge" value="{{ inscricao.conjuge.nome }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="conjuge_inscrito">Cônjuge Inscrito?</label>
-                <input type="text" id="conjuge_inscrito"
-                    value="{{ inscricao.conjuge.get_conjuge_inscrito_display }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="ja_e_campista">Já é Campista?</label>
-                <input type="text" id="ja_e_campista" value="{{ inscricao.conjuge.get_ja_e_campista_display }}"
-                    readonly>
-            </div>
-        </div>
-        {% endif %}
-
-        <h2>Dados da Paróquia</h2>
-        <div class="grid-container">
-            <div class="form-group">
-                <label for="nome_paroquia">Nome Paróquia:</label>
-                <input type="text" id="nome_paroquia" value="{{ inscricao.paroquia.nome }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="cidade_paroquia">Cidade:</label>
-                <input type="text" id="cidade_paroquia" value="{{ inscricao.paroquia.cidade }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="estado_paroquia">Estado:</label>
-                <input type="text" id="estado_paroquia" value="{{ inscricao.paroquia.estado }}" readonly>
-            </div>
-        </div>
-
-        <h2>Responsáveis</h2>
-        <h3>Responsável 1</h3>
-        <div class="grid-container">
-            <div class="form-group">
-                <label for="responsavel_1_nome">Nome:</label>
-                <input type="text" id="responsavel_1_nome" value="{{ inscricao.responsavel_1_nome }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_1_telefone">Telefone:</label>
-                <input type="tel" id="responsavel_1_telefone" value="{{ inscricao.responsavel_1_telefone }}"
-                    readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_1_grau_parentesco">Grau:</label>
-                <input type="text" id="responsavel_1_grau_parentesco"
-                    value="{{ inscricao.responsavel_1_grau_parentesco }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_1_ja_e_campista">Já é Campista:</label>
-                <input type="text" id="responsavel_1_ja_e_campista"
-                    value="{% if inscricao.responsavel_1_ja_e_campista %}Sim{% else %}Não{% endif %}" readonly>
-            </div>
-        </div>
-
-        <h3>Responsável 2</h3>
-        <div class="grid-container">
-            <div class="form-group">
-                <label for="responsavel_2_nome">Nome:</label>
-                <input type="text" id="responsavel_2_nome" value="{{ inscricao.responsavel_2_nome }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_2_telefone">Telefone:</label>
-                <input type="tel" id="responsavel_2_telefone" value="{{ inscricao.responsavel_2_telefone }}"
-                    readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_2_grau_parentesco">Grau:</label>
-                <input type="text" id="responsavel_2_grau_parentesco"
-                    value="{{ inscricao.responsavel_2_grau_parentesco }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="responsavel_2_ja_e_campista">Já é Campista:</label>
-                <input type="text" id="responsavel_2_ja_e_campista"
-                    value="{% if inscricao.responsavel_2_ja_e_campista %}Sim{% else %}Não{% endif %}" readonly>
-            </div>
-        </div>
-
-        <h2>Contato Emergência</h2>
-        <div class="grid-container">
-            <div class="form-group">
-                <label for="contato_emergencia_nome">Nome:</label>
-                <input type="text" id="contato_emergencia_nome" value="{{ inscricao.contato_emergencia_nome }}"
-                    readonly>
-            </div>
-            <div class="form-group">
-                <label for="contato_emergencia_telefone">Telefone:</label>
-                <input type="tel" id="contato_emergencia_telefone"
-                    value="{{ inscricao.contato_emergencia_telefone }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="contato_emergencia_grau_parentesco">Grau:</label>
-                <input type="text" id="contato_emergencia_grau_parentesco"
-                    value="{{ inscricao.contato_emergencia_grau_parentesco }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="contato_emergencia_ja_e_campista">Já é Campista:</label>
-                <input type="text" id="contato_emergencia_ja_e_campista"
-                    value="{% if inscricao.contato_emergencia_ja_e_campista %}Sim{% else %}Não{% endif %}"
-                    readonly>
-            </div>
-        </div>
-
-        <div class="footer">
-            Desenvolvido por Alexandre Martins Vieira
-        </div>
+{% for inscricao in inscricoes %}
+{% with base=inscricao.inscricaosenior|default:inscricao.inscricaojuvenil|default:inscricao.inscricaomirim|default:inscricao.inscricaoservos %}
+<div class="sheet">
+  <!-- Cabeçalho -->
+  <div class="top">
+    <div class="t-left">
+      <h1 class="t-title">FICHA DE INSCRIÇÃO</h1>
+      <div class="t-sub">{{ inscricao.evento.nome|default:"não informado" }}</div>
     </div>
+    <div class="media">
+      {% if inscricao.participante.foto %}
+        <img class="photo" src="{{ inscricao.participante.foto.url }}" alt="Foto do participante">
+      {% else %}
+        <div class="photo" style="display:grid;place-items:center;font-size:9px;color:#9ca3af">sem foto</div>
+      {% endif %}
+      <img class="qr" src="{% url 'inscricoes:qr_code_png' inscricao.participante.qr_token %}" alt="QR participante">
+    </div>
+  </div>
 
-    <div class="page-break"></div>
-    {% empty %}
-    <p style="text-align:center; padding:20px;">Nenhuma ficha para imprimir.</p>
-    {% endfor %}
+  <!-- Participante -->
+  <div class="sec">
+    <h3>Participante</h3>
+    <div class="grid">
+      <div class="f span-12"><label>Nome</label><div class="v">{{ inscricao.participante.nome|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Nasc.</label><div class="v">{{ base.data_nascimento|date:"d/m/Y"|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>CPF</label><div class="v">{{ inscricao.participante.cpf|default:"não informado" }}</div></div>
 
-    <script>
-        // dispara a impressão assim que carregar
-        window.onload = () => window.print();
-    </script>
+      <div class="f span-4"><label>Telefone</label><div class="v">{{ inscricao.participante.telefone|default:"não informado" }}</div></div>
+      <div class="f span-8"><label>E-mail</label><div class="v">{{ inscricao.participante.email|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>CEP</label><div class="v">{{ inscricao.participante.CEP|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Nº</label><div class="v">{{ inscricao.participante.numero|default:"não informado" }}</div></div>
+
+      <div class="f span-8"><label>Endereço</label><div class="v">{{ inscricao.participante.endereco|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Bairro</label><div class="v">{{ inscricao.participante.bairro|default:"não informado" }}</div></div>
+      <div class="f span-6"><label>Cidade</label><div class="v">{{ inscricao.participante.cidade|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>UF</label><div class="v">{{ inscricao.participante.estado|default:"não informado" }}</div></div>
+    </div>
+  </div>
+
+  <!-- Dados adicionais -->
+  <div class="sec">
+    <h3>Dados adicionais</h3>
+    <div class="grid">
+      <div class="f span-2"><label>Altura</label><div class="v">{{ base.altura|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Peso</label><div class="v">{{ base.peso|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Batizado?</label><div class="v">{{ base.get_batizado_display|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Estado civil</label><div class="v">{{ base.get_estado_civil_display|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Casado na Igreja?</label><div class="v">{{ base.get_casado_na_igreja_display|default:"não informado" }}</div></div>
+
+      <div class="f span-6"><label>Paróquia</label><div class="v">{{ base.paroquia|default:"não informado" }}</div></div>
+      <div class="f span-6"><label>Pastoral/Movimento</label><div class="v">{{ base.pastoral_movimento|default:"não informado" }}</div></div>
+      <div class="f span-6"><label>Outra Pastoral/Movimento</label><div class="v">{{ base.outra_pastoral_movimento|default:"não informado" }}</div></div>
+
+      <div class="f span-2"><label>Dizimista?</label><div class="v">{{ base.get_dizimista_display|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Crismado?</label><div class="v">{{ base.get_crismado_display|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Camisa</label><div class="v">{{ base.tamanho_camisa|default:"não informado" }}</div></div>
+
+      <div class="f span-12"><label>Indicado por</label><div class="v">{{ base.indicado_por|default:"não informado" }}</div></div>
+    </div>
+  </div>
+
+  <!-- Saúde (inclui Pressão/Diabetes aqui) -->
+  <div class="sec">
+    <h3>Saúde</h3>
+    <div class="grid">
+      <div class="f span-3"><label>Pressão alta?</label><div class="v">{{ base.get_pressao_alta_display|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Diabetes?</label><div class="v">{{ base.get_diabetes_display|default:"não informado" }}</div></div>
+
+      <div class="f span-2"><label>Prob. Saúde?</label><div class="v">{{ base.get_problema_saude_display|default:"não informado" }}</div></div>
+      <div class="f span-7"><label>Qual?</label><div class="v v-wrap">{{ base.qual_problema_saude|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Med. Ctrl.?</label><div class="v">{{ base.get_medicamento_controlado_display|default:"não informado" }}</div></div>
+      <div class="f span-7"><label>Qual?</label><div class="v v-wrap">{{ base.qual_medicamento_controlado|default:"não informado" }}</div></div>
+
+      <div class="f span-4"><label>Protocolo</label><div class="v v-wrap">{{ base.protocolo_administracao|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Mob. Red.?</label><div class="v">{{ base.get_mobilidade_reduzida_display|default:"não informado" }}</div></div>
+      <div class="f span-6"><label>Qual?</label><div class="v v-wrap">{{ base.qual_mobilidade_reduzida|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Tipo Sang.</label><div class="v">{{ base.tipo_sanguineo|default:"não informado" }}</div></div>
+      <div class="f span-4"><label><!-- espaço --></label><div class="v" style="border:none;background:transparent;min-height:0;padding:0"></div></div>
+
+      <div class="f span-2"><label>Alerg. Alim.?</label><div class="v">{{ base.get_alergia_alimento_display|default:"não informado" }}</div></div>
+      <div class="f span-7"><label>Qual?</label><div class="v v-wrap">{{ base.qual_alergia_alimento|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>Alerg. Med.?</label><div class="v">{{ base.get_alergia_medicamento_display|default:"não informado" }}</div></div>
+      <div class="f span-7"><label>Qual?</label><div class="v v-wrap">{{ base.qual_alergia_medicamento|default:"não informado" }}</div></div>
+
+      <div class="f span-18"><label>Informações extras</label><div class="v v-wrap">{{ base.informacoes_extras|default:"não informado" }}</div></div>
+    </div>
+  </div>
+
+  <!-- Cônjuge -->
+  {% if inscricao.conjuge or base.nome_conjuge %}
+  <div class="sec">
+    <h3>Cônjuge</h3>
+    <div class="grid">
+      {% if inscricao.conjuge %}
+        <div class="f span-10"><label>Nome</label><div class="v">{{ inscricao.conjuge.nome|default:"não informado" }}</div></div>
+        <div class="f span-4"><label>Inscrito?</label><div class="v">{{ inscricao.conjuge.get_conjuge_inscrito_display|default:"não informado" }}</div></div>
+        <div class="f span-4"><label>Já é campista?</label><div class="v">{{ inscricao.conjuge.get_ja_e_campista_display|default:"não informado" }}</div></div>
+      {% else %}
+        <div class="f span-10"><label>Nome</label><div class="v">{{ base.nome_conjuge|default:"não informado" }}</div></div>
+        <div class="f span-4"><label>Inscrito?</label><div class="v">{{ base.get_conjuge_inscrito_display|default:"não informado" }}</div></div>
+        <div class="f span-4"><label><!-- vazio --></label><div class="v" style="border:none;background:transparent;min-height:0;padding:0"></div></div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Paróquia (da inscrição) -->
+  <div class="sec">
+    <h3>Paróquia (Inscrição)</h3>
+    <div class="grid">
+      <div class="f span-10"><label>Paróquia</label><div class="v">{{ inscricao.paroquia.nome|default:"não informado" }}</div></div>
+      <div class="f span-6"><label>Cidade</label><div class="v">{{ inscricao.paroquia.cidade|default:"não informado" }}</div></div>
+      <div class="f span-2"><label>UF</label><div class="v">{{ inscricao.paroquia.estado|default:"não informado" }}</div></div>
+    </div>
+  </div>
+
+  <!-- Responsáveis -->
+  <div class="sec">
+    <h3>Responsáveis</h3>
+    <div class="grid">
+      <div class="f span-10"><label>Resp. 1 — Nome</label><div class="v">{{ inscricao.responsavel_1_nome|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Telefone</label><div class="v">{{ inscricao.responsavel_1_telefone|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Grau</label><div class="v">{{ inscricao.responsavel_1_grau_parentesco|default:"não informado" }}</div></div>
+      <div class="f span-1"><label>Camp.</label><div class="v">{% if inscricao.responsavel_1_ja_e_campista %}Sim{% else %}Não{% endif %}</div></div>
+
+      <div class="f span-10"><label>Resp. 2 — Nome</label><div class="v">{{ inscricao.responsavel_2_nome|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Telefone</label><div class="v">{{ inscricao.responsavel_2_telefone|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Grau</label><div class="v">{{ inscricao.responsavel_2_grau_parentesco|default:"não informado" }}</div></div>
+      <div class="f span-1"><label>Camp.</label><div class="v">{% if inscricao.responsavel_2_ja_e_campista %}Sim{% else %}Não{% endif %}</div></div>
+    </div>
+  </div>
+
+  <!-- Emergência -->
+  <div class="sec">
+    <h3>Contato de emergência</h3>
+    <div class="grid">
+      <div class="f span-10"><label>Nome</label><div class="v">{{ inscricao.contato_emergencia_nome|default:"não informado" }}</div></div>
+      <div class="f span-4"><label>Telefone</label><div class="v">{{ inscricao.contato_emergencia_telefone|default:"não informado" }}</div></div>
+      <div class="f span-3"><label>Grau</label><div class="v">{{ inscricao.contato_emergencia_grau_parentesco|default:"não informado" }}</div></div>
+      <div class="f span-1"><label>Camp.</label><div class="v">{% if inscricao.contato_emergencia_ja_e_campista %}Sim{% else %}Não{% endif %}</div></div>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="footer">
+    <img src="{% static 'img/logo.png' %}" alt="Logo do sistema">
+    Desenvolvido por Alexandre Martins Vieira
+  </div>
+</div>
+{% endwith %}
+{% empty %}
+<p style="text-align:center; padding:20px;">Nenhuma ficha para imprimir.</p>
+{% endfor %}
+
 </body>
-
 </html>
