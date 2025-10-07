@@ -1,229 +1,274 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alterar Política de Privacidade</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* Cores */
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --light-bg: #f9f9f9;
-            --text-color: #333;
-            --border-color: #ddd;
-            --white: #fff;
-            --error-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-        }
+  <meta charset="utf-8" />
+  <title>Política de Privacidade — Admin Geral</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#64748b; --ring:rgba(37,99,235,.18);
+      --g1:#0b1020; --g2:#111a3a;
+      --base-font:14px;
+      --line:#e5e7eb; --panel:#fff;
+      --row:#f8fafc;
+    }
+    html{ font-size:var(--base-font); }
+    body{ background:#f6f8fb; color:var(--ink); }
+    .text-muted-2{ color:var(--muted); }
 
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 30px;
-            background-color: var(--white);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border-radius: 10px;
-            flex: 1;
-        }
+    /* Navbar catálogo */
+    .nav-pro{ background:linear-gradient(90deg,var(--g1),var(--g2)); }
+    .navbar-brand{ font-size:1rem; }
+    .navbar .btn{ font-size:.85rem; padding:.35rem .6rem; }
 
-        h1 {
-            color: var(--secondary-color);
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 600;
-            font-size: 2.5em;
-        }
+    /* Header/toolbar compacto */
+    .sticky-topbar{ position:sticky; top:0; z-index:20; background:#ffffffd6; backdrop-filter:blur(6px); }
 
-        form {
-            margin-top: 20px;
-        }
+    /* Painel limpinho */
+    .card-clean{
+      background:var(--panel); border:1px solid var(--line); border-radius:.9rem;
+      box-shadow:0 10px 24px rgba(17,24,39,.08);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .card-clean:hover{ transform:translateY(-1px); box-shadow:0 12px 28px rgba(17,24,39,.12); }
 
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+    /* Form / textarea */
+    label.form-label{ font-weight:700; color:var(--muted); font-size:.9rem; }
+    textarea{
+      width:100%; min-height:360px; resize:vertical;
+      border:1px solid var(--line); border-radius:.8rem;
+      padding:.8rem; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#fff;
+    }
+    textarea:focus{ outline:none; border-color:#93c5fd; box-shadow:0 0 0 .25rem var(--ring); }
 
-        .form-group {
-            flex: 1;
-            min-width: 250px;
-        }
+    /* Preview */
+    .preview{
+      border:1px dashed var(--line); border-radius:.8rem; padding:.9rem; background:rgba(2,132,199,.03);
+      max-height:520px; overflow:auto;
+    }
+    .prose p{ margin:0 0 .6rem }
+    .prose ul{ margin:.4rem 0 .6rem 1.1rem }
+    .prose li{ margin:.15rem 0 }
 
-        label {
-            display: block;
-            margin: 15px 0 5px;
-            font-weight: 500;
-            color: var(--secondary-color);
-        }
-
-        textarea { /* Alterado para aplicar apenas a textarea */
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 1em;
-            color: var(--text-color);
-            background-color: var(--light-bg);
-            transition: border-color 0.3s ease;
-            min-height: 300px; /* Adicionado para dar uma altura inicial */
-        }
-
-        textarea:focus { /* Alterado para aplicar apenas a textarea */
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
-        .button-container {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button[type="submit"],
-        .btn {
-            padding: 14px 28px;
-            color: var(--white);
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        button[type="submit"] {
-            background-color: var(--primary-color);
-        }
-
-        button[type="submit"]:hover {
-            background-color: #207ac2;
-        }
-
-        .btn-back {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-back:hover {
-            background-color: #203343;
-        }
-
-        .btn-back {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: var(--white);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-back:hover {
-            text-decoration: underline;
-        }
-
-        .errorlist {
-            margin: 10px 0;
-            padding: 0;
-            list-style: none;
-            color: var(--error-color);
-            font-size: 0.9em;
-        }
-
-        .errorlist li {
-            margin-bottom: 5px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            background-color: var(--secondary-color);
-            color: var(--white);
-            margin-top: 30px;
-            border-radius: 0;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-                margin: 15px auto;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .form-group {
-                min-width: auto;
-            }
-
-            textarea { /* Alterado para aplicar apenas a textarea */
-                padding: 10px;
-                font-size: 0.9em;
-            }
-
-            button[type="submit"],
-            .btn {
-                padding: 12px 24px;
-                font-size: 1em;
-            }
-
-            .button-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-    </style>
+    /* Alerts simples */
+    .alert-slim{ padding:.5rem .65rem; border-radius:.6rem; font-size:.9rem; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Alterar Política de Privacidade</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.texto.id_for_label }}">{{ form.texto.label }}</label>
-                {{ form.texto }}
-                {% if form.texto.errors %}
-                    <ul class="errorlist">
-                        {% for error in form.texto.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-            <div class="button-container">
-                <button type="submit">Salvar</button>
-                <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-back">
-                    <i class="fas fa-arrow-left"></i> Voltar para o Dashboard
-                </a>
-            </div>
-        </form>
+
+<!-- NAVBAR catálogo -->
+<nav class="navbar nav-pro navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{% url 'inscricoes:admin_geral_dashboard' %}">Admin Geral</a>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <a class="btn btn-sm btn-outline-light" href="{% url 'inscricoes:admin_geral_dashboard' %}">← Dashboard</a>
+      <button type="button" class="btn btn-sm btn-light" id="themeToggle" aria-label="Alternar tema">Tema</button>
     </div>
-    <footer>
-        &copy; {{ current_year }} Admin Geral - Todos os direitos reservados
-    </footer>
+  </div>
+</nav>
+
+<main class="container py-3 py-lg-4">
+
+  <!-- Cabeçalho compacto (título + ações) -->
+  <div class="sticky-topbar border rounded-3 p-3 mb-3 bg-white">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div>
+        <h1 class="h6 m-0">Política de Privacidade</h1>
+        <div class="small text-muted-2">Edite o texto exibido aos participantes. Válido imediatamente após salvar.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="togglePreview">
+          Visualizar
+        </button>
+        <button form="policyForm" type="submit" class="btn btn-primary btn-sm">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Django (opcional) -->
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-slim {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% elif 'warning' in message.tags %}alert-warning{% else %}alert-info{% endif %} m-0 mb-2">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Editor -->
+  <section class="card-clean p-3 p-lg-4">
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+      <div class="small text-muted-2" id="stats">0 caracteres • 0 palavras</div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="restoreDraft" title="Rascunho salvo no navegador">
+          Restaurar rascunho
+        </button>
+        <button form="policyForm" type="submit" class="btn btn-primary btn-sm">
+          Salvar
+        </button>
+      </div>
+    </div>
+
+    <form method="post" id="policyForm" class="row g-3">
+      {% csrf_token %}
+
+      <div class="col-12 col-lg-6">
+        <label for="{{ form.texto.id_for_label }}" class="form-label">{{ form.texto.label|default:"Texto da Política" }}</label>
+        {{ form.texto }}
+        {% if form.texto.errors %}
+          <div class="mt-2">
+            {% for error in form.texto.errors %}
+              <div class="alert alert-danger py-1 px-2 mb-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <p class="small text-muted-2 mt-2 mb-0">
+          Dica: use <kbd>Ctrl</kbd>+<kbd>S</kbd> (ou <kbd>⌘</kbd>+<kbd>S</kbd>) para salvar. Rascunhos são salvos automaticamente no navegador.
+        </p>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div id="previewBox" class="preview" hidden>
+          <div class="fw-semibold mb-2 text-muted-2">Pré-visualização</div>
+          <div id="preview" class="prose"></div>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex align-items-center justify-content-between">
+        <div class="small text-muted-2" id="draftInfo" aria-live="polite"></div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-outline-secondary btn-sm">Voltar ao Dashboard</a>
+          <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <footer class="py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center text-muted-2 small">
+      <div>© {% now "Y" %} Admin Geral — Todos os direitos reservados</div>
+      <div>Desenvolvido por Alexandre Martins Vieira • Bootstrap 5</div>
+    </div>
+  </footer>
+</main>
+
+<script>
+  // Tema com persistência (mesma key das outras telas)
+  (function themeToggle(){
+    const KEY='relatorios-theme';
+    const btn=document.getElementById('themeToggle');
+    const root=document.documentElement;
+    function apply(theme){
+      if(theme==='dark'){ root.dataset.theme='dark'; document.documentElement.style.colorScheme='dark'; }
+      else if(theme==='light'){ root.dataset.theme='light'; document.documentElement.style.colorScheme='light'; }
+      else{ root.removeAttribute('data-theme'); document.documentElement.style.colorScheme='light dark'; }
+    }
+    apply(localStorage.getItem(KEY) || 'auto');
+    btn?.addEventListener('click', ()=>{
+      const cur=localStorage.getItem(KEY)||'auto';
+      const next= cur==='auto' ? 'dark' : cur==='dark' ? 'light' : 'auto';
+      localStorage.setItem(KEY,next); apply(next);
+      btn.setAttribute('aria-label',`Tema: ${next}`);
+    });
+  })();
+
+  // Editor: auto-resize, contador, preview, rascunho, Ctrl/Cmd+S
+  (function policyEditor(){
+    const form = document.getElementById('policyForm');
+    const ta = form?.querySelector('textarea[name="{{ form.texto.name }}"]') || form?.querySelector('textarea');
+    const stats = document.getElementById('stats');
+    const previewBox = document.getElementById('previewBox');
+    const preview = document.getElementById('preview');
+    const togglePreview = document.getElementById('togglePreview');
+    const draftInfo = document.getElementById('draftInfo');
+    const restoreDraftBtn = document.getElementById('restoreDraft');
+    const DRAFT_KEY = 'policy-draft';
+
+    if(!ta) return;
+
+    // Auto-resize
+    const autoresize = () => { ta.style.height='auto'; ta.style.height = Math.min(ta.scrollHeight, 1200) + 'px'; };
+    ['input','change'].forEach(ev => ta.addEventListener(ev, autoresize));
+    window.addEventListener('load', autoresize);
+
+    // Contador
+    const count = () => {
+      const txt = ta.value || '';
+      const chars = txt.length;
+      const words = (txt.trim().match(/\S+/g) || []).length;
+      stats.textContent = `${chars} caracteres • ${words} palavras`;
+    };
+    ['input','change'].forEach(ev => ta.addEventListener(ev, count));
+    count();
+
+    // Preview simples (sanitização leve + parágrafos)
+    function toHTML(text){
+      if(!text) return '';
+      const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return esc.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+    }
+    const render = () => { preview.innerHTML = toHTML(ta.value); };
+    ['input','change'].forEach(ev => ta.addEventListener(ev, render));
+    render();
+
+    // Toggle preview
+    togglePreview?.addEventListener('click', ()=>{
+      const hidden = previewBox.hasAttribute('hidden');
+      if(hidden){
+        previewBox.removeAttribute('hidden'); render();
+        togglePreview.textContent = 'Ocultar';
+      }else{
+        previewBox.setAttribute('hidden','');
+        togglePreview.textContent = 'Visualizar';
+      }
+    });
+
+    // Rascunho local
+    let draftTimer = null;
+    const saveDraft = () => {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ t: Date.now(), v: ta.value }));
+      draftInfo.textContent = 'Rascunho salvo localmente.';
+    };
+    ta.addEventListener('input', ()=>{
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(saveDraft, 400);
+    });
+
+    // Restaurar rascunho se houver
+    const draft = (()=>{ try{ return JSON.parse(localStorage.getItem(DRAFT_KEY)||''); }catch{return null;} })();
+    if(draft && (!ta.value || ta.value.trim().length < (draft.v||'').trim().length)){
+      const d = new Date(draft.t);
+      draftInfo.textContent = `Rascunho local de ${d.toLocaleString()}.`;
+      restoreDraftBtn.disabled = false;
+    } else {
+      restoreDraftBtn.disabled = true;
+    }
+    restoreDraftBtn?.addEventListener('click', ()=>{
+      const d = (()=>{ try{ return JSON.parse(localStorage.getItem(DRAFT_KEY)||''); }catch{return null;} })();
+      if(d?.v!=null){
+        ta.value = d.v; autoresize(); count(); render();
+        draftInfo.textContent = 'Rascunho restaurado.';
+      }
+    });
+
+    // Limpa rascunho após envio
+    form.addEventListener('submit', ()=> localStorage.removeItem(DRAFT_KEY));
+
+    // Atalho Ctrl/Cmd + S para enviar
+    document.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='s'){
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+  })();
+</script>
 </body>
 </html>

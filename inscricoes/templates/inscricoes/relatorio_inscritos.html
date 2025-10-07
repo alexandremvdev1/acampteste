@@ -1,322 +1,408 @@
 {% load custom_filters %}
 {% load static %}
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Relatório de Inscritos - {{ evento.nome }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+  <meta charset="utf-8" />
+  <title>Relatório de Inscritos — {{ evento.nome }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkfSLzLQvWQ2zYlH3xZkS2VJKJQGXrCM1/MrZ8Dq03+4T6pG8Y2LRp5kw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* Estilos CSS (movidos para um arquivo style.css para melhor organização) */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background-color: #f4f6f9;
-            color: #334155;
-        }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #334155;
-            font-size: 26px;
-            font-weight: 600;
-        }
+  <style>
+    /* ====== Impressão ====== */
+    @media print{
+      .no-print{ display:none !important; }
+      body{ background:#fff; margin:0; }
+      body *{ visibility:hidden; }
+      #printHeader, #printHeader *{ visibility:visible; }
+      #printHeader{
+        display:block; position:absolute; inset:0 auto auto 0; width:100%;
+        text-align:center; font-weight:700; font-size:14px; padding:.5rem 0;
+      }
+      #tRelatorio, #tRelatorio *{ visibility:visible; }
+      #tRelatorio{ position:absolute; left:0; top:40px; width:100%; }
+      #tRelatorio thead, #tRelatorio tfoot{ display:none !important; }
+      #tRelatorio td{ padding:.4rem .5rem; font-size:12px; }
+      .sticky-topbar{ display:none !important; }
+    }
 
-        form {
-            margin-bottom: 20px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    /* ====== Tokens / estilo do painel ====== */
+    :root{
+      --ink:#0f172a; --muted:#64748b; --ring:rgba(37,99,235,.18);
+      --g1:#0b1020; --g2:#111a3a;
+      --base-font:14px;
+      --line:#e5e7eb; --panel:#fff; --shadow:0 10px 24px rgba(17,24,39,.08);
+    }
+    html{ font-size: var(--base-font); }
+    body{ background:#f6f8fb; color:var(--ink); }
 
-        form label {
-            font-size: 16px;
-            color: #334155;
-            margin-right: 10px;
-            font-weight: 500;
-        }
+    /* Navbar */
+    .nav-pro{ background:linear-gradient(90deg,var(--g1),var(--g2)); }
+    .navbar .btn{ font-size:.85rem; padding:.35rem .6rem; }
+    .navbar-brand{ font-size:1rem; }
 
-        select {
-            padding: 10px 14px;
-            font-size: 15px;
-            margin-right: 10px;
-            cursor: pointer;
-            border-radius: 6px;
-            border: 1px solid #cbd5e0;
-            color: #4b5563;
-            background-color: #f9fafb;
-        }
+    /* Topbar fixa com ações */
+    .sticky-topbar{
+      position: sticky; top: 0; z-index: 20;
+      background:#ffffffd6; backdrop-filter: blur(6px);
+      border:1px solid var(--line); border-radius:.9rem;
+    }
+    .text-muted-2{ color:var(--muted); }
+    .btn-sm, .btn.btn-sm{ font-size:.8rem; padding:.35rem .6rem; }
 
-        button {
-            padding: 10px 16px;
-            font-size: 15px;
-            margin-right: 10px;
-            cursor: pointer;
-            border-radius: 6px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
+    /* Cards */
+    .card-clean{
+      border:1px solid var(--line); border-radius:.95rem; background:#fff;
+      box-shadow:var(--shadow);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease;
+    }
+    .card-clean:hover{ transform:translateY(-2px); box-shadow:0 14px 36px rgba(17,24,39,.12); border-color:#dbe1ea; filter:brightness(1.02) }
 
-        button:hover {
-            background-color: #218838;
-        }
+    .sec-title{
+      font-size:.95rem; color:var(--muted); letter-spacing:.02em; font-weight:700;
+      margin:0 0 .75rem; display:flex; align-items:center; gap:.5rem;
+      text-transform:uppercase;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            border: 1px solid #e0e0e0;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
+    /* Tabela */
+    #tRelatorio thead th{
+      position:sticky; top:0; z-index:5;
+      background:linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,0));
+      backdrop-filter: blur(2px);
+    }
+    .is-hidden{ display:none !important; }
 
-        th,
-        td {
-            border: 1px solid #e0e0e0;
-            padding: 12px;
-            text-align: left;
-            color: #4b5563;
-            /* Adicionado para evitar quebra de linha */
-            white-space: nowrap;
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 500;
-            color: #334155;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .total {
-            margin-top: 20px;
-            font-weight: 500;
-            text-align: right;
-            color: #334155;
-            font-size: 16px;
-        }
-
-        @media print {
-
-            form,
-            #btn-imprimir,
-            #btn-voltar {
-                display: none;
-            }
-
-            /* Garante que a tabela ocupe toda a largura da página na impressão */
-            table {
-                width: 100%;
-            }
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            body {
-                margin: 10px;
-            }
-
-            h2 {
-                font-size: 24px;
-            }
-
-            form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            form label {
-                font-size: 14px;
-                margin-right: 5px;
-                margin-bottom: 5px;
-                text-align: left;
-            }
-
-            select,
-            button {
-                font-size: 14px;
-                padding: 8px 12px;
-                margin-bottom: 10px;
-            }
-
-            table {
-                font-size: 13px;
-            }
-
-            th,
-            td {
-                padding: 8px;
-                white-space: normal; /* Permite quebra de linha em telas menores */
-            }
-
-            .total {
-                font-size: 15px;
-            }
-        }
-
-        /* Estilos para a seção de tamanhos de camisa */
-        .tamanho-camisa {
-            margin-top: 10px; /* Reduz o espaçamento superior */
-            text-align: right; /* Alinha o texto à direita */
-        }
-
-        .tamanho-camisa h3 {
-            font-size: 18px;
-            color: #334155;
-            margin-bottom: 5px; /* Reduz o espaçamento inferior */
-        }
-
-        .tamanho-camisa p {
-            font-size: 16px;
-            color: #4b5563;
-            margin-bottom: 2px; /* Reduz o espaçamento inferior */
-        }
-    </style>
+    /* Chips de camisa */
+    .chip{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:.5rem .9rem;
+      background:#fff;
+      font-weight:700;
+      box-shadow:var(--shadow);
+    }
+  </style>
 </head>
-
 <body>
+<nav class="navbar nav-pro navbar-dark no-print">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{% url 'inscricoes:relatorios_evento' evento.id %}">
+      <i class="fa-solid fa-arrow-left me-2"></i> Relatórios
+    </a>
+    <span class="navbar-text text-white-50 d-none d-md-inline">{{ evento.nome }}</span>
+    <div class="d-flex gap-2 ms-auto">
+      <button id="btnImprimirTopo" class="btn btn-light btn-sm">
+        <i class="fa-solid fa-print me-1"></i> Imprimir
+      </button>
+    </div>
+  </div>
+</nav>
 
-    <h2><i class="fas fa-list-alt"></i> Relatório de Inscritos - {{ evento.nome }}</h2>
+<main class="container py-3" id="page" data-evento="{{ evento.id }}">
+  <!-- HEADER FIXO -->
+  <div class="sticky-topbar p-3 mb-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div>
+        <h1 class="h6 m-0">Relatório de Inscritos</h1>
+        <div class="small text-muted-2">
+          {{ evento.nome }} • Total: <strong>{{ participantes|length }}</strong>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'inscricoes:relatorios_evento' evento.id %}">
+          <i class="fa fa-arrow-left me-1"></i> Voltar para Relatórios
+        </a>
+        <button class="btn btn-primary btn-sm" id="btnImprimir2"><i class="fa fa-print me-1"></i> Imprimir</button>
+        <button class="btn btn-outline-primary btn-sm" id="btnExcel2"><i class="fa fa-file-excel me-1"></i> Baixar CSV</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Formulário de Filtro -->
-    <form method="get">
-        <label for="cidade"><i class="fas fa-city"></i> Filtrar por Cidade:</label>
-        <select name="cidade" id="cidade">
-            <option value="">Todas as Cidades</option>
-            {% for c in cidades %}
+  <div id="printHeader">Relatório de Inscritos — {{ evento.nome }}</div>
+
+  <!-- Filtros -->
+  <form method="get" class="card-clean p-3 p-md-4 mb-3 no-print" id="formFiltros">
+    <h2 class="sec-title"><i class="fa-solid fa-sliders"></i> Filtros</h2>
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label for="cidade" class="form-label small text-muted">Filtrar por cidade</label>
+        <select name="cidade" id="cidade" class="form-select">
+          <option value="">Todas</option>
+          {% for c in cidades %}
             <option value="{{ c }}" {% if cidade_filtro == c %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
+          {% endfor %}
         </select>
-
-        <label for="status"><i class="fas fa-filter"></i> Filtrar por Status:</label>
-        <select name="status" id="status">
-            <option value="">Todos os Status</option>
-            <option value="concluida" {% if status_filtro == 'concluida' %}selected{% endif %}>Inscrição Concluída
-            </option>
-            <option value="pendente" {% if status_filtro == 'pendente' %}selected{% endif %}>Inscrição Pendente
-            </option>
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="status" class="form-label small text-muted">Status da inscrição</label>
+        <select name="status" id="status" class="form-select">
+          <option value="">Todos</option>
+          <option value="concluida" {% if status_filtro == 'concluida' %}selected{% endif %}>Concluída</option>
+          <option value="pendente"  {% if status_filtro == 'pendente'  %}selected{% endif %}>Pendente</option>
         </select>
-
-        <label for="selecionado"><i class="fas fa-check-square"></i> Mostrar Selecionados:</label>
-        <select name="selecionado" id="selecionado">
-            <option value="">Todos</option>
-            <option value="sim" {% if selecionado_filtro == 'sim' %}selected{% endif %}>Apenas Selecionados
-            </option>
-            <option value="nao" {% if selecionado_filtro == 'nao' %}selected{% endif %}>Não Selecionados</option>
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="selecionado" class="form-label small text-muted">Selecionado</label>
+        <select name="selecionado" id="selecionado" class="form-select">
+          <option value="">Todos</option>
+          <option value="sim" {% if selecionado_filtro == 'sim' %}selected{% endif %}>Apenas selecionados</option>
+          <option value="nao" {% if selecionado_filtro == 'nao' %}selected{% endif %}>Não selecionados</option>
         </select>
+      </div>
+      <div class="col-12 d-grid d-md-flex justify-content-md-center mt-2">
+        <button class="btn btn-primary btn-sm px-4" type="submit">
+          <i class="fa fa-filter me-2"></i>Aplicar filtros
+        </button>
+      </div>
+    </div>
+  </form>
 
-        <button type="submit"><i class="fas fa-search"></i> Filtrar</button>
-    </form>
-
-    <!-- Botões -->
-    <div style="text-align: center; margin-bottom: 15px;">
-        <button id="btn-imprimir" onclick="window.print()"><i class="fas fa-print"></i> Imprimir Relatório</button>
-        <button id="btn-voltar" onclick="history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
+  <!-- Seleção de colunas -->
+  <section class="card-clean p-3 p-md-4 mb-3 no-print">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h2 class="sec-title mb-0"><i class="fa-solid fa-table-columns"></i> Colunas</h2>
+      <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#colsCollapse" aria-expanded="true">
+        Mostrar / ocultar
+      </button>
     </div>
 
-    <!-- Tabela de Participantes -->
-    <table>
+    <div class="collapse show mt-3" id="colsCollapse">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-2" id="colsGrid">
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-idx"> <span class="form-check-label">#</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-nome"> <span class="form-check-label">Nome</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-cidade"> <span class="form-check-label">Cidade</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-estado"> <span class="form-check-label">Estado</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-telefone"> <span class="form-check-label">Telefone</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-email"> <span class="form-check-label">E-mail</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-camisa"> <span class="form-check-label">Tamanho da Camisa</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-nasc"> <span class="form-check-label">Data de Nascimento</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-status"> <span class="form-check-label">Status</span></label></div>
+        <div class="col"><label class="form-check"><input type="checkbox" class="form-check-input col-toggle" data-col="col-selecionado"> <span class="form-check-label">Selecionado</span></label></div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnMarcarTodos">Selecionar tudo</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLimpar">Limpar</button>
+        <button type="button" class="btn btn-success btn-sm" id="btnImprimir"><i class="fa fa-print me-2"></i>Imprimir</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="btnExcel"><i class="fa fa-file-excel me-2"></i>Baixar CSV</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabela -->
+  <section class="card-clean p-2 p-md-3">
+    <div class="table-responsive">
+      <table id="tRelatorio" class="table table-hover align-middle" aria-label="Tabela de inscritos">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Nome</th>
-                <th>Cidade</th>
-                <th>Estado</th>
-                <th>Telefone</th>
-                <th>Email</th>
-                <th>Tamanho da Camisa</th>
-                <th>Data de Nascimento</th>
-                <th>Status</th>
-                <th>Selecionado</th>
-            </tr>
+          <tr>
+            <th class="col-idx">#</th>
+            <th class="col-nome">Nome</th>
+            <th class="col-cidade">Cidade</th>
+            <th class="col-estado">Estado</th>
+            <th class="col-telefone">Telefone</th>
+            <th class="col-email">E-mail</th>
+            <th class="col-camisa">Tamanho da Camisa</th>
+            <th class="col-nasc">Data de Nascimento</th>
+            <th class="col-status">Status</th>
+            <th class="col-selecionado">Selecionado</th>
+          </tr>
         </thead>
         <tbody>
-            {% for p in participantes %}
+          {% for p in participantes %}
             <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ p.nome }}</td>
-                <td>{{ p.cidade }}</td>
-                <td>{{ p.estado }}</td>
-                <td>{{ p.telefone }}</td>
-                <td>{{ p.email }}</td>
+              <td class="col-idx">{{ forloop.counter }}</td>
+              <td class="col-nome">{{ p.nome }}</td>
+              <td class="col-cidade">{{ p.cidade }}</td>
+              <td class="col-estado">{{ p.estado }}</td>
+              <td class="col-telefone">{{ p.telefone }}</td>
+              <td class="col-email">{{ p.email }}</td>
 
-                {% with inscricao=inscricoes_dict|get_item:p.id %}
+              {% with inscricao=inscricoes_dict|get_item:p.id %}
                 {% if inscricao %}
-                    {% if inscricao.inscricao_concluida %}
-                        {% if inscricao.inscricaosenior %}
-                            <td>{{ inscricao.inscricaosenior.tamanho_camisa }}</td>
-                            <td>{{ inscricao.inscricaosenior.data_nascimento|date:"d/m/Y" }}</td>
-                        {% elif inscricao.inscricaojuvenil %}
-                            <td>{{ inscricao.inscricaojuvenil.tamanho_camisa }}</td>
-                            <td>{{ inscricao.inscricaojuvenil.data_nascimento|date:"d/m/Y" }}</td>
-                        {% elif inscricao.inscricaomirim %}
-                            <td>{{ inscricao.inscricaomirim.tamanho_camisa }}</td>
-                            <td>{{ inscricao.inscricaomirim.data_nascimento|date:"d/m/Y" }}</td>
-                        {% elif inscricao.inscricaoservos %}
-                            <td>{{ inscricao.inscricaoservos.tamanho_camisa }}</td>
-                            <td>{{ inscricao.inscricaoservos.data_nascimento|date:"d/m/Y" }}</td>
-                        {% else %}
-                            <td>-</td>
-                            <td>-</td>
-                        {% endif %}
-                        <td>Concluída</td>
-                    {% else %}
-                        <td>-</td>
-                        <td>-</td>
-                        <td>Pendente</td>
-                    {% endif %}
-                    <td>
-                        {% if inscricao.foi_selecionado %}
-                            Sim
-                        {% else %}
-                            Não
-                        {% endif %}
-                    </td>
+                  <td class="col-camisa">{{ inscricao.camisa|default:"-" }}</td>
+                  <td class="col-nasc">
+                    {% if inscricao.nasc %}{{ inscricao.nasc|date:"d/m/Y" }}{% else %}-{% endif %}
+                  </td>
+                  <td class="col-status">
+                    {% if inscricao.inscricao_concluida %}Concluída{% else %}Pendente{% endif %}
+                  </td>
+                  <td class="col-selecionado">
+                    {% if inscricao.foi_selecionado %}Sim{% else %}Não{% endif %}
+                  </td>
                 {% else %}
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                  <td class="col-camisa">-</td>
+                  <td class="col-nasc">-</td>
+                  <td class="col-status">-</td>
+                  <td class="col-selecionado">-</td>
                 {% endif %}
-                {% endwith %}
-
+              {% endwith %}
             </tr>
-            {% empty %}
-            <tr>
-                <td colspan="10">Nenhum participante encontrado.</td>
-            </tr>
-            {% endfor %}
+          {% empty %}
+            <tr><td class="text-muted" colspan="10">Nenhum participante encontrado.</td></tr>
+          {% endfor %}
         </tbody>
-    </table>
-
-    <p class="total">
-        Total de participantes encontrados: {{ participantes|length }}
-    </p>
-
-    <!-- Seção de Tamanhos de Camisa -->
-    <div class="tamanho-camisa">
-        <h3>Quantidade de Camisas por Tamanho</h3>
-        <p>PP: {{ quantidades_camisas.pp|default_if_none:0 }}</p>
-        <p>P: {{ quantidades_camisas.p|default_if_none:0 }}</p>
-        <p>M: {{ quantidades_camisas.m|default_if_none:0 }}</p>
-        <p>G: {{ quantidades_camisas.g|default_if_none:0 }}</p>
-        <p>GG: {{ quantidades_camisas.gg|default_if_none:0 }}</p>
-        <p>XG: {{ quantidades_camisas.xg|default_if_none:0 }}</p>
-        <p>XXG: {{ quantidades_camisas.xxg|default_if_none:0 }}</p>
+        <tfoot>
+          <tr>
+            <td class="text-muted small" colspan="10">Gerado em {{ now }}</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
+  </section>
 
+  <!-- Totais -->
+  <div class="text-end text-body fw-bold mt-2 no-print">
+    Total de participantes encontrados: {{ participantes|length }}
+  </div>
+
+  <!-- Quantidade de camisas -->
+  <section class="no-print mt-3">
+    <div class="d-flex flex-wrap gap-2" aria-label="Quantidade de camisas por tamanho">
+      <span class="chip">PP:  {{ quantidades_camisas.pp|default_if_none:0 }}</span>
+      <span class="chip">P:   {{ quantidades_camisas.p|default_if_none:0 }}</span>
+      <span class="chip">M:   {{ quantidades_camisas.m|default_if_none:0 }}</span>
+      <span class="chip">G:   {{ quantidades_camisas.g|default_if_none:0 }}</span>
+      <span class="chip">GG:  {{ quantidades_camisas.gg|default_if_none:0 }}</span>
+      <span class="chip">XG:  {{ quantidades_camisas.xg|default_if_none:0 }}</span>
+      <span class="chip">XGG: {{ quantidades_camisas.xgg|default_if_none:0 }}</span>
+    </div>
+  </section>
+
+  <footer class="py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center">
+      <small>© {{ now|date:"Y" }} — Todos os direitos reservados</small>
+      <small class="text-muted-2">Desenvolvido por Alexandre Martins Vieira • Bootstrap 5</small>
+    </div>
+  </footer>
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Colunas + persistência + export CSV -->
+<script>
+(function(){
+  const table      = document.getElementById('tRelatorio');
+  const checkboxes = Array.from(document.querySelectorAll('.col-toggle'));
+  const eventoId   = document.getElementById('page').dataset.evento || '0';
+  const LS_KEY     = 'rel_cols_' + eventoId;
+
+  const allCols = [
+    'col-idx','col-nome','col-cidade','col-estado','col-telefone',
+    'col-email','col-camisa','col-nasc','col-status','col-selecionado'
+  ];
+  const defaultCols = ['col-nome','col-cidade','col-camisa','col-nasc','col-status'];
+
+  function applyColumns(active){
+    const toHide = allCols.filter(c => !active.includes(c));
+    const toShow = active.slice();
+    toHide.forEach(cls => table.querySelectorAll('.' + cls).forEach(el => el.classList.add('is-hidden')));
+    toShow.forEach(cls => table.querySelectorAll('.' + cls).forEach(el => el.classList.remove('is-hidden')));
+  }
+
+  function readColsFromQuery(){
+    const p = new URLSearchParams(location.search);
+    const raw = p.get('cols');
+    if(!raw) return null;
+    const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+    return parts.filter(x => allCols.includes(x));
+  }
+
+  function saveColsToQuery(cols){
+    const url = new URL(location.href);
+    if(cols.length){ url.searchParams.set('cols', cols.join(',')); }
+    else{ url.searchParams.delete('cols'); }
+    history.replaceState(null, '', url.toString());
+  }
+
+  const fromQuery = readColsFromQuery();
+  const fromLS    = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+  const initial   = (fromQuery && fromQuery.length) ? fromQuery
+                    : (Array.isArray(fromLS) && fromLS.length ? fromLS : defaultCols);
+
+  checkboxes.forEach(chk => { chk.checked = initial.includes(chk.dataset.col); });
+  applyColumns(initial);
+
+  function currentSelection(){ return checkboxes.filter(c => c.checked).map(c => c.dataset.col); }
+  checkboxes.forEach(chk => {
+    chk.addEventListener('change', () => {
+      const cols = currentSelection();
+      applyColumns(cols);
+      localStorage.setItem(LS_KEY, JSON.stringify(cols));
+      saveColsToQuery(cols);
+    });
+  });
+
+  document.getElementById('btnMarcarTodos')?.addEventListener('click', () => {
+    checkboxes.forEach(c => c.checked = true);
+    const cols = currentSelection(); applyColumns(cols);
+    localStorage.setItem(LS_KEY, JSON.stringify(cols)); saveColsToQuery(cols);
+  });
+  document.getElementById('btnLimpar')?.addEventListener('click', () => {
+    checkboxes.forEach(c => c.checked = false);
+    const cols = currentSelection(); applyColumns(cols);
+    localStorage.setItem(LS_KEY, JSON.stringify(cols)); saveColsToQuery(cols);
+  });
+
+  const doPrint = () => window.print();
+  document.getElementById('btnImprimir')?.addEventListener('click', doPrint);
+  document.getElementById('btnImprimir2')?.addEventListener('click', doPrint);
+  document.getElementById('btnImprimirTopo')?.addEventListener('click', doPrint);
+
+  // Exportar CSV (apenas colunas visíveis)
+  function exportVisibleTableToCSV(filename){
+    const ths = Array.from(table.querySelectorAll('thead th'));
+    const visible = ths
+      .map((th, idx) => ({ idx, hidden: th.classList.contains('is-hidden'), label: th.textContent.trim() }))
+      .filter(x => !x.hidden);
+
+    const rows = [];
+    rows.push(['Relatório de Inscritos — {{ evento.nome|escapejs }}']);
+    rows.push(visible.map(x => x.label));
+
+    const trs = Array.from(table.querySelectorAll('tbody tr'));
+    trs.forEach(tr => {
+      const tds = Array.from(tr.children);
+      const line = visible.map(x => (tds[x.idx]?.textContent || '').trim());
+      rows.push(line);
+    });
+
+    const BOM = "\uFEFF"; // para Excel PT-BR
+    const csv = rows.map(line =>
+      line.map(v => {
+        const needsQuotes = /[",;\n]/.test(v);
+        let out = String(v).replace(/"/g,'""');
+        return needsQuotes ? `"${out}"` : out;
+      }).join(';')
+    ).join('\n');
+
+    const blob = new Blob([BOM + csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function suggestedFilename(){
+    const today = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `relatorio_inscritos_evento_${eventoId}_${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}.csv`;
+  }
+
+  const doExcel = () => exportVisibleTableToCSV(suggestedFilename());
+  document.getElementById('btnExcel')?.addEventListener('click', doExcel);
+  document.getElementById('btnExcel2')?.addEventListener('click', doExcel);
+
+})();
+</script>
 </body>
-
 </html>

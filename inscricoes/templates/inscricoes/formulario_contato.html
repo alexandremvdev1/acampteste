@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -165,6 +166,8 @@
             width: 80%;
             max-width: 500px;
             position: relative;
+            /* ADIÇÃO: centralizar texto/botão do modal (como no modelo) */
+            text-align: center;
         }
 
         .close {
@@ -189,7 +192,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #009443;
+            background-color: #ffffff;
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -206,7 +209,7 @@
         }
 
         #whatsapp-flutuante:hover {
-            background-color: #02853d;
+            background-color: #ffffff;
         }
 
         /* Botão dentro do modal WhatsApp */
@@ -243,6 +246,26 @@
 
         .politica-link a:hover {
             text-decoration: underline;
+        }
+
+        /* ===========================
+           ADIÇÕES: imagem na bolinha
+           =========================== */
+        #whatsapp-flutuante img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+        /* Efeito hover (leve zoom/sombra) no botão flutuante, como no modelo */
+        #whatsapp-flutuante{
+            box-shadow: 0 4px 10px rgba(0,0,0,.25);
+            transition: transform .15s ease, box-shadow .15s ease, background-color .3s ease;
+        }
+        #whatsapp-flutuante:hover{
+            transform: scale(1.06);
+            box-shadow: 0 6px 16px rgba(0,0,0,.35);
         }
     </style>
 </head>
@@ -345,6 +368,69 @@
             {{ form.contato_emergencia_ja_e_campista.errors }}
             {{ form.contato_emergencia_ja_e_campista }}
         </div>
+{% if evento.tipo == "casais" %}
+  <h3>Filhos</h3>
+
+  <div class="form-group">
+    <label for="num_filhos">Quantos filhos você tem?</label>
+    <select id="num_filhos" class="form-control">
+      <option value="0" {% if not filhos_qs %}selected{% endif %}>0</option>
+      {% for i in range_filhos %}
+        <option value="{{ i }}" {% if filhos_qs|length == i %}selected{% endif %}>{{ i }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Management form precisa estar ANTES do loop -->
+  {{ filhos_formset.management_form }}
+
+  <div id="filhos-container">
+    {% for form in filhos_formset %}
+      <div class="filho-form border p-3 rounded mb-3 bg-light" style="display:none;">
+
+        <!-- Erros gerais do form -->
+        {{ form.non_field_errors }}
+
+        <h5 class="mb-3">Filho {{ forloop.counter }}</h5>
+
+        <div class="form-group mb-2">
+          <label for="{{ form.nome.id_for_label }}" class="form-label">Nome</label>
+          {{ form.nome }}
+          {{ form.nome.errors }}
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="{{ form.endereco.id_for_label }}" class="form-label">Endereço</label>
+          {{ form.endereco }}
+          {{ form.endereco.errors }}
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="{{ form.telefone.id_for_label }}" class="form-label">Telefone</label>
+          {{ form.telefone }}
+          {{ form.telefone.errors }}
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="{{ form.idade.id_for_label }}" class="form-label">Idade</label>
+          {{ form.idade }}
+          {{ form.idade.errors }}
+        </div>
+
+        {% if form.DELETE %}
+          <div class="form-check mt-2">
+            {{ form.DELETE }}
+            <label for="{{ form.DELETE.id_for_label }}" class="form-check-label">
+              Excluir este filho
+            </label>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
 
         <button type="submit" class="btn btn-primary">Próxima Etapa</button>
 
@@ -356,7 +442,7 @@
         </a>
     </p>
     <p style="text-align:center; font-size:0.75rem; color:rgba(0,0,0,0.25); margin-top:4px;">
-        Desenvolvido por Alexandre Martins Vieira
+        eismeaqui.app - Desenvolvido por Alexandre Martins Vieira 2025 ©
     </p>
 
     <!-- Modal da Política de Privacidade -->
@@ -369,7 +455,15 @@
     </div>
 
     <!-- Caixinha flutuante WhatsApp -->
-    <div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp" onclick="openModal('modalWhatsApp')">🙋🏼‍♂️</div>
+    <div id="whatsapp-flutuante" title="Fale conosco pelo WhatsApp" onclick="openModal('modalWhatsApp')">
+        <!-- ADIÇÃO: imagem dentro da bolinha, mantendo o emoji -->
+        {% if politica.imagem_ajuda %}
+          <img src="{{ politica.imagem_ajuda.url }}" alt="Ajuda" width="60" height="60" loading="lazy">
+        {% else %}
+          <img src="{% static 'img/ajuda/porquinho.png' %}" alt="Ajuda" width="60" height="60" loading="lazy">
+        {% endif %}
+        
+    </div>
 
     <!-- Modal WhatsApp - custom -->
     <div id="modalWhatsApp" class="modal">
@@ -383,51 +477,96 @@
         </div>
     </div>
 
-    <script>
-        // Funções para abrir e fechar os modais
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
-            document.body.classList.add("modal-open");
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-            document.body.classList.remove("modal-open");
-        }
-
-        // Fechar o modal se clicar fora do conteúdo
-        window.onclick = function (event) {
-            if (event.target.classList.contains('modal')) {
-                closeModal(event.target.id);
-            }
-        }
-    </script>
-    <!-- Inputmask UMD -->
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.9/dist/inputmask.min.js"></script>
-
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // IDs dos campos de telefone
-  var telefones = [
-    "id_responsavel_1_telefone",
-    "id_responsavel_2_telefone",
-    "id_contato_emergencia_telefone"
-  ];
+  // ———————————————————————————
+  // Abrir e fechar modais
+  // ———————————————————————————
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "block";
+      document.body.classList.add("modal-open");
+    }
+  }
 
-  telefones.forEach(function(fieldId) {
-    var el = document.getElementById(fieldId);
-    if (el) {
-      Inputmask("(99) 99999-9999", {
-        placeholder: "",         // não mostra placeholder inicial
-        showMaskOnFocus: false,  // não exibe máscara ao focar
-        showMaskOnHover: false,  // não exibe máscara ao passar o mouse
-        clearIncomplete: true    // remove entrada incompleta ao desfocar
-      }).mask(el);
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "none";
+      document.body.classList.remove("modal-open");
+    }
+  }
+
+  // Fechar o modal se clicar fora do conteúdo
+  window.addEventListener("click", function (event) {
+    if (event.target.classList.contains("modal")) {
+      closeModal(event.target.id);
     }
   });
-});
+
+  // ———————————————————————————
+  // Execução ao carregar o DOM
+  // ———————————————————————————
+  document.addEventListener("DOMContentLoaded", function () {
+    // ———————————————————————————
+    // Máscaras de telefone
+    // ———————————————————————————
+    const telefones = [
+      "id_responsavel_1_telefone",
+      "id_responsavel_2_telefone",
+      "id_contato_emergencia_telefone"
+    ];
+
+    telefones.forEach(function (fieldId) {
+      const el = document.getElementById(fieldId);
+      if (el && typeof Inputmask !== "undefined") {
+        Inputmask("(99) 99999-9999", {
+          placeholder: "",
+          showMaskOnFocus: false,
+          showMaskOnHover: false,
+          clearIncomplete: true
+        }).mask(el);
+      }
+    });
+
+    // ———————————————————————————
+    // Controle de filhos dinâmicos
+    // ———————————————————————————
+    const selectNumFilhos = document.getElementById("num_filhos");
+    const filhosForms = document.querySelectorAll("#filhos-container .filho-form");
+    const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS'); // campo oculto do Django
+
+    function atualizarFilhos() {
+      const qtd = parseInt(selectNumFilhos.value) || 0;
+
+      filhosForms.forEach((div, idx) => {
+        if (idx < qtd) {
+          div.style.display = "block"; // mostra os filhos necessários
+        } else {
+          div.style.display = "none";  // esconde os demais
+
+          // Limpa apenas se for novo e sem valor salvo
+          div.querySelectorAll("input").forEach(input => {
+            if (!input.defaultValue) {
+              input.value = "";
+            }
+          });
+        }
+      });
+
+      // Atualiza TOTAL_FORMS para o Django validar corretamente
+      if (totalFormsInput) {
+        totalFormsInput.value = qtd;
+      }
+    }
+
+    if (selectNumFilhos) {
+      selectNumFilhos.addEventListener("change", atualizarFilhos);
+      atualizarFilhos(); // executa já na carga inicial
+    }
+  });
 </script>
 
-</body>
 
+</body>
 </html>

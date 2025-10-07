@@ -9,6 +9,10 @@ from .models import VideoEventoAcampamento  # Certifique-se de importar o modelo
 from .models import PastoralMovimento
 from .models import Conjuge
 from .models import MercadoPagoConfig
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import User
+from .models import InscricaoCasais, InscricaoEvento, InscricaoRetiro, AlocacaoMinisterio
 
 class MercadoPagoConfigForm(forms.ModelForm):
     class Meta:
@@ -150,11 +154,13 @@ class ParticipanteEnderecoForm(forms.Form):
 
 class BaseInscricaoForm(forms.ModelForm):
     SIM_NAO_CHOICES = [
+        ('', '---------'),
         ('sim', 'Sim'),
         ('nao', 'Não'),
     ]
 
     ESTADO_CIVIL_CHOICES = [
+        ('', '---------'),
         ('solteiro', 'Solteiro(a)'),
         ('casado', 'Casado(a)'),
         ('divorciado', 'Divorciado(a)'),
@@ -162,22 +168,58 @@ class BaseInscricaoForm(forms.ModelForm):
         ('uniao_estavel', 'União Estável'),
     ]
 
+    # Pergunta: Já é campista?
+    ja_e_campista = forms.ChoiceField(
+        choices=SIM_NAO_CHOICES,
+        label="Já é Campista?",
+        required=False,
+        widget=forms.Select(attrs={'id': 'id_ja_e_campista'})
+    )
+
+    # Se sim → Qual tema do acampamento?
+    tema_acampamento = forms.CharField(
+        label="Qual tema do acampamento que participou?",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'id': 'id_tema_acampamento',
+            'placeholder': 'Ex.: Acampamento de Jovens 2023'
+        })
+    )
+
+    # Estado civil
     estado_civil = forms.ChoiceField(
         choices=ESTADO_CIVIL_CHOICES,
         label="Estado Civil",
+        required=False,
         widget=forms.Select(attrs={'id': 'id_estado_civil'})
     )
 
+    # Se casado/união → quanto tempo
+    tempo_casado_uniao = forms.CharField(
+        label="Tempo de união/casamento",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'id': 'id_tempo_casado_uniao',
+            'placeholder': 'Ex.: 5 anos'
+        })
+    )
+
+    # Se casado/união → casado no religioso?
+    casado_na_igreja = forms.ChoiceField(
+        choices=SIM_NAO_CHOICES,
+        label="Casado no religioso?",
+        required=False,
+        widget=forms.Select(attrs={'id': 'id_casado_na_igreja'})
+    )
+
+    # Nome do cônjuge
     nome_conjuge = forms.CharField(
         label="Nome do Cônjuge",
-        required=False,  # Não obrigatório a princípio
+        required=False,
         widget=forms.TextInput(attrs={'id': 'id_nome_conjuge'})
     )
 
-    def clean_nome_conjuge(self):
-        nome = self.cleaned_data.get('nome_conjuge', '')
-        return nome.title() if nome else nome
-
+    # Cônjuge inscrito?
     conjuge_inscrito = forms.ChoiceField(
         label="Cônjuge Inscrito?",
         required=False,
@@ -188,11 +230,21 @@ class BaseInscricaoForm(forms.ModelForm):
     class Meta:
         abstract = True
 
+    def clean_nome_conjuge(self):
+        nome = self.cleaned_data.get('nome_conjuge', '')
+        return nome.title() if nome else nome
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Inicialmente, torne os campos condicionais não obrigatórios
-        self.fields['nome_conjuge'].required = False
-        self.fields['conjuge_inscrito'].required = False
+        # Garantir que os campos condicionais nunca sejam obrigatórios
+        for field in [
+            'nome_conjuge',
+            'conjuge_inscrito',
+            'tempo_casado_uniao',
+            'tema_acampamento'
+        ]:
+            if field in self.fields:
+                self.fields[field].required = False
 
 
 
@@ -200,7 +252,7 @@ class InscricaoSeniorForm(BaseInscricaoForm):
     class Meta(BaseInscricaoForm.Meta):
         model = InscricaoSenior
         fields = [
-            "data_nascimento", "batizado", "estado_civil", "casado_na_igreja", "nome_conjuge",
+            "data_nascimento", "batizado", "estado_civil", "tempo_casado_uniao", "casado_na_igreja", "nome_conjuge",
             "conjuge_inscrito", "indicado_por", "tamanho_camisa", "paroquia",
             "pastoral_movimento", "outra_pastoral_movimento", "dizimista", "crismado",
             "altura", "peso", "problema_saude", "qual_problema_saude",
@@ -212,7 +264,7 @@ class InscricaoJuvenilForm(BaseInscricaoForm):
     class Meta(BaseInscricaoForm.Meta):
         model = InscricaoJuvenil
         fields = [
-            "data_nascimento", "batizado", "estado_civil", "casado_na_igreja", "nome_conjuge",
+            "data_nascimento", "batizado", "estado_civil", "tempo_casado_uniao", "casado_na_igreja", "nome_conjuge",
             "conjuge_inscrito", "indicado_por", "tamanho_camisa", "paroquia",
             "pastoral_movimento", "outra_pastoral_movimento", "dizimista", "crismado",
             "altura", "peso", "problema_saude", "qual_problema_saude",
@@ -224,7 +276,7 @@ class InscricaoMirimForm(BaseInscricaoForm):
     class Meta(BaseInscricaoForm.Meta):
         model = InscricaoMirim
         fields = [
-            "data_nascimento", "batizado", "estado_civil", "casado_na_igreja", "nome_conjuge",
+            "data_nascimento", "batizado", "estado_civil", "tempo_casado_uniao", "casado_na_igreja", "nome_conjuge",
             "conjuge_inscrito", "indicado_por", "tamanho_camisa", "paroquia",
             "pastoral_movimento", "outra_pastoral_movimento", "dizimista", "crismado",
             "altura", "peso", "problema_saude", "qual_problema_saude",
@@ -243,6 +295,38 @@ class InscricaoServosForm(BaseInscricaoForm):
             "medicamento_controlado", "qual_medicamento_controlado"
         ]
 
+# ---------- REMOVIDA a definição duplicada de InscricaoCasaisForm (sem foto) ----------
+
+class InscricaoEventoForm(BaseInscricaoForm):
+    class Meta(BaseInscricaoForm.Meta):
+        model = InscricaoEvento
+        fields = [
+            "data_nascimento", "batizado", "estado_civil", "tempo_casado_uniao", "casado_na_igreja", "nome_conjuge",
+            "conjuge_inscrito", "indicado_por", "tamanho_camisa", "paroquia",
+            "pastoral_movimento", "outra_pastoral_movimento", "dizimista", "crismado",
+            "altura", "peso", "problema_saude", "qual_problema_saude",
+            "medicamento_controlado", "qual_medicamento_controlado",
+            "protocolo_administracao", "mobilidade_reduzida", "qual_mobilidade_reduzida",
+            "alergia_alimento", "qual_alergia_alimento",
+            "alergia_medicamento", "qual_alergia_medicamento",
+            "tipo_sanguineo", "informacoes_extras",
+        ]
+
+
+class InscricaoRetiroForm(BaseInscricaoForm):
+    class Meta(BaseInscricaoForm.Meta):
+        model = InscricaoRetiro
+        fields = [
+            "data_nascimento", "batizado", "estado_civil", "tempo_casado_uniao", "casado_na_igreja", "nome_conjuge",
+            "conjuge_inscrito", "indicado_por", "tamanho_camisa", "paroquia",
+            "pastoral_movimento", "outra_pastoral_movimento", "dizimista", "crismado",
+            "altura", "peso", "problema_saude", "qual_problema_saude",
+            "medicamento_controlado", "qual_medicamento_controlado",
+            "protocolo_administracao", "mobilidade_reduzida", "qual_mobilidade_reduzida",
+            "alergia_alimento", "qual_alergia_alimento",
+            "alergia_medicamento", "qual_alergia_medicamento",
+            "tipo_sanguineo", "informacoes_extras",
+        ]
 
 class EventoForm(forms.ModelForm):
     class Meta:
@@ -283,7 +367,7 @@ class EventoForm(forms.ModelForm):
 class PoliticaPrivacidadeForm(forms.ModelForm):
     class Meta:
         model = PoliticaPrivacidade
-        fields = ['texto', 'imagem_camisa', 'imagem_1', 'imagem_2']
+        fields = ['texto', 'imagem_camisa', 'imagem_1', "imagem_ajuda", 'imagem_2']
         widgets = {
             'texto': forms.Textarea(attrs={'rows': 5, 'cols': 40}),
         }
@@ -494,10 +578,29 @@ class DadosSaudeForm(forms.ModelForm):
 
 
 
+# inscricoes/forms.py
+from django import forms
+from .models import VideoEventoAcampamento
+
 class VideoEventoForm(forms.ModelForm):
     class Meta:
         model = VideoEventoAcampamento
-        fields = ['titulo', 'arquivo']
+        fields = ["titulo", "arquivo"]
+        widgets = {
+            "titulo": forms.TextInput(attrs={
+                "placeholder": "Ex.: Aftermovie Acampamento Juvenil 2025",
+                "class": "w-full border rounded px-3 py-2"
+            }),
+        }
+
+    def clean_arquivo(self):
+        f = self.cleaned_data.get("arquivo")
+        # Opcional: garantir que é vídeo (quando conteúdo vier via upload padrão)
+        # Cloudinary aceita muitos formatos; esse check é só um guard-rail leve.
+        if f and hasattr(f, "content_type") and not f.content_type.startswith("video/"):
+            raise forms.ValidationError("Envie um arquivo de vídeo válido.")
+        return f
+
 
 from django import forms
 from django.contrib.auth import get_user_model
@@ -521,6 +624,13 @@ class PastoralMovimentoForm(forms.ModelForm):
         }
 
 class InscricaoForm(forms.ModelForm):
+    # Campo extra para vincular (cônjuge)
+    inscricao_pareada = forms.ModelChoiceField(
+        queryset=Inscricao.objects.none(),
+        required=False,
+        label="Vincular com outra inscrição (cônjuge)"
+    )
+
     class Meta:
         model = Inscricao
         fields = [
@@ -530,6 +640,9 @@ class InscricaoForm(forms.ModelForm):
             'foi_selecionado',
             'pagamento_confirmado',
             'inscricao_concluida',
+            # NOVO:
+            'inscricao_pareada',
+            # contatos/responsáveis
             'responsavel_1_nome',
             'responsavel_1_telefone',
             'responsavel_1_grau_parentesco',
@@ -543,6 +656,64 @@ class InscricaoForm(forms.ModelForm):
             'evento': forms.HiddenInput(),
             'paroquia': forms.HiddenInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        # você pode passar `evento=...` ao instanciar o form, mas se não vier,
+        # usamos `self.instance.evento`
+        evento = kwargs.pop('evento', None)
+        super().__init__(*args, **kwargs)
+
+        ev = evento or getattr(self.instance, 'evento', None)
+        qs = Inscricao.objects.none()
+        if ev:
+            qs = Inscricao.objects.filter(evento=ev)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+        self.fields['inscricao_pareada'].queryset = qs
+
+        # se já houver pareamento (de qualquer lado), pré-carrega no campo
+        if self.instance and self.instance.pk:
+            par = getattr(self.instance, 'inscricao_pareada', None) or getattr(self.instance, 'pareada_por', None)
+            if par and (not self.initial.get('inscricao_pareada')):
+                self.initial['inscricao_pareada'] = par.pk
+
+    def clean_inscricao_pareada(self):
+        par = self.cleaned_data.get('inscricao_pareada')
+        if not par:
+            return par
+
+        # não pode parear consigo mesmo
+        if self.instance and self.instance.pk and par.pk == self.instance.pk:
+            raise ValidationError("Não é possível parear com a própria inscrição.")
+
+        # deve ser do mesmo evento
+        ev_id = (self.instance.evento_id if self.instance and self.instance.pk else None) or \
+                (self.cleaned_data.get('evento').id if self.cleaned_data.get('evento') else None) or \
+                (self.initial.get('evento').id if self.initial.get('evento') else None)
+        if ev_id and par.evento_id != ev_id:
+            raise ValidationError("A inscrição pareada deve ser do mesmo evento.")
+
+        return par
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        par = self.cleaned_data.get('inscricao_pareada')
+
+        if commit:
+            obj.save()
+
+            # espelha o vínculo nas duas pontas se seu modelo tiver helpers
+            if hasattr(obj, 'set_pareada') and hasattr(obj, 'desparear'):
+                if par:
+                    obj.set_pareada(par)
+                else:
+                    obj.desparear()
+            else:
+                # fallback simples (apenas um lado) – ainda funciona com a prop `par`
+                obj.inscricao_pareada = par
+                obj.save(update_fields=['inscricao_pareada'])
+
+        return obj
 
 from .models import Participante
 
@@ -562,6 +733,556 @@ class ParticipanteForm(forms.ModelForm):
 
 
 class ConjugeForm(forms.ModelForm):
+    SIM_NAO_CHOICES = [
+        ('', '---------'),
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    ]
+
+    ja_e_campista = forms.ChoiceField(
+        label="Cônjuge já é Campista?",
+        choices=SIM_NAO_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'id': 'id_conj_ja_e_campista'})
+    )
+
+    acampamento = forms.CharField(   # 👈 usar o MESMO nome do modelo
+        label="Qual tema do acampamento?",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'id': 'id_conj_acampamento',
+            'placeholder': 'Ex.: Acampamento Casais 2022'
+        })
+    )
+
     class Meta:
         model = Conjuge
-        fields = ['nome', 'conjuge_inscrito', 'ja_e_campista']
+        fields = ['nome', 'conjuge_inscrito', 'ja_e_campista', 'acampamento']  # 👈 aqui também
+
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome', '')
+        return nome.title() if nome else nome
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('ja_e_campista') == 'sim' and not cleaned.get('acampamento'):
+            self.add_error('acampamento', 'Informe o tema do acampamento do cônjuge.')
+        return cleaned
+
+
+from django import forms
+from django.forms import modelformset_factory
+from .models import Filho
+
+class FilhoForm(forms.ModelForm):
+    class Meta:
+        model = Filho
+        fields = ['nome', 'endereco', 'telefone', 'idade']
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'placeholder': 'Nome do filho',
+                'class': 'form-control',
+            }),
+            'endereco': forms.TextInput(attrs={
+                'placeholder': 'Endereço',
+                'class': 'form-control',
+            }),
+            'telefone': forms.TextInput(attrs={
+                'placeholder': '(00) 00000-0000',
+                'class': 'form-control',
+            }),
+            'idade': forms.NumberInput(attrs={
+                'min': 0,
+                'max': 30,
+                'class': 'form-control',
+                'placeholder': 'Idade',
+            }),
+        }
+        labels = {
+            'nome': 'Nome',
+            'endereco': 'Endereço',
+            'telefone': 'Telefone',
+            'idade': 'Idade',
+        }
+
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome', '')
+        return nome.title() if nome else nome
+
+FilhoFormSet = modelformset_factory(
+    Filho,
+    form=FilhoForm,
+    extra=0,  # Começa sem filhos visíveis
+    can_delete=True
+)
+
+# inscricoes/forms.py
+from django import forms
+from django.utils import timezone
+from .models import Pagamento
+
+class PagamentoForm(forms.ModelForm):
+    class Meta:
+        model = Pagamento
+        fields = ["valor", "metodo", "status", "data_pagamento", "comprovante"]
+        widgets = {
+            "data_pagamento": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # opcional: receber a inscrição para sugerir valor padrão
+        self.inscricao = kwargs.pop("inscricao", None)
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk and self.inscricao:
+            try:
+                self.fields["valor"].initial = self.inscricao.evento.valor_inscricao
+            except Exception:
+                pass
+
+    def clean(self):
+        cleaned = super().clean()
+        status = cleaned.get("status")
+        data_pg = cleaned.get("data_pagamento")
+
+        # se marcar como confirmado e não informar data, preenche com agora
+        if status == Pagamento.StatusPagamento.CONFIRMADO and not data_pg:
+            cleaned["data_pagamento"] = timezone.now()
+        return cleaned
+
+# forms.py
+from django import forms
+from .models import PoliticaReembolso
+
+class PoliticaReembolsoForm(forms.ModelForm):
+    class Meta:
+        model = PoliticaReembolso
+        fields = [
+            'ativo',
+            'permite_reembolso',
+            'prazo_solicitacao_dias',
+            'taxa_administrativa_percent',
+            'descricao',
+            'contato_email',
+            'contato_whatsapp',
+        ]
+        widgets = {
+            'descricao': forms.Textarea(attrs={'rows': 6}),
+        }
+
+
+class AdminParoquiaCreateForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ["first_name", "last_name", "username", "email"]  # senha vem do UserCreationForm
+
+    def save(self, commit=True, paroquia=None):
+        user = super().save(commit=False)
+        user.tipo_usuario = "admin_paroquia"
+        if paroquia is not None:
+            user.paroquia = paroquia
+        if commit:
+            user.save()
+        return user
+
+# --- Form de contato da landing (/site/) ---
+from django import forms
+
+class LeadLandingForm(forms.Form):
+    nome = forms.CharField(
+        label="Nome",
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            "class": "mt-1 block w-full rounded-xl border-slate-300 focus:border-indigo-400 focus:ring-indigo-200",
+            "placeholder": "Seu nome completo",
+            "required": True,
+        }),
+    )
+    whatsapp = forms.CharField(
+        label="WhatsApp",
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            "class": "mt-1 block w-full rounded-xl border-slate-300 focus:border-indigo-400 focus:ring-indigo-200",
+            "placeholder": "(xx) xxxxx-xxxx",
+            "inputmode": "tel",
+            "required": True,
+        }),
+    )
+    email = forms.EmailField(
+        label="E-mail",
+        widget=forms.EmailInput(attrs={
+            "class": "mt-1 block w-full rounded-xl border-slate-300 focus:border-indigo-400 focus:ring-indigo-200",
+            "placeholder": "voce@paroquia.com",
+            "required": True,
+        }),
+    )
+    mensagem = forms.CharField(
+        label="Mensagem (opcional)",
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 4,
+            "class": "mt-1 block w-full rounded-xl border-slate-300 focus:border-indigo-400 focus:ring-indigo-200",
+            "placeholder": "Conte rapidamente sobre seu evento ou paróquia...",
+        }),
+    )
+    lgpd = forms.BooleanField(
+        label="Concordo em ser contatado e com o tratamento dos meus dados conforme a LGPD para fins de atendimento.",
+        required=True,
+        widget=forms.CheckboxInput(attrs={"class": "mt-1"}),
+    )
+
+# inscricoes/forms.py
+from django import forms
+# ... seus imports ...
+from .models import Comunicado
+
+class ComunicadoForm(forms.ModelForm):
+    class Meta:
+        model = Comunicado
+        fields = ["titulo", "texto", "capa", "publicado"]
+        widgets = {
+            "titulo": forms.TextInput(attrs={"class": "form-control", "placeholder": "Título"}),
+            "texto": forms.Textarea(attrs={"class": "form-control", "rows": 8, "placeholder": "Escreva a publicação..."}),
+            "publicado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+# inscricoes/forms.py
+from django import forms
+from .models import Ministerio, AlocacaoMinisterio, Inscricao
+
+class MinisterioForm(forms.ModelForm):
+    class Meta:
+        model = Ministerio
+        fields = ["nome", "descricao"]  # evento será setado na view para "novo"
+
+class AlocacaoMinisterioForm(forms.ModelForm):
+    class Meta:
+        model = AlocacaoMinisterio
+        fields = ["inscricao"]  # ministerio será setado na view
+
+    def __init__(self, *args, **kwargs):
+        evento = kwargs.pop("evento", None)
+        ministerio = kwargs.pop("ministerio", None)
+        super().__init__(*args, **kwargs)
+
+        # Limita inscrições ao mesmo evento e que ainda não estejam alocadas neste ministério
+        if evento:
+            qs = Inscricao.objects.filter(evento=evento)
+            if ministerio:
+                qs = qs.exclude(alocacao_ministerio__ministerio=ministerio)
+            self.fields["inscricao"].queryset = qs.select_related("participante").order_by("participante__nome")
+
+        # Aparência
+        for f in self.fields.values():
+            f.widget.attrs.update({"class": "form-select"})
+
+from django import forms
+from .models import InscricaoCasais
+
+
+# forms.py
+
+class InscricaoCasaisForm(BaseInscricaoForm):
+    # deixa a foto opcional aqui; a view define required=True na etapa 2
+    foto_casal = forms.ImageField(
+        label="Foto do casal",
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"})
+    )
+
+    class Meta(BaseInscricaoForm.Meta):
+        model = InscricaoCasais
+        fields = [
+            # Dados básicos
+            "data_nascimento",
+            "altura",
+            "peso",
+            "batizado",
+            "estado_civil",
+            "casado_na_igreja",
+            "tempo_casado_uniao",
+            "paroquia",
+            "pastoral_movimento",
+            "outra_pastoral_movimento",
+            "dizimista",
+            "crismado",
+            "tamanho_camisa",
+
+            # ---------------- SAÚDE ----------------
+            "problema_saude",
+            "qual_problema_saude",
+            "medicamento_controlado",
+            "qual_medicamento_controlado",
+            "protocolo_administracao",
+            "mobilidade_reduzida",
+            "qual_mobilidade_reduzida",
+            "alergia_alimento",
+            "qual_alergia_alimento",
+            "alergia_medicamento",
+            "qual_alergia_medicamento",
+            "diabetes",        # 🔹 novo
+            "pressao_alta",    # 🔹 novo
+            # ----------------------------------------
+
+            "tipo_sanguineo",
+            "indicado_por",
+            "informacoes_extras",
+
+            # Casais
+            "foto_casal",
+        ]
+        widgets = {
+            "data_nascimento": forms.DateInput(attrs={"type": "date"}),
+            "altura": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "peso": forms.NumberInput(attrs={"step": "0.1", "min": "0"}),
+            "informacoes_extras": forms.Textarea(attrs={"rows": 3}),
+            "foto_casal": forms.ClearableFileInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Aplica CSS Bootstrap em todos os campos
+        for name, field in self.fields.items():
+            widget = field.widget
+
+            if isinstance(widget, forms.FileInput):
+                css_class = "form-control"
+            elif isinstance(widget, forms.Textarea):
+                css_class = "form-control"
+            elif isinstance(widget, (forms.DateInput, forms.NumberInput, forms.TextInput, forms.EmailInput, forms.URLInput)):
+                css_class = "form-control"
+            elif isinstance(widget, forms.Select):
+                css_class = "form-select"
+            else:
+                css_class = "form-control"
+
+            widget.attrs.update({"class": css_class})
+
+        # 🔹 Restringe opções de estado civil → apenas Casado / União Estável
+        self.fields["estado_civil"].choices = [
+            ("casado", "Casado"),
+            ("uniao_estavel", "União Estável"),
+        ]
+
+        # 🔹 Ajuste de labels mais claros (opcional, mas melhora UX)
+        self.fields["tempo_casado_uniao"].label = "Tempo de união (anos/meses)"
+        self.fields["foto_casal"].label = "Foto do casal"
+
+    # (opcional) validação de tipo/tamanho
+    def clean_foto_casal(self):
+        f = self.cleaned_data.get("foto_casal")
+        if not f:
+            return f
+        # tipo de conteúdo (se disponível)
+        ct = getattr(f, "content_type", None)
+        if ct and not ct.startswith("image/"):
+            raise ValidationError("Envie uma imagem válida.")
+        # tamanho (ex.: 10 MB)
+        max_bytes = 10 * 1024 * 1024
+        if getattr(f, "size", 0) > max_bytes:
+            raise ValidationError("A imagem deve ter no máximo 10 MB.")
+        return f
+
+from django.core.exceptions import ValidationError
+from django import forms
+from django.core.exceptions import ValidationError
+import re
+
+UF_CHOICES = [
+    ('', '—'), ('AC','AC'),('AL','AL'),('AP','AP'),('AM','AM'),('BA','BA'),
+    ('CE','CE'),('DF','DF'),('ES','ES'),('GO','GO'),('MA','MA'),('MT','MT'),
+    ('MS','MS'),('MG','MG'),('PA','PA'),('PB','PB'),('PR','PR'),('PE','PE'),
+    ('PI','PI'),('RJ','RJ'),('RN','RN'),('RS','RS'),('RO','RO'),('RR','RR'),
+    ('SC','SC'),('SP','SP'),('SE','SE'),('TO','TO'),
+]
+
+def _digits(s: str) -> str:
+    return re.sub(r'\D', '', s or '')
+
+def _fmt_cep(d: str) -> str:
+    # 8 dígitos → 99999-999
+    return f"{d[:5]}-{d[5:]}" if len(d) == 8 else d
+
+def _valida_cpf_basico(d: str) -> bool:
+    # validação simples: exatamente 11 dígitos (sem algoritmo)
+    return len(d) == 11
+
+class FormBasicoPagamentoPublico(forms.Form):
+    # Participante 1
+    nome = forms.CharField(
+        label="Nome completo (1º participante)",
+        max_length=150,
+        widget=forms.TextInput(attrs={"autocomplete": "name"})
+    )
+    cpf = forms.CharField(
+        label="CPF do 1º participante",
+        max_length=18,  # aceita máscara
+        widget=forms.TextInput(attrs={"placeholder": "000.000.000-00", "inputmode": "numeric"})
+    )
+
+    # Participante 2 (opcional, mas se informar CPF precisa ter nome, e vice-versa)
+    nome_segundo = forms.CharField(
+        label="Nome completo (2º participante - opcional)",
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={"autocomplete": "name"})
+    )
+    cpf_segundo = forms.CharField(
+        label="CPF do 2º participante (opcional)",
+        max_length=18,
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "000.000.000-00", "inputmode": "numeric"})
+    )
+
+    # Endereço mínimo (CEP → preenche cidade/UF no front com ViaCEP)
+    CEP = forms.CharField(
+        label="CEP",
+        max_length=9,
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "00000-000", "inputmode": "numeric"})
+    )
+    cidade = forms.CharField(
+        label="Cidade",
+        max_length=120,
+        required=False,
+        widget=forms.TextInput(attrs={"id": "id_cidade"})
+    )
+    estado = forms.ChoiceField(
+        label="Estado (UF)",
+        choices=UF_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={"id": "id_estado"})
+    )
+
+    # -------------------------
+    # Normalizações de campos
+    # -------------------------
+    def clean_nome(self):
+        return (self.cleaned_data.get("nome") or "").strip()
+
+    def clean_nome_segundo(self):
+        return (self.cleaned_data.get("nome_segundo") or "").strip()
+
+    def clean_cidade(self):
+        return (self.cleaned_data.get("cidade") or "").strip()
+
+    def clean_estado(self):
+        # normaliza para sigla em maiúsculo
+        uf = (self.cleaned_data.get("estado") or "").strip().upper()
+        return uf
+
+    def clean_CEP(self):
+        cep_raw = (self.cleaned_data.get("CEP") or "").strip()
+        d = _digits(cep_raw)
+        if d and len(d) != 8:
+            raise ValidationError("CEP inválido. Use 8 dígitos (ex.: 77000-000).")
+        return _fmt_cep(d) if d else ""
+
+    def clean_cpf(self):
+        cpf_raw = (self.cleaned_data.get("cpf") or "").strip()
+        d = _digits(cpf_raw)
+        if not _valida_cpf_basico(d):
+            raise ValidationError("CPF inválido. Informe 11 dígitos.")
+        # opcional: retornar com máscara padronizada
+        return f"{d[:3]}.{d[3:6]}.{d[6:9]}-{d[9:]}"  # 000.000.000-00
+
+    def clean_cpf_segundo(self):
+        cpf2_raw = (self.cleaned_data.get("cpf_segundo") or "").strip()
+        if not cpf2_raw:
+            return ""  # opcional, então pode ficar vazio
+        d = _digits(cpf2_raw)
+        if not _valida_cpf_basico(d):
+            raise ValidationError("CPF do 2º participante inválido. Informe 11 dígitos.")
+        return f"{d[:3]}.{d[3:6]}.{d[6:9]}-{d[9:]}"
+
+    # -------------------------
+    # Regras cruzadas
+    # -------------------------
+    def clean(self):
+        data = super().clean()
+
+        # Participante 2: se informou CPF2 exige nome2; se informou nome2 exige CPF2
+        nome2 = (data.get("nome_segundo") or "").strip()
+        cpf2  = (data.get("cpf_segundo") or "").strip()
+        if cpf2 and not nome2:
+            self.add_error("nome_segundo", "Informe o nome do 2º participante.")
+        if nome2 and not cpf2:
+            self.add_error("cpf_segundo", "Informe o CPF do 2º participante.")
+
+        # Se informou CEP, exigimos cidade e UF (ViaCEP preenche no front, mas garantimos no back)
+        cep = (data.get("CEP") or "").strip()
+        if cep:
+            if not (data.get("cidade") or "").strip():
+                self.add_error("cidade", "Informe a cidade (preenchida automaticamente pelo CEP).")
+            if not (data.get("estado") or "").strip():
+                self.add_error("estado", "Selecione a UF (preenchida automaticamente pelo CEP).")
+
+        return data
+
+    
+class MinisterioForm(forms.ModelForm):
+    class Meta:
+        model = Ministerio
+        fields = ["nome", "descricao"]
+
+    def __init__(self, *args, **kwargs):
+        # vamos receber o evento por argumento para validar/atribuir
+        self.evento = kwargs.pop("evento", None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        if self.evento:
+            obj.evento = self.evento
+        if commit:
+            obj.save()
+        return obj
+        
+class AlocarInscricaoForm(forms.Form):
+    inscricao = forms.ModelChoiceField(
+        queryset=Inscricao.objects.none(),
+        label="Inscrição do participante",
+        required=True,
+        help_text="Apenas inscrições deste evento aparecem aqui."
+    )
+
+    def __init__(self, *args, **kwargs):
+        # >>> Retira os kwargs customizados ANTES do super()
+        self.evento: EventoAcampamento | None = kwargs.pop("evento", None)
+        self.ministerio: Ministerio | None = kwargs.pop("ministerio", None)
+
+        super().__init__(*args, **kwargs)
+
+        # Define o queryset do campo conforme o evento
+        qs = Inscricao.objects.none()
+        if self.evento:
+            qs = Inscricao.objects.filter(evento=self.evento)
+            # Se quiser, filtre por status, por ex.:
+            # qs = qs.filter(status__in=["confirmada", "paga", ...])
+
+        self.fields["inscricao"].queryset = qs
+        self.fields["inscricao"].label_from_instance = (
+            lambda obj: f"{obj.participante.nome} — #{obj.id}"
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        insc: Inscricao | None = cleaned.get("inscricao")
+
+        if not self.evento:
+            raise ValidationError("Evento não informado no formulário.")
+
+        if insc and insc.evento_id != self.evento.id:
+            raise ValidationError("A inscrição selecionada não pertence a este evento.")
+
+        # (Opcional) Bloquear duplicidade de alocação nesse ministério/evento
+        if self.ministerio and insc:
+            existe = AlocacaoMinisterio.objects.filter(
+                evento=self.evento,
+                ministerio=self.ministerio,
+                inscricao=insc,
+            ).exists()
+            if existe:
+                raise ValidationError("Esta inscrição já está alocada neste ministério.")
+
+        return cleaned

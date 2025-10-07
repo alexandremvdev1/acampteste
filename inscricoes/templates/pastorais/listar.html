@@ -1,119 +1,213 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>📋 Lista de Pastorais</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
+  <meta charset="utf-8" />
+  <title>Pastorais / Movimentos — Admin Geral</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-        .container {
-            max-width: 600px;
-            width: 90%;
-            background: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#64748b; --ring:rgba(37,99,235,.18);
+      --g1:#0b1020; --g2:#111a3a;
+      --base-font:14px;
+      --line:#e5e7eb; --panel:#fff;
 
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-        }
+      --accent:#2563eb; --accent-2:#1d4ed8;
+      --chip:#eef2ff; --chip-ink:#4338ca;
+    }
+    html{ font-size:var(--base-font); }
+    body{ background:#f6f8fb; color:var(--ink); }
+    .text-muted-2{ color:var(--muted); }
 
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 25px 0;
-        }
+    /* Navbar (Catálogo) */
+    .nav-pro{ background:linear-gradient(90deg,var(--g1),var(--g2)); }
+    .navbar-brand{ font-size:1rem; }
+    .navbar .btn{ font-size:.85rem; padding:.35rem .6rem; }
 
-        li {
-            background-color: #ecf0f1;
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-        }
+    /* Topbar */
+    .sticky-topbar{ position:sticky; top:0; z-index:20; background:#ffffffd6; backdrop-filter:blur(6px); }
 
-        li::before {
-            content: "🔹";
-        }
+    /* Painel limpo */
+    .card-clean{
+      background:var(--panel); border:1px solid var(--line); border-radius:.9rem;
+      box-shadow:0 10px 24px rgba(17,24,39,.08);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .card-clean:hover{ transform:translateY(-1px); box-shadow:0 12px 28px rgba(17,24,39,.12); }
 
-        .empty-message {
-            font-style: italic;
-            color: #888;
-            margin-bottom: 25px;
-        }
+    /* Inputs (Catálogo) */
+    .form-control{
+      border-radius:.8rem; border-color:var(--line); padding:.6rem .8rem; font-size:.95rem; background:#fff;
+    }
+    .form-control:focus{ border-color:#93c5fd; box-shadow:0 0 0 .25rem var(--ring); }
+    .btn.btn-sm, .btn-sm{ font-size:.85rem; padding:.45rem .65rem; }
 
-        .btn {
-            display: block;
-            width: 96%;
-            padding: 12px;
-            text-align: center;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-            margin-bottom: 15px;
-        }
+    /* Lista em cards */
+    .avatar{
+      width:38px; height:38px; border-radius:.8rem; display:grid; place-items:center; flex:0 0 auto;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; font-weight:800;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
+    }
+    .chip{
+      margin-left:auto; font-size:.78rem; padding:.25rem .6rem; border-radius:999px;
+      background:var(--chip); color:var(--chip-ink); border:1px solid rgba(99,102,241,.25); font-weight:700;
+    }
+    .item{
+      border:1px solid var(--line); border-radius:.9rem; padding:.75rem .85rem; background:#fff;
+      display:flex; align-items:center; gap:.65rem;
+      transition: transform .12s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .item:hover{ transform: translateY(-2px); box-shadow:0 10px 24px rgba(17,24,39,.08); border-color: rgba(37,99,235,.35); }
+    .name{ font-weight:700; letter-spacing:.2px }
 
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-secondary {
-            background-color: #7f8c8d;
-        }
-
-        .btn-secondary:hover {
-            background-color: #636e72;
-        }
-
-        @media (max-width: 500px) {
-            .container {
-                padding: 20px;
-            }
-
-            .btn {
-                padding: 10px;
-                font-size: 0.95rem;
-            }
-        }
-    </style>
+    .empty{ text-align:center; color:var(--muted); padding:24px; border:1px dashed var(--line); border-radius:12px; background:#fff }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>📋 Lista de Pastorais / Movimentos</h2>
-
-        {% if pastorais %}
-            <ul>
-                {% for p in pastorais %}
-                    <li>{{ p.nome }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="empty-message">⚠️ Nenhuma pastoral ou movimento cadastrado.</p>
-        {% endif %}
-
-        <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn">➕ Cadastrar Nova Pastoral</a>
-        <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-secondary">⬅️ Voltar para o Painel</a>
+  <!-- NAVBAR estilo Catálogo -->
+  <nav class="navbar nav-pro navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="{% url 'inscricoes:admin_geral_dashboard' %}">Admin Geral</a>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'inscricoes:admin_geral_dashboard' %}">← Dashboard</a>
+        <button type="button" class="btn btn-sm btn-light" id="themeToggle" aria-label="Alternar tema">Tema</button>
+        <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn btn-sm btn-success">+ Nova Pastoral</a>
+      </div>
     </div>
+  </nav>
+
+  <main class="container py-3 py-lg-4">
+    <!-- Cabeçalho / topbar -->
+    <div class="sticky-topbar border rounded-3 p-3 mb-3 bg-white">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <h1 class="h6 m-0">Pastorais / Movimentos</h1>
+          <div class="small text-muted-2">Gerencie e pesquise a lista de pastorais cadastradas.</div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus me-1"></i> Cadastrar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <section class="card-clean p-3 p-lg-4 mb-3" aria-labelledby="filtros">
+      <h2 id="filtros" class="h6 text-muted-2 mb-3"><i class="fa-solid fa-filter"></i> Filtros</h2>
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-8">
+          <label class="form-label small text-muted-2 mb-1" for="q">Busca</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white">🔎</span>
+            <input id="q" type="search" class="form-control" placeholder="Buscar por nome… (ex.: Liturgia, RCC, Catequese)" aria-label="Buscar pastoral">
+          </div>
+        </div>
+        <div class="col-12 col-lg-4">
+          <div class="text-end small text-muted-2" id="count"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista -->
+    {% if pastorais %}
+    <section class="card-clean p-3 p-lg-4" aria-labelledby="lista">
+      <h2 id="lista" class="h6 text-muted-2 mb-3"><i class="fa-solid fa-list"></i> Lista</h2>
+      <div id="list" class="row g-3">
+        {% for p in pastorais %}
+          <div class="col-12 col-sm-6 col-lg-4" data-name="{{ p.nome|lower }}">
+            <div class="item">
+              <div class="avatar" aria-hidden="true">{{ p.nome|first|upper }}</div>
+              <div class="name text-truncate" title="{{ p.nome }}">{{ p.nome }}</div>
+              <span class="chip">Pastoral</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2 justify-content-center mt-3">
+        <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-plus me-1"></i> Cadastrar Nova Pastoral
+        </a>
+        <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fa-solid fa-gauge me-1"></i> Voltar ao Painel
+        </a>
+      </div>
+    </section>
+    {% else %}
+      <section class="card-clean p-4">
+        <div class="empty">⚠️ Nenhuma pastoral ou movimento cadastrado.</div>
+        <div class="d-flex gap-2 justify-content-center mt-2">
+          <a href="{% url 'inscricoes:cadastrar_pastoral_movimento' %}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus me-1"></i> Cadastrar Nova Pastoral
+          </a>
+          <a href="{% url 'inscricoes:admin_geral_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-gauge me-1"></i> Voltar ao Painel
+          </a>
+        </div>
+      </section>
+    {% endif %}
+
+    <footer class="py-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center text-muted-2 small">
+        <div>© {% now "Y" %} Admin Geral — Todos os direitos reservados</div>
+        <div>Desenvolvido por Alexandre Martins Vieira • Bootstrap 5</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Tema com persistência (mesma chave usada nas outras telas)
+    (function themeToggle(){
+      const KEY='relatorios-theme';
+      const btn=document.getElementById('themeToggle');
+      const root=document.documentElement;
+      function apply(theme){
+        if(theme==='dark'){ root.dataset.theme='dark'; document.documentElement.style.colorScheme='dark'; }
+        else if(theme==='light'){ root.dataset.theme='light'; document.documentElement.style.colorScheme='light'; }
+        else{ root.removeAttribute('data-theme'); document.documentElement.style.colorScheme='light dark'; }
+      }
+      apply(localStorage.getItem(KEY) || 'auto');
+      btn?.addEventListener('click', ()=>{
+        const cur=localStorage.getItem(KEY)||'auto';
+        const next= cur==='auto' ? 'dark' : cur==='dark' ? 'light' : 'auto';
+        localStorage.setItem(KEY,next); apply(next);
+        btn.setAttribute('aria-label',`Tema: ${next}`);
+      });
+    })();
+
+    // Busca, normalização e contador
+    (function listControls(){
+      const list = document.getElementById('list');
+      const q = document.getElementById('q');
+      const count = document.getElementById('count');
+      if(!list || !q || !count) return;
+
+      const cards = Array.from(list.querySelectorAll('[data-name]'));
+      // Ordena A→Z ao carregar
+      cards.sort((a,b)=> a.dataset.name.localeCompare(b.dataset.name,'pt-BR',{sensitivity:'base'}))
+           .forEach(el => list.appendChild(el));
+
+      const norm = (s)=> (s||'').toLowerCase()
+        .normalize('NFD').replace(/\p{Diacritic}/gu,'');
+
+      function apply(){
+        const term = norm(q.value);
+        let shown = 0;
+        cards.forEach(el=>{
+          const name = norm(el.dataset.name);
+          const vis = !term || name.includes(term);
+          el.classList.toggle('d-none', !vis);
+          if(vis) shown++;
+        });
+        count.textContent = shown + ' de ' + cards.length + ' pastorais';
+      }
+
+      q.addEventListener('input', apply);
+      apply();
+    })();
+  </script>
 </body>
 </html>

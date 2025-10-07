@@ -1,90 +1,210 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>➕ Cadastrar Pastoral</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f5f6fa;
-            margin: 0;
-            padding: 20px;
-        }
+  <meta charset="utf-8" />
+  <title>Nova Pastoral — Admin Geral</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-        .container {
-            max-width: 500px;
-            background: #fff;
-            margin: 40px auto;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#64748b; --ring:rgba(37,99,235,.18);
+      --g1:#0b1020; --g2:#111a3a;
+      --base-font:14px; --line:#e5e7eb;
+      --accent:#2563eb; --accent-2:#1d4ed8;
+    }
+    html{ font-size:var(--base-font); }
+    body{ background:#f6f8fb; color:var(--ink); }
+    .text-muted-2{ color:var(--muted); }
 
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
+    /* Navbar (estilo Catálogo) */
+    .nav-pro{ background:linear-gradient(90deg,var(--g1),var(--g2)); }
+    .navbar-brand{ font-size:1rem; }
+    .navbar .btn{ font-size:.85rem; padding:.35rem .6rem; }
 
-        form label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #333;
-        }
+    /* Topbar colada */
+    .sticky-topbar{ position:sticky; top:0; z-index:20; background:#ffffffd6; backdrop-filter:blur(6px); }
 
-        form input[type="text"] {
-            width: 96%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
+    /* Cartão limpo */
+    .card-clean{
+      background:#fff; border:1px solid var(--line); border-radius:.9rem;
+      box-shadow:0 10px 24px rgba(17,24,39,.08);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .card-clean:hover{ transform:translateY(-1px); box-shadow:0 12px 28px rgba(17,24,39,.12); }
 
-        .btn {
-            display: inline-block;
-            margin-top: 25px;
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            text-align: center;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-        }
+    /* Form compacto */
+    .form-control, .form-select, textarea{
+      border-radius:.8rem; border-color:var(--line); padding:.6rem .8rem; font-size:.95rem; background:#fff;
+    }
+    .form-control:focus, .form-select:focus, textarea:focus{
+      border-color:#93c5fd; box-shadow:0 0 0 .25rem var(--ring);
+    }
+    .form-label{ font-size:.85rem; color:var(--muted); margin-bottom:.25rem; font-weight:600; }
+    .form-text{ color:var(--muted); }
 
-        .btn:hover {
-            background-color: #2980b9;
-        }
+    /* Botões compactos */
+    .btn.btn-sm, .btn-sm{ font-size:.85rem; padding:.45rem .65rem; }
+    .btn-gradient{
+      background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; border:none;
+    }
+    .btn-gradient:hover{ filter:brightness(1.05); }
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            text-decoration: none;
-            color: #888;
-            font-size: 0.9rem;
-        }
+    /* Erros */
+    .err-box{
+      border:1px solid rgba(239,68,68,.35); background:rgba(239,68,68,.06);
+      color:#b91c1c; border-radius:.6rem; padding:.5rem .6rem; font-size:.9rem;
+    }
 
-        .back-link:hover {
-            color: #555;
-        }
-    </style>
+    /* Dicas */
+    kbd{ background:#111827; color:#e5e7eb; border-radius:6px; padding:2px 6px; font:12px/1 ui-monospace,Menlo,Consolas,monospace; }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>➕ Cadastrar Nova Pastoral</h2>
-
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn">Salvar</button>
-        </form>
-
-        <a href="{% url 'inscricoes:listar_pastorais_movimentos' %}" class="back-link">← Voltar para lista</a>
+  <!-- NAVBAR estilo Catálogo -->
+  <nav class="navbar nav-pro navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="{% url 'inscricoes:admin_geral_dashboard' %}">Admin Geral</a>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'inscricoes:listar_pastorais_movimentos' %}">← Lista</a>
+        <button type="button" class="btn btn-sm btn-light" id="themeToggle" aria-label="Alternar tema">Tema</button>
+      </div>
     </div>
+  </nav>
+
+  <main class="container py-3 py-lg-4">
+    <!-- Cabeçalho / topbar -->
+    <div class="sticky-topbar border rounded-3 p-3 mb-3 bg-white">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <h1 class="h6 m-0">Cadastrar Pastoral / Movimento</h1>
+          <div class="small text-muted-2">Inclua uma nova pastoral para usar nos formulários e relatórios.</div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'inscricoes:listar_pastorais_movimentos' %}" class="btn btn-outline-secondary btn-sm">Voltar</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <section class="card-clean p-3 p-lg-4">
+      <h2 class="h6 text-muted-2 mb-3"><i class="fa-solid fa-plus"></i> Nova Pastoral</h2>
+
+      <form method="post" novalidate id="pastoralForm" class="needs-validation" autocomplete="off">
+        {% csrf_token %}
+
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="col-12">
+              <label for="{{ field.id_for_label }}" class="form-label">
+                {{ field.label }}
+                {% if field.field.required %}<span class="text-warning">*</span>{% endif %}
+              </label>
+
+              {# sem add_class: render cru e JS aplica classes Bootstrap automaticamente #}
+              {{ field }}
+
+              {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+              {% if field.errors %}
+                <div class="err-box mt-2">
+                  {% for error in field.errors %}<div>• {{ error }}</div>{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end mt-3">
+          <a href="{% url 'inscricoes:listar_pastorais_movimentos' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-gradient btn-sm">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Salvar
+          </button>
+        </div>
+
+        <p class="small text-muted-2 mt-2">
+          Dica: use <kbd>Ctrl</kbd>+<kbd>Enter</kbd> (ou <kbd>⌘</kbd>+<kbd>Enter</kbd>) para enviar.
+        </p>
+      </form>
+    </section>
+
+    <footer class="py-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center text-muted-2 small">
+        <div>© {% now "Y" %} Admin Geral — Todos os direitos reservados</div>
+        <div>Desenvolvido por Alexandre Martins Vieira • Bootstrap 5</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Tema com persistência
+    (function themeToggle(){
+      const KEY='relatorios-theme';
+      const btn=document.getElementById('themeToggle');
+      const root=document.documentElement;
+      function apply(theme){
+        if(theme==='dark'){ root.dataset.theme='dark'; document.documentElement.style.colorScheme='dark'; }
+        else if(theme==='light'){ root.dataset.theme='light'; document.documentElement.style.colorScheme='light'; }
+        else{ root.removeAttribute('data-theme'); document.documentElement.style.colorScheme='light dark'; }
+      }
+      apply(localStorage.getItem(KEY) || 'auto');
+      btn?.addEventListener('click', ()=>{
+        const cur=localStorage.getItem(KEY)||'auto';
+        const next= cur==='auto' ? 'dark' : cur==='dark' ? 'light' : 'auto';
+        localStorage.setItem(KEY,next); apply(next);
+        btn.setAttribute('aria-label',`Tema: ${next}`);
+      });
+    })();
+
+    // Aplique classes Bootstrap aos widgets gerados pelo Django (sem widget-tweaks)
+    (function enhanceWidgets(){
+      const form = document.getElementById('pastoralForm');
+      if(!form) return;
+
+      const isTextInput = (el) =>
+        ['text','email','url','number','password','search','tel','date','time','datetime-local'].includes(el.type);
+
+      form.querySelectorAll('input, select, textarea').forEach(el=>{
+        // ignore tipos especiais
+        if(el.tagName==='SELECT'){ el.classList.add('form-select'); return; }
+        if(el.type==='checkbox' || el.type==='radio' || el.type==='file') return;
+
+        if(isTextInput(el) || el.tagName==='TEXTAREA'){
+          el.classList.add('form-control');
+        }
+      });
+    })();
+
+    // UX: foco, Ctrl/Cmd+Enter e slug automático (se existir)
+    (function formUX(){
+      const form = document.getElementById('pastoralForm');
+      if(!form) return;
+
+      const first = form.querySelector('input[type="text"], input, textarea, select');
+      first && first.focus();
+
+      document.addEventListener('keydown', (e)=>{
+        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='enter'){
+          e.preventDefault();
+          form.requestSubmit();
+        }
+      });
+
+      const nome = form.querySelector('input[name$="nome"]');
+      const slug = form.querySelector('input[name$="slug"]');
+      if(nome && slug){
+        const slugify = (s)=> (s||'')
+          .normalize('NFD').replace(/\p{Diacritic}/gu,'')
+          .toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+        nome.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = slugify(nome.value); } });
+        slug.addEventListener('input', ()=> slug.dataset.touched = '1');
+      }
+    })();
+  </script>
+
+  <!-- Ícones (opcional, se já não estiver global) -->
+  <script src="https://kit.fontawesome.com/a2e0e6ad59.js" crossorigin="anonymous"></script>
 </body>
 </html>

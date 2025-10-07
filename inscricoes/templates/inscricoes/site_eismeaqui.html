@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>eismeaqui.app — Gestão de Inscrições para Eventos Católicos</title>
+  <meta name="description" content="Agenda da comunidade, notícias e eventos com inscrições abertas."/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .frame { border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; box-shadow:0 10px 24px rgba(2,6,23,.12); background:#fff; }
+    .frame-head { display:flex; gap:.35rem; padding:.6rem .8rem; background:linear-gradient(180deg,#f8fafc,#eef2f7); border-bottom:1px solid #e5e7eb; }
+    .dot { width:.65rem; height:.65rem; border-radius:999px; background:#e11d48; }
+    .dot:nth-child(2){ background:#f59e0b; } .dot:nth-child(3){ background:#10b981; }
+    .kbd { font-variant:all-small-caps; letter-spacing:.06em; padding:.15rem .4rem; border:1px solid #e5e7eb; border-bottom-width:2px; border-radius:.4rem; background:#fff; font-size:.7rem; }
+    .badge { border:1px solid rgba(148,163,184,.35); padding:.25rem .6rem; border-radius:999px; font-size:.75rem; }
+    .grad { background:linear-gradient(135deg, #0ea5e9 0%, #6366f1 55%, #22c55e 100%); }
+    .grad-ink { background:linear-gradient(135deg, #0ea5e9, #6366f1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .shadow-card { box-shadow:0 10px 24px rgba(2,6,23,.12); }
+    html { scroll-behavior:smooth; } @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+    .anchor-offset { scroll-margin-top: 84px; }
+    .form-flat input[type="text"], .form-flat input[type="email"], .form-flat input[type="tel"], .form-flat select, .form-flat textarea {
+      border-radius:0 !important; border:1px solid #cbd5e1; padding:.625rem .75rem; background:#fff; outline:none; width:100%;
+      box-shadow: inset 0 1px 0 rgba(2,6,23,.03); transition: box-shadow .15s, border-color .15s;
+    }
+    .form-flat input::placeholder,.form-flat textarea::placeholder{color:#94a3b8}
+    .form-flat input:focus,.form-flat select:focus,.form-flat textarea:focus{border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+    .form-flat .errorlist{margin:.25rem 0 0; color:#dc2626; font-size:.75rem}
+    .card-hover{ transition:transform .15s, box-shadow .15s; } .card-hover:hover{ transform:translateY(-2px); box-shadow:0 16px 36px rgba(2,6,23,.14); }
+    .line-clamp-3{ display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+{% load site_images %}
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <a href="{% url 'inscricoes:landing' %}" class="flex items-center gap-2 font-semibold text-lg group">
+        <span class="w-2.5 h-2.5 rounded-full grad block"></span>
+        <span>eismeaqui<span class="text-slate-400">.app</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#comunidade" class="hover:text-slate-600">Comunidade</a>
+        <a href="#abertos" class="hover:text-slate-600">Inscrições abertas</a>
+        <a href="#como-funciona" class="hover:text-slate-600">Como funciona</a>
+        <a href="{% url 'inscricoes:contribuicao' %}" class="hover:text-slate-600">Contribuição solidária</a>
+        <a href="#faq" class="hover:text-slate-600">FAQ</a>
+      </nav>
+      <div class="hidden md:flex items-center gap-2">
+        <a href="{% url 'inscricoes:login' %}" target="_blank" rel="noopener noreferrer" data-newtab
+           class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white shadow-card hover:shadow-lg transition">Entrar</a>
+        <a href="#demo" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white shadow-card hover:shadow-lg transition">Ver demonstração</a>
+        <a href="#contato" class="px-3 py-1.5 rounded-lg text-white text-sm grad shadow-card hover:opacity-95 transition">Entre em contato</a>
+      </div>
+      <button id="menuBtn" class="md:hidden p-2 border border-slate-300 rounded-lg" aria-label="Abrir menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="mobileNav" class="md:hidden hidden border-t border-slate-200 bg-white/90">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-2 text-sm">
+        <a href="#comunidade" class="py-2">Comunidade</a>
+        <a href="#abertos" class="py-2">Inscrições abertas</a>
+        <a href="#como-funciona" class="py-2">Como funciona</a>
+        <a href="{% url 'inscricoes:contribuicao' %}" class="py-2">Contribuição solidária</a>
+        <a href="#faq" class="py-2">FAQ</a>
+        <a href="{% url 'inscricoes:login' %}" target="_blank" rel="noopener noreferrer" data-newtab class="py-2">Entrar</a>
+        <a href="#contato" class="py-2">Entre em contato</a>
+        <a href="#demo" class="py-2">Ver demonstração</a>
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+  <div class="max-w-3xl mx-auto px-4 mt-4">
+    {% for m in messages %}
+      <div class="my-2 p-3 rounded-xl border {% if m.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% elif m.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% else %}bg-slate-50 border-slate-200 text-slate-800{% endif %}">
+        {{ m }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Carrossel de Banners dos Eventos (logo abaixo do header) -->
+  {% if eventos_abertos %}
+  <section id="carousel-banners" class="bg-transparent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+      <div id="evCarousel" class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-card">
+        <div id="evSlides" class="flex transition-transform duration-500 ease-out" style="transform: translateX(0%)">
+          {% for evento in eventos_abertos %}
+            <a
+              href="{% url 'inscricoes:inscricao_inicial' evento.slug %}"
+              class="block min-w-full relative group"
+              aria-label="Inscrever-se em {{ evento.nome }}"
+              target="_blank" rel="noopener noreferrer" data-newtab
+            >
+              {% if evento.banner %}
+                <img src="{{ evento.banner.url }}" alt="Banner de {{ evento.nome }}"
+                     class="w-full h-52 sm:h-64 md:h-80 lg:h-[420px] object-cover">
+              {% else %}
+                {% site_image "default-banner" "w-full h-52 sm:h-64 md:h-80 lg:h-[420px] object-cover" alt="Banner do evento" %}
+              {% endif %}
+              <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <div class="backdrop-blur bg-black/35 text-white rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-card">
+                  <div class="text-sm opacity-90">
+                    {% if evento.data_inicio and evento.data_fim %}
+                      {{ evento.data_inicio|date:"d/m/Y" }} a {{ evento.data_fim|date:"d/m/Y" }}
+                    {% elif evento.data_inicio %}
+                      {{ evento.data_inicio|date:"d/m/Y" }}
+                    {% endif %}
+                    {% if evento.paroquia %}
+                      • {% if evento.paroquia.cidade %}{{ evento.paroquia.cidade }} — {% endif %}{{ evento.paroquia.nome }}
+                    {% endif %}
+                  </div>
+                  <h3 class="text-lg sm:text-xl font-bold leading-snug">{{ evento.nome }}</h3>
+                  <span class="inline-flex items-center gap-1 text-xs sm:text-sm mt-1 opacity-90">
+                    Clique para inscrever-se
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="opacity-90">
+                      <path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+
+        <!-- Controles -->
+        <button type="button" aria-label="Anterior"
+                class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-slate-300 bg-white/90 hover:bg-white shadow-card"
+                data-ev-prev>‹</button>
+        <button type="button" aria-label="Próximo"
+                class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-slate-300 bg-white/90 hover:bg-white shadow-card"
+                data-ev-next>›</button>
+
+        <!-- Indicadores -->
+        <div class="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2" id="evDots">
+          {% for evento in eventos_abertos %}
+            <button type="button" class="w-2.5 h-2.5 rounded-full bg-white/60 hover:bg-white ring-1 ring-white/50"
+                    aria-label="Ir para slide {{ forloop.counter }}" data-ev-index="{{ forloop.counter0 }}"></button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 grad opacity-[.10]"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 mb-4">
+          <span class="badge">Comunidade</span>
+          <span class="badge">Eventos</span>
+          <span class="badge">LGPD</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+          Agenda e inscrições da <span class="grad-ink">comunidade</span>
+        </h1>
+        <p class="mt-4 text-slate-600 text-lg">
+          Acompanhe abaixo as notícias e os eventos com inscrições abertas. As informações são atualizadas pelos responsáveis locais.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a href="#abertos" class="px-4 py-2 rounded-xl text-white grad shadow-card hover:shadow-lg transition">Ver eventos</a>
+          <a href="#contato" class="px-4 py-2 rounded-xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Falar com a equipe</a>
+          <a href="{% url 'inscricoes:contribuicao' %}" class="px-4 py-2 rounded-xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Entenda a contribuição solidária</a>
+          <span class="text-slate-500 text-sm">Organização e transparência</span>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-slate-500 text-sm">
+          <span class="kbd">Ctrl</span><span>+</span><span class="kbd">S</span>
+          <span class="ml-2">Relatórios prontos para impressão quando necessário</span>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="frame card-hover">
+          <div class="frame-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          {% site_image "dashboard" "w-full h-56 sm:h-64 md:h-[360px] object-cover" alt="Painel geral do eismeaqui.app" %}
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="frame card-hover">
+            <div class="frame-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            {% site_image "evento-criacao" "w-full h-28 sm:h-36 md:h-40 object-cover" alt="Criação de evento com questionário pronto" %}
+          </div>
+          <div class="frame card-hover">
+            <div class="frame-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            {% site_image "pagamentos" "w-full h-28 sm:h-36 md:h-40 object-cover" alt="Tela de pagamentos via Mercado Pago" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comunidade: avisos + agenda -->
+  <section id="comunidade" class="py-12 bg-white anchor-offset">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Avisos / Notícias — CARROSSEL -->
+        <div class="lg:col-span-2">
+          <h2 class="text-2xl font-bold">Notícias e avisos da comunidade</h2>
+          <p class="text-slate-600 mt-1">Informações gerais, comunicados e destaques pastorais.</p>
+
+          {% if comunicados %}
+            <div class="relative mt-5" aria-label="Carrossel de notícias">
+              <div id="newsTrack"
+                   class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 pb-2"
+                   style="scrollbar-width: thin;">
+                {% for c in comunicados %}
+                  <article class="snap-start shrink-0 w-80 sm:w-[28rem] rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden card-hover">
+                    <a href="{% url 'inscricoes:comunicado_detalhe' c.pk %}" class="block">
+                      {% if c.capa %}
+                        <img src="{{ c.capa.url }}" alt="Capa — {{ c.titulo }}" class="w-full h-44 object-cover">
+                      {% else %}
+                        {% site_image "news-default" "w-full h-44 object-cover" alt="Capa do comunicado" %}
+                      {% endif %}
+                      <div class="p-4">
+                        <h3 class="font-semibold text-slate-900 truncate">{{ c.titulo }}</h3>
+                        {% if c.data_publicacao %}<p class="text-xs text-slate-500 mt-0.5">{{ c.data_publicacao|date:"d/m/Y" }}</p>{% endif %}
+                        {% if c.texto %}<p class="text-slate-700 mt-2 line-clamp-3">{{ c.texto }}</p>{% endif %}
+                        <span class="inline-block mt-3 text-indigo-600 font-semibold">Ler mais →</span>
+                      </div>
+                    </a>
+                  </article>
+                {% endfor %}
+              </div>
+
+              <!-- Controles -->
+              <button type="button" aria-label="Anterior"
+                      class="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-slate-300 bg-white shadow-card hover:shadow-lg"
+                      onclick="scrollNews(-1)">‹</button>
+              <button type="button" aria-label="Próximo"
+                      class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-slate-300 bg-white shadow-card hover:shadow-lg"
+                      onclick="scrollNews(1)">›</button>
+            </div>
+          {% else %}
+            <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
+              <p class="text-slate-600">Sem comunicados no momento. Fique atento aos eventos abaixo.</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Agenda simples -->
+        <div>
+          <h3 class="text-xl font-semibold">Agenda da Comunidade</h3>
+          <p class="text-slate-600 mt-1">Atividades abertas ao público e encontros pastorais.</p>
+
+          <ol class="mt-4 space-y-3">
+          {% if eventos_comunidade %}
+            {% for e in eventos_comunidade|slice:":6" %}
+              <li class="rounded-xl border border-slate-200 bg-white p-4 shadow-card">
+                <div class="text-sm text-slate-500">
+                  {% if e.data_inicio and e.data_fim %}
+                    {{ e.data_fim|date:"d/m/Y" }} — {{ e.data_inicio|date:"d/m/Y" }}
+                  {% elif e.data_inicio %}
+                    {{ e.data_inicio|date:"d/m/Y" }}
+                  {% endif %}
+                </div>
+                <div class="font-semibold">{{ e.nome }}</div>
+                {% if e.paroquia %}
+                  <div class="text-xs text-slate-500">
+                    {% if e.paroquia.cidade %}{{ e.paroquia.cidade }} — {% endif %}{{ e.paroquia.nome }}
+                  </div>
+                {% endif %}
+                <div class="mt-2">
+                  {% if e.slug %}
+                    <a href="{% url 'inscricoes:inscricao_evento_publico' e.slug %}" class="text-indigo-600 underline underline-offset-4">Detalhes</a>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="rounded-xl border border-slate-200 bg-white p-4 shadow-card">
+              <div class="text-slate-600">Nenhuma atividade listada hoje.</div>
+            </li>
+          {% endif %}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inscrições abertas -->
+  <section id="abertos" class="py-14 bg-slate-50 anchor-offset">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <h2 class="text-3xl font-bold">Inscrições abertas</h2>
+          <p class="mt-2 text-slate-600">Escolha um evento e faça sua inscrição agora.</p>
+        </div>
+      </div>
+
+      {% if eventos_abertos %}
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for evento in eventos_abertos|slice:":6" %}
+            <article class="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden card-hover">
+              {% if evento.banner %}
+                <img src="{{ evento.banner.url }}" alt="Banner de {{ evento.nome }}" class="w-full h-40 object-cover">
+              {% else %}
+                {% site_image "default-banner" "w-full h-40 object-cover" alt="Banner do evento" %}
+              {% endif %}
+
+              <div class="p-5">
+                <h3 class="font-semibold text-lg">{{ evento.nome }}</h3>
+                <p class="text-sm text-slate-600 mt-1">
+                  {{ evento.get_tipo_display }} •
+                  {% if evento.data_inicio and evento.data_fim %}
+                    {{ evento.data_inicio|date:"d/m/Y" }} a {{ evento.data_fim|date:"d/m/Y" }}
+                  {% elif evento.data_inicio %}
+                    {{ evento.data_inicio|date:"d/m/Y" }}
+                  {% endif %}
+                </p>
+                {% if evento.paroquia %}
+                  <p class="text-xs text-slate-500 mt-1">
+                    {% if evento.paroquia.cidade %}{{ evento.paroquia.cidade }} — {% endif %}{{ evento.paroquia.nome }}
+                  </p>
+                {% endif %}
+                {% if evento.valor_inscricao %}<p class="text-sm text-slate-700 mt-2">Valor: R$ {{ evento.valor_inscricao }}</p>{% endif %}
+
+                <div class="mt-4 flex gap-2">
+                  <a href="{% url 'inscricoes:inscricao_inicial' evento.slug %}" target="_blank" rel="noopener noreferrer" data-newtab
+                     class="px-4 py-2 rounded-xl text-white grad shadow-card hover:shadow-lg transition">Inscrever-se</a>
+                  <a href="{% url 'inscricoes:inscricao_evento_publico' evento.slug %}"
+                     class="px-4 py-2 rounded-2xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Detalhes</a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="mt-8 text-slate-500">No momento não há eventos com inscrições abertas.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section id="como-funciona" class="py-14 bg-white anchor-offset">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold text-center">Como funciona</h2>
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-slate-200 p-6 bg-white shadow-card card-hover">
+          <div class="text-sm text-slate-500">Passo 1</div>
+          <h3 class="font-semibold mt-1">Crie o evento</h3>
+          <p class="mt-2 text-slate-600">Defina paróquia, tipo (sênior, mirim, etc.), vagas — o <strong>questionário já vem pronto</strong>. Um link público é gerado automaticamente.</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 p-6 bg-white shadow-card card-hover">
+          <div class="text-sm text-slate-500">Passo 2</div>
+          <h3 class="font-semibold mt-1">Divulgue e receba inscrições</h3>
+          <p class="mt-2 text-slate-600">Acompanhe inscritos, confirme pagamentos, envie e-mails e exporte listas para impressão.</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 p-6 bg-white shadow-card card-hover">
+          <div class="text-sm text-slate-500">Passo 3</div>
+          <h3 class="font-semibold mt-1">Organize o dia do evento</h3>
+          <p class="mt-2 text-slate-600">Imprima crachás, fichas e relatórios; monitore presenças e gere certificados pós-evento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contato / CTA -->
+  <section id="contato" class="py-16 anchor-offset">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold">Fale com a equipe</h2>
+        <p class="mt-2 text-slate-600">Dúvidas sobre eventos ou interesse em utilizar o sistema na sua paróquia.</p>
+      </div>
+
+      <form action="{% url 'inscricoes:contato_enviar' %}" method="post" class="form-flat mt-8 grid gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-card" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="honeypot" value="">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="id_nome" class="block text-sm font-medium text-slate-700">Nome</label>
+            {{ form.nome }}{% if form.nome.errors %}<p class="text-red-600 text-xs mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="id_whatsapp" class="block text-sm font-medium text-slate-700">WhatsApp</label>
+            {{ form.whatsapp }}{% if form.whatsapp.errors %}<p class="text-red-600 text-xs mt-1">{{ form.whatsapp.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label for="id_email" class="block text-sm font-medium text-slate-700">E-mail</label>
+          {{ form.email }}{% if form.email.errors %}<p class="text-red-600 text-xs mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label for="id_mensagem" class="block text-sm font-medium text-slate-700">Mensagem (opcional)</label>
+          {{ form.mensagem }}{% if form.mensagem.errors %}<p class="text-red-600 text-xs mt-1">{{ form.mensagem.errors.0 }}</p>{% endif %}
+        </div>
+
+        {% if form.lgpd %}
+          <div class="flex items-start gap-2 text-xs text-slate-600">
+            {{ form.lgpd }}
+            <label for="{{ form.lgpd.id_for_label }}">Concordo em ser contatado e com o tratamento dos meus dados conforme a LGPD para fins de atendimento.</label>
+          </div>
+          {% if form.lgpd.errors %}<p class="text-red-600 text-xs mt-1">{{ form.lgpd.errors.0 }}</p>{% endif %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+          <div class="text-red-700 text-sm bg-red-50 border border-red-200 rounded-xl p-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-3">
+          <button type="submit" class="px-5 py-3 rounded-2xl text-white grad shadow-card hover:shadow-lg transition">Enviar</button>
+          <a id="demo" href="#abertos" class="px-5 py-3 rounded-2xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Ver eventos</a>
+          <a href="{% url 'inscricoes:contribuicao' %}" class="px-5 py-3 rounded-2xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Entenda a contribuição solidária</a>
+        </div>
+        <p class="text-xs text-slate-500">Resposta em horário comercial.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-14 bg-white anchor-offset">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold text-center">Perguntas frequentes</h2>
+      <div class="mt-8 grid md:grid-cols-2 gap-6">
+        <details class="rounded-xl border border-slate-200 p-5 bg-white shadow-card card-hover">
+          <summary class="font-semibold cursor-pointer">Posso usar o eismeaqui.app para diferentes tipos de eventos?</summary>
+          <p class="mt-2 text-slate-600">Sim. Eventos sênior, juvenil, mirim e servos contam com <strong>questionários prontos por tipo</strong>.</p>
+        </details>
+        <details class="rounded-xl border border-slate-200 p-5 bg-white shadow-card card-hover">
+          <summary class="font-semibold cursor-pointer">Como funcionam os pagamentos?</summary>
+          <p class="mt-2 text-slate-600">Cada paróquia integra sua conta do Mercado Pago; confirmações atualizam as inscrições automaticamente.</p>
+        </details>
+        <details class="rounded-xl border border-slate-200 p-5 bg-white shadow-card card-hover">
+          <summary class="font-semibold cursor-pointer">Consigo imprimir crachás e relatórios?</summary>
+          <p class="mt-2 text-slate-600">Sim. Layouts prontos para impressão direta do navegador.</p>
+        </details>
+        <details class="rounded-xl border border-slate-200 p-5 bg-white shadow-card card-hover">
+          <summary class="font-semibold cursor-pointer">Há envio automático de e-mails?</summary>
+          <p class="mt-2 text-slate-600">Confirmações de inscrição e pagamento com link para a inscrição.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chamada final -->
+  <section class="py-12 bg-slate-50">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-2xl font-bold">Quer usar o eismeaqui.app na sua paróquia?</h2>
+      <p class="mt-2 text-slate-600">
+        Solução completa para gestão de inscrições, com formulários por tipo de evento, integração com Mercado Pago, relatórios, crachás e certificados.
+      </p>
+      <div class="mt-5 flex items-center justify-center gap-3">
+        <a href="#contato" class="px-5 py-3 rounded-2xl text-white grad shadow-card hover:shadow-lg transition">Fale conosco</a>
+        <a href="{% url 'inscricoes:contribuicao' %}" class="px-5 py-3 rounded-2xl border border-slate-300 bg-white shadow-card hover:shadow-lg transition">Entenda a contribuição solidária</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer id="rodape" class="border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-3 gap-8">
+      <div>
+        <div class="flex items-center gap-2 font-semibold text-lg"><span class="w-2.5 h-2.5 rounded-full grad block"></span> eismeaqui<span class="text-slate-400">.app</span></div>
+        <p class="mt-2 text-sm text-slate-600">Sistema de inscrições e gestão de eventos católicos.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold">Links</h4>
+        <ul class="mt-2 text-sm text-slate-600 space-y-1">
+          <li><a href="#comunidade" class="hover:underline">Comunidade</a></li>
+          <li><a href="#abertos" class="hover:underline">Inscrições abertas</a></li>
+          <a href="{% url 'inscricoes:contribuicao' %}">Entenda a contribuição solidária</a>
+
+          <li><a href="#faq" class="hover:underline">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold">Fale com a gente</h4>
+        <p class="mt-2 text-sm text-slate-600">E-mail: contato@eismeaqui.app</p>
+        <p class="text-sm text-slate-600">WhatsApp: (xx) xxxxx-xxxx</p>
+      </div>
+    </div>
+    <div class="py-4 text-center text-xs text-slate-500">© <span id="year"></span> eismeaqui.app — Todos os direitos reservados</div>
+  </footer>
+
+  <script>
+    // Menu mobile
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    if (menuBtn && mobileNav) {
+      menuBtn.addEventListener('click', () => mobileNav.classList.toggle('hidden'));
+    }
+    // Ano atual
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Máscara (00) 00000-0000 no WhatsApp
+    function maskPhone(v){
+      v=v.replace(/\D/g,'');
+      v=v.replace(/^(\d{2})(\d)/,'($1) $2');
+      v=v.replace(/(\d{5})(\d{4}).*/,'$1-$2');
+      return v;
+    }
+    const w = document.getElementById('id_whatsapp');
+    if (w){
+      w.setAttribute('inputmode','tel');
+      w.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+    }
+
+    // Links internos: manter _self; apenas os marcados com data-newtab abrem nova aba
+    (function(){
+      try{
+        const base = document.querySelector('base[target]');
+        if (base) base.setAttribute('target','_self');
+        document.querySelectorAll('a[target="_blank"]').forEach(a=>{
+          try{
+            const u = new URL(a.getAttribute('href'), location.href);
+            if (u.origin === location.origin && !a.hasAttribute('data-newtab')) a.setAttribute('target','_self');
+          }catch(e){}
+        });
+      }catch(e){}
+    })();
+
+    // Carrossel de notícias — rolagem por card
+    function scrollNews(dir){
+      const el = document.getElementById('newsTrack');
+      if(!el) return;
+      const card = el.querySelector('article');
+      const gap  = 16; // .gap-4 (4*4px)
+      const delta = (card?.offsetWidth || 320) + gap;
+      el.scrollBy({ left: dir * delta, behavior: 'smooth' });
+    }
+
+    // Carrossel de banners de eventos
+    (function(){
+      const track   = document.getElementById('evSlides');
+      const prevBtn = document.querySelector('[data-ev-prev]');
+      const nextBtn = document.querySelector('[data-ev-next]');
+      const dotsBox = document.getElementById('evDots');
+      const container = document.getElementById('evCarousel');
+      if (!track || !container) return;
+
+      const slides = Array.from(track.children);
+      if (slides.length === 0) return;
+
+      let idx = 0;
+      let timer = null;
+      const INTERVAL = 6000;
+
+      function update(){
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        if (dotsBox){
+          dotsBox.querySelectorAll('button').forEach((b, i) => {
+            b.classList.toggle('bg-white', i === idx);
+            b.classList.toggle('bg-white/60', i !== idx);
+            b.classList.toggle('ring-2', i === idx);
+          });
+        }
+      }
+
+      function go(n){ idx = (n + slides.length) % slides.length; update(); }
+      function next(){ go(idx + 1); }
+      function prev(){ go(idx - 1); }
+
+      if (dotsBox){
+        dotsBox.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-ev-index]');
+          if (!btn) return;
+          go(parseInt(btn.getAttribute('data-ev-index'), 10) || 0);
+          restart();
+        });
+      }
+      prevBtn && prevBtn.addEventListener('click', () => { prev(); restart(); });
+      nextBtn && nextBtn.addEventListener('click', () => { next(); restart(); });
+
+      function start(){ timer = setInterval(next, INTERVAL); }
+      function stop(){ if (timer) clearInterval(timer); timer = null; }
+      function restart(){ stop(); start(); }
+      container.addEventListener('mouseenter', stop);
+      container.addEventListener('mouseleave', start);
+
+      update();
+      if (slides.length > 1) start();
+    })();
+  </script>
+</body>
+</html>
